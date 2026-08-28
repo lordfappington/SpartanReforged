@@ -1,0 +1,23 @@
+# Milestone 0 - Discovery
+
+- [x] Development environment installed
+- [ ] Canonical Spartan game version identified
+- [ ] Original game ISO safely backed up
+- [ ] Disc filesystem extracted
+- [ ] Disc contents catalogued
+- [ ] Main executable identified
+- [ ] PAK archives identified
+- [ ] PAK archives successfully unpacked
+- [ ] Extracted file extensions catalogued
+- [ ] Texture formats identified
+- [ ] Model formats investigated
+- [ ] Animation formats investigated
+- [ ] Audio formats identified
+- [ ] Level/scene data investigated
+- [ ] Scripts/config/data tables investigated
+- [ ] Main ELF loaded into Ghidra
+- [ ] Function discovery/export investigated
+- [ ] PS2Recomp compatibility investigated
+- [ ] First recompilation experiment performed
+- [ ] Major unsupported PS2 functionality documented
+- [ ] Decision made on recompilation vs reimplementation direction

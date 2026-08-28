@@ -1,0 +1,45 @@
+# Legally owned game data and extracted proprietary content
+game-original/*
+!game-original/README.md
+game-extracted/*
+!game-extracted/README.md
+assets/original/*
+assets/references/existing-texture-pack/*
+captures/videos/*
+backups/*
+!backups/README.md
+
+# Generated and temporary output
+temp/*
+recomp/generated/*
+*.log
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Disc images, executables, archives, and game packages
+*.iso
+*.bin
+*.img
+*.elf
+*.pak
+*.zip
+*.7z
+*.rar
+
+# IDE and build output
+.vs/
+.vscode/
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+out/
+build/
+*.user
+*.suo
+
+# Locally downloaded third-party binaries (keep provenance docs/scripts)
+tools/external/spartan-pak-tools/quickbms.zip
+tools/external/spartan-pak-tools/quickbms/
+recomp/ps2recomp/
+
