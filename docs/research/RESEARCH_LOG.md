@@ -62,3 +62,16 @@
 - Confirmed `FE_LANG.TXT` as a boot-time language menu script. It defines language selection and explicitly transfers control to `fe_tv`, matching GENERAL's `start_section="fe_lang"` and sibling `FNT_END` declarations.
 - Found the three memory-card `.ICO` files are byte-identical proprietary payloads rather than conventional Windows ICO containers. Stock Noesis TIM2 support is present; recognition of the custom `.ICO` payload remains unconfirmed. No conversion or plugin installation occurred.
 - No other PAK was opened. No Ghidra, PS2Recomp, conversion, modification, or upscaling work occurred, and broad Milestone 0 completion boxes remain unchanged.
+
+## 2026-08-29 - FE_TV.PAK extracted, analyzed, and compared
+
+- Verified `DATA/FE_TV.PAK`: 8,282,688 bytes, SHA-256 `ffd880ed25d385f8addbcbcee105032f5525112306f44db31f549c129cd9d6c4`, `PAK1` version 1, 79 entries, and `0x800` alignment.
+- Ran QuickBMS list-only first. All paths and extents passed traversal, malformed/reserved-name, duplicate, collision, alignment, overlap, and bounds checks; entry order is ascending by offset.
+- Extracted only FE_TV to ignored `game-extracted/pak/FE_TV`. All 79 listed paths and sizes matched, no extra appeared, total output is 8,184,826 bytes, and the source hash remained unchanged.
+- Inventoried 35 `.TM2`, 32 `.DIM`, 8 `.TXT`, 3 `.ICO`, and 1 `.MTL` entry. Generated listings/reports remain local under `logs/analysis`.
+- Confirmed all 35 TIM2 files are one-picture, one-mip, 8-bit indexed images with 256-color CLUTs; dimensions are 16×16, 256×256, or 512×512.
+- Strengthened the DIM model to a 1-byte size-class-like value, 63 `0xcd` bytes, and 256 u16 advance-like measurements. FONT18/FONT18G share measurements; Czech/Polish FONT24 contains an unexplained `0x2000` sentinel.
+- Parsed both front-end MTL samples as a name table plus variable length-delimited records containing counted child/property blocks. Five shared records are byte-identical; numeric property semantics remain unknown.
+- FE_TV's UI tables contain all 699 FE_LANG records in the same key order plus 189 keys per language, while many localized values are revised. Twenty FE_TV assets are byte-identical to FE_LANG counterparts or shared paths.
+- Confirmed the section graph FE_LANG → FE_TV, then FE_TV → FE_MAIN for normal video states or FE_TV → FE_LOAD from the tester path. No runtime order beyond these explicit script edges was inferred.
+- No other PAK was opened. No asset conversion/modification, Ghidra, or PS2Recomp work occurred; broad milestone boxes remain unchanged.

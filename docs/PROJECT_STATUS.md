@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Milestone 0 - Front-End Format Discovery
+Milestone 0 - Front-End Asset Architecture
 
 ## Milestone 0 - Discovery
 
-The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. Root `GENERAL.PAK` and `DATA/FE_LANG.PAK` have been extracted in separate ignored directories after list-only safety audits. FE_LANG establishes the boot-time language-selection flow and the first front-end resource formats. The other 28 PAKs have not been extracted.
+The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. GENERAL, FE_LANG, and FE_TV have been extracted into separate ignored directories after list-only safety audits. FE_LANG → FE_TV → FE_MAIN is now the evidenced normal front-end path, with FE_TV → FE_LOAD used by its display tester. The other 27 PAKs have not been extracted.
 
 ## Environment
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. GENERAL reveals the section/allocation manifest and audio configuration syntax. FE_LANG confirms paletted TIM2 textures, TIM2-plus-DIM bitmap fonts, ordered legacy-encoded localization tables, a front-end world/menu script, a binary material table, and proprietary memory-card icon payloads. Model, animation, and inner audio formats remain unidentified; see `research/FILE_FORMAT_REGISTRY.md`.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. FE_LANG/FE_TV establish a repeated section-package architecture: WORLD state scripts and resource indexes, per-language localization snapshots and TIM2-plus-DIM fonts, plus duplicated `GENERIC_GRAPHICS`. MTL is now structurally parsed as a resource/property container, and DIM has a confirmed 256-entry measurement layout with likely glyph-advance semantics. Model, animation, and inner audio formats remain unidentified.
 
 ## Executable Analysis
 
@@ -39,11 +39,13 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - Which PAK operations are safely supported beyond extraction?
 - Which additional formats and content categories are stored in the level, arena, and remaining front-end PAK archives?
 - What does `FNT_END` mean, and how are `DATA\ENV` logical paths resolved to disc PAKs?
-- What are the exact schemas for FE_LANG `.DIM`, `.MTL`, and memory-card `.ICO` files, and which legacy code pages does the game use for each UI language?
+- What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
+- What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
+- What is the proprietary memory-card `.ICO` schema?
 - Where are the `fe_splash` and `level99/testlevel` sections stored?
 - What are the actual codecs and schemas for the `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries?
 - Which PS2 hardware and middleware dependencies block recompilation?
 
 ## Next Actions
 
-In a separately authorized task, list `DATA/FE_TV.PAK` and, if coherent, extract it into an isolated ignored directory. FE_LANG directly loads `fe_tv`, making it the next bounded front-end target.
+In a separately authorized task, list `DATA/FE_MAIN.PAK` and, if coherent, extract it into an isolated ignored directory. FE_TV conditionally loads `fe_main` for established 50/60 Hz states, making it the next normal-path target.
