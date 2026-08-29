@@ -1,6 +1,6 @@
 # PAK Archive Overview
 
-This survey used header reads and QuickBMS 0.12.0 `-l` list-only mode. No archive entry was extracted, decompressed, rewritten, or reimported.
+The initial survey used header reads and QuickBMS 0.12.0 `-l` list-only mode. A later controlled task extracted only the two-entry root `GENERAL.PAK`; see `GENERAL_PAK_ANALYSIS.md`. No other PAK has been extracted, rewritten, or reimported.
 
 ## Common Container Header
 
@@ -12,7 +12,7 @@ The script logs stored extents and does not invoke a decompressor. This indicate
 
 | Archive | Size | SHA-256 | Version | Alignment | Listed entries | Result |
 |---|---:|---|---:|---:|---:|---|
-| `GENERAL.PAK` | 29,074 | `0ec7ec24f69625d5302c0a040f55803ff084e48655f8142d299bfc9bb97f6e1c` | PAK1 | `0x800` | 2 | List-only succeeded |
+| `GENERAL.PAK` | 29,074 | `0ec7ec24f69625d5302c0a040f55803ff084e48655f8142d299bfc9bb97f6e1c` | PAK1 | `0x800` | 2 | List-only and isolated extraction succeeded |
 | `E_DATA.PAK` | 1,514,409,600 | `bd2d12fe350e9afa68094c30645eac664c99104ac592c41926a71488a5f03e45` | PAK1 | `0x800` | 12,689 | List-only succeeded |
 
 `GENERAL.PAK` names exactly two paths:
@@ -48,7 +48,6 @@ Header-only inspection found 28 additional PAK1 archives: 27 under `DATA` and on
 
 - QuickBMS returned exit code 0 for both requested root archives.
 - `GENERAL.PAK` reported 2 files and `E_DATA.PAK` reported 12,689 files.
-- Only archive table names, offsets, and logical sizes were read.
+- The initial survey read only archive table names, offsets, and logical sizes. A later controlled task extracted only the two root `GENERAL.PAK` text files.
 - Detailed local listings are generated research output under `logs/extraction` and are not committed.
 - Rebuild/reimport compatibility remains unverified.
-

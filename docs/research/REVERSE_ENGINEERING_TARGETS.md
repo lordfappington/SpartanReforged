@@ -9,7 +9,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## ARCHIVES
 
-- `GENERAL.PAK` — **CONFIRMED:** PAK1, 2 listed entries.
+- `GENERAL.PAK` — **CONFIRMED:** PAK1, 2 entries successfully extracted into an isolated ignored directory; contains the section manifest and global sound configuration.
 - `E_DATA.PAK` — **CONFIRMED:** PAK1, 12,689 listed sound-tree entries.
 - `DATA/LEVEL*.PAK`, `DATA/ARENA*.PAK`, `DATA/FE_*.PAK`, `IOP/GENERAL.PAK` — **CONFIRMED:** PAK1 containers; contents not listed.
 
@@ -27,8 +27,9 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## LEVEL DATA
 
-- `DATA/LEVEL00.PAK` through `DATA/LEVEL14.PAK`, including `LEVEL07D.PAK` — **LIKELY:** level-specific content based solely on archive names.
-- `DATA/ARENA*.PAK` — **LIKELY:** arena-specific content based solely on names.
+- `DATA/LEVEL00.PAK` through `DATA/LEVEL14.PAK`, including `LEVEL07D.PAK` — **LIKELY:** level-specific content; `SECTIONS.TXT` confirms matching logical section names and `DATA\ENV\level*` paths.
+- `DATA/ARENA*.PAK` — **LIKELY:** arena-specific content; `SECTIONS.TXT` confirms matching arena section names and `DATA\ENV\arena*` paths.
+- `DATA/FE_LANG.PAK` — **HIGH-VALUE NEXT TARGET:** `SECTIONS.TXT` declares `fe_lang` as `start_section`; archive is 1,348,160 bytes with 32 declared entries.
 
 ## AUDIO
 
@@ -39,7 +40,9 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 ## SCRIPTS / CONFIGURATION
 
 - `SYSTEM.CNF` — **CONFIRMED:** PS2 boot configuration.
-- `GENERAL.PAK` paths `DATA\SECTIONS.TXT` and `DATA\SOUND\SCRIPTS\MISC.TXT` — **LIKELY:** text configuration/data; contents not extracted.
+- `GENERAL.PAK/DATA/SECTIONS.TXT` — **CONFIRMED:** ordered section/allocation manifest mapping front-end, arena, level, and test identifiers to `DATA\ENV` logical paths.
+- `GENERAL.PAK/DATA/SOUND/SCRIPTS/MISC.TXT` — **CONFIRMED:** ordered cross-platform audio configuration covering global volumes, crowd sound-grid behavior, and PS2/Xbox effect presets.
+- Future executable string targets: `start_section`, `FNT_END`, `STD_LEVEL`, `SOUND_GRID`, `EFFECT_NAME`, and `DATA\ENV`.
 - `E_DATA.PAK` entries below `DATA\SOUND\SCRIPTS` — **LIKELY:** localized or compiled sound scripts based on path names.
 
 ## IOP / PS2 SYSTEM MODULES
@@ -54,4 +57,3 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Actual codecs and schemas for `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries.
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
-

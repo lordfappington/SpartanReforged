@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Milestone 0 - Disc Extraction and Content Inventory
+Milestone 0 - Archive Structure Analysis
 
 ## Milestone 0 - Discovery
 
-The canonical PS2 ISO has an independently verified matching backup. Its complete ISO9660 filesystem has been extracted read-only and catalogued without unpacking any PAK archive.
+The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. The small root `GENERAL.PAK` has now been extracted in isolation and its two text configuration files analyzed. No other PAK has been extracted.
 
 ## Environment
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. No standalone image/model/audio formats were found outside archives. Inner sound-tree extensions are catalogued but their proprietary formats remain unknown; see `research/FILE_FORMAT_REGISTRY.md`.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. `GENERAL.PAK` reveals an ordered section/allocation manifest and a cross-platform audio configuration syntax. No texture, model, animation, or inner audio format has yet been identified; see `research/FILE_FORMAT_REGISTRY.md`.
 
 ## Executable Analysis
 
@@ -38,9 +38,11 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What executable and archive revisions exist across releases?
 - Which PAK operations are safely supported beyond extraction?
 - Which formats and content categories are stored in the level, arena, and front-end PAK archives?
+- What does `FNT_END` mean, and how are `DATA\ENV` logical paths resolved to disc PAKs?
+- Where are the `fe_splash` and `level99/testlevel` sections stored?
 - What are the actual codecs and schemas for the `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries?
 - Which PS2 hardware and middleware dependencies block recompilation?
 
 ## Next Actions
 
-In a separately authorized task, perform a controlled extraction of the smallest root archive (`GENERAL.PAK`) into `game-extracted/pak` and validate the result before extracting larger archives.
+In a separately authorized task, list `DATA/FE_LANG.PAK` and, if coherent, extract it into an isolated ignored directory; it is the confirmed initial section and a small 32-entry archive.

@@ -38,3 +38,15 @@
 - Important disc directories are `DATA` (27 PAKs) and `IOP` (10 IRX modules, one IMG, and one PAK).
 - Unknowns include all proprietary inner schemas/codecs, the contents of level/arena/front-end archives, and the exact purpose of `IOP/GENERAL.PAK`.
 - Generated CSV/JSON inventories and list-only output remain local under `logs/extraction` and are not committed.
+
+## 2026-08-29 - Root GENERAL.PAK extracted and analyzed
+
+- Reverified source `GENERAL.PAK` SHA-256 `0ec7ec24f69625d5302c0a040f55803ff084e48655f8142d299bfc9bb97f6e1c` before extraction.
+- Extracted only root `GENERAL.PAK` with QuickBMS into ignored `game-extracted/pak/GENERAL`; the destination was empty and QuickBMS reported exactly two files with no errors.
+- Verified `DATA/SECTIONS.TXT` (1,788 bytes, SHA-256 `5f7aa226244a36e7c8aa41747737d4975e2d1118415099d81928e0ba571df5d9`) and `DATA/SOUND/SCRIPTS/MISC.TXT` (24,978 bytes, SHA-256 `eaf11f7bfaa1625fc275208c71c588acfce3d1253540a463094eaafaf3e8805c`).
+- Rehashed the source archive after extraction; its size, timestamp, and SHA-256 were unchanged.
+- `SECTIONS.TXT` is a 30-section registration/allocation manifest. It declares `fe_lang` as the initial section, classifies six front-end entries as `FNT_END`, classifies 23 arena/level entries as `STD_LEVEL`, and maps them to `DATA\ENV` logical paths.
+- Section names align with the front-end, arena, and level archive basenames, except that `fe_splash` and `level99/testlevel` have no same-named disc PAK.
+- `MISC.TXT` is an ordered cross-platform audio configuration with duplicate-key record groups. It configures sound volumes, stream fading, character fall sounds, a 7×7 crowd sound grid, and 19 PS2/Xbox reverb presets; `GC_EFFECTS` is present but empty.
+- No direct audio asset filenames occur in `MISC.TXT`; effect identifiers are presets rather than confirmed gameplay sound events.
+- No other PAK was opened or extracted. The project-wide “PAK archives successfully unpacked” milestone remains incomplete.
