@@ -75,3 +75,19 @@
 - FE_TV's UI tables contain all 699 FE_LANG records in the same key order plus 189 keys per language, while many localized values are revised. Twenty FE_TV assets are byte-identical to FE_LANG counterparts or shared paths.
 - Confirmed the section graph FE_LANG → FE_TV, then FE_TV → FE_MAIN for normal video states or FE_TV → FE_LOAD from the tester path. No runtime order beyond these explicit script edges was inferred.
 - No other PAK was opened. No asset conversion/modification, Ghidra, or PS2Recomp work occurred; broad milestone boxes remain unchanged.
+
+## 2026-08-29 - FE_MAIN.PAK extracted, analyzed, and compared
+
+- Verified `DATA/FE_MAIN.PAK`: 144,123,908 bytes, SHA-256 `9b0edcf2bd8868de4450cf80bdd15967347bb5ea9b9dd7a312496cb1fb15d328`, `PAK1` version 1, 114 entries, and `0x800` alignment.
+- Ran QuickBMS list-only first. All ordered paths and extents passed traversal, malformed/reserved-name, duplicate, collision, alignment, overlap, and bounds checks; the final extent ends exactly at archive EOF.
+- Extracted only FE_MAIN to ignored `game-extracted/pak/FE_MAIN`. All 114 paths and sizes matched, no extra appeared, total output is 143,982,047 bytes, and the source hash remained unchanged.
+- Inventoried 68 `.TM2`, 32 `.DIM`, 8 `.TXT`, 3 `.ICO`, 2 `.PSS`, and 1 `.MTL` file. Generated listing/inventory/magic reports remain local under `logs/analysis`.
+- Confirmed all 68 TIM2 resources are one-picture, one-mip, 8-bit indexed images with 256-color CLUTs, spanning 16×16 through 512×512. Names and script bindings identify UI atlases plus smoke/fog/glow/flare effect textures.
+- Confirmed both PSS files as about 94-second MPEG program streams containing MPEG-2 video: 512×224 at 30000/1001 fps and 512×256 at 25 fps. FE_MAIN selects them by platform/video-system state for its attract loop; FFprobe reported no audio stream.
+- Confirmed the 576-byte DIM layout in all 32 font tables. Their prefix schema matches FE_TV, but 1–17 measurements and all paired atlases differ; Czech/Polish FONT24 retain `0x2000` at indices 191 and 223.
+- Parsed FE_MAIN MTL as 45 records ending exactly at EOF. All 10 FE_TV-shared and all 7 FE_LANG-shared records are byte-identical, even where the referenced section asset differs, strongly supporting stable resource declarations rather than a conventional material-file claim.
+- Analyzed the 8,717-line main script: 35 distinct TIM2 filenames, 13 emitters, 111 menus, symbolic SFX/music, MPEG playback, save/profile/unlock logic, and explicit exits to `level00`–`level14`, `level07d`, six arena sections, and `fe_xtra`. The `map_512.tga` reference conflicts with packaged `MAP_512.TM2` and remains unexplained.
+- FE_MAIN has no mesh/model, skeleton, character-animation, world-placement, 3D scene, or 3D camera payload evidence. Its animation/transform commands target UI objects, while its emitters confirm a front-end 2D effect system.
+- Exact duplicated content includes 12 FE_MAIN files found in FE_TV and seven found in FE_LANG by hash. Seven UI tables exactly match FE_TV, and shared generic icons/remapping resources remain identical across all three sections.
+- The self-contained-section model is strengthened: FE_MAIN embeds its script, declarations, localized text, fonts, UI/effect textures, generic assets, and both large videos. The phase is now `Milestone 0 - Section Asset Architecture`; broad format/unpacking milestones remain incomplete.
+- No other PAK was opened. No asset conversion/modification, Ghidra, PS2Recomp, or installation occurred.

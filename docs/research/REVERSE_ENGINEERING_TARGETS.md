@@ -13,12 +13,14 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `E_DATA.PAK` — **CONFIRMED:** PAK1, 12,689 listed sound-tree entries.
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** PAK1, 32 entries safely listed and extracted in isolation; contains language tables, font resources, front-end script/material data, textures, and memory-card icon assets.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** PAK1, 79 entries safely listed, extracted, inventoried, analyzed, and compared with FE_LANG.
-- `DATA/LEVEL*.PAK`, `DATA/ARENA*.PAK`, the other three `DATA/FE_*.PAK` files, and `IOP/GENERAL.PAK` — **CONFIRMED:** PAK1 containers; contents not listed.
+- `DATA/FE_MAIN.PAK` — **CONFIRMED:** PAK1, 114 entries safely listed, extracted, inventoried, and compared with FE_LANG/FE_TV; adds MPEG-2 `.PSS` video and a large main-menu script.
+- `DATA/LEVEL*.PAK`, `DATA/ARENA*.PAK`, the other two `DATA/FE_*.PAK` files, and `IOP/GENERAL.PAK` — **CONFIRMED:** PAK1 containers; contents not listed.
 
 ## TEXTURES
 
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** 12 single-picture, 256-color TIM2 textures from 16×16 through 256×256; includes eight font atlases.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** 35 single-picture, 8-bit indexed TIM2 textures from 16×16 through 512×512; includes 32 font atlases.
+- `DATA/FE_MAIN.PAK` — **CONFIRMED:** 68 single-picture, one-mip, 8-bit indexed TIM2 textures from 16×16 through 512×512; 32 font atlases plus UI cards, maps, icons, logos, and effect pages.
 - Other `DATA/FE_*.PAK`, `DATA/LEVEL*.PAK`, and `DATA/ARENA*.PAK` files — **UNKNOWN candidates:** not opened.
 
 ## MODELS
@@ -35,12 +37,14 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `DATA/ARENA*.PAK` — **LIKELY:** arena-specific content; `SECTIONS.TXT` confirms matching arena section names and `DATA\ENV\arena*` paths.
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** boot-time language-selection front end; `SECTIONS.TXT` declares it as `start_section`, and its script loads `fe_tv` after selection.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** video-mode/progressive-scan front end reached from FE_LANG; conditionally loads `fe_main` or `fe_load`.
-- `DATA/FE_MAIN.PAK` — **HIGH-VALUE NEXT TARGET:** normal `LEVEL fe_main` destination for established 50/60 Hz states; list-only inspection pending.
+- `DATA/FE_MAIN.PAK` — **CONFIRMED:** main-menu runtime section; dispatches to `level00`–`level14`, `level07d`, six arena sections, and `fe_xtra`.
+- `DATA/LEVEL00.PAK` — **HIGH-VALUE NEXT TARGET:** direct FE_MAIN destination and first candidate for comparing gameplay asset architecture with the established front-end section model.
 
 ## AUDIO
 
 - `E_DATA.PAK` — **CONFIRMED:** all listed paths are under `DATA\SOUND`.
 - Inner `.MIC`, `.MSB`, `.MSH`, `.CMH`, and `.BIN` files — **LIKELY:** audio data, banks, metadata, or scripts based on path context; encodings remain unknown.
+- `FE_MAIN.PAK/.../ATTRACT.PSS` and `ATTRACT_PAL.PSS` — **CONFIRMED:** MPEG program streams with one MPEG-2 video stream; no audio stream reported by FFprobe.
 - `IOP/LIBSD.IRX`, `SDRDRV.IRX`, and `STREAM.IRX` — **LIKELY:** runtime sound/streaming modules based on conventional names; code not analyzed.
 
 ## SCRIPTS / CONFIGURATION
@@ -52,6 +56,8 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `FE_LANG.PAK/DATA/ENV/FE_LANG/TEXT/*/UI.TXT` — **CONFIRMED:** seven synchronized, ordered localization tables with duplicate keys and legacy single-byte encodings.
 - `FE_TV.PAK/DATA/ENV/FE_TV/WORLD/FE_TV.TXT` — **CONFIRMED:** cross-platform video-mode state script with TIM2/font/SFX references, local menu transitions, and section exits to `fe_main`/`fe_load`.
 - `FE_TV.PAK/DATA/ENV/FE_TV/WORLD/FE.MTL` — **HIGH-VALUE FORMAT TARGET:** confirmed length-delimited resource/property container; numeric child-property meanings remain unknown.
+- `FE_MAIN.PAK/DATA/ENV/FE_MAIN/WORLD/FE_MAIN.TXT` — **CONFIRMED:** large main-menu state graph binding 35 TIM2 filenames, 13 emitters, symbolic SFX/music, MPEG playback, save/profile/unlock logic, and gameplay/front-end section exits.
+- `FE_MAIN.PAK/DATA/ENV/FE_MAIN/WORLD/FE.MTL` — **CONFIRMED structure:** 45-record resource table; every shared FE_LANG/FE_TV record is byte-identical, strengthening the stable declaration/property model.
 - Front-end `FONT*.DIM` — **HIGH-VALUE FORMAT TARGET:** confirmed 256-entry u16 measurement structure; exact character mapping and sentinel semantics remain unknown.
 - Future executable string targets: `start_section`, `FNT_END`, `STD_LEVEL`, `SOUND_GRID`, `EFFECT_NAME`, and `DATA\ENV`.
 - `E_DATA.PAK` entries below `DATA\SOUND\SCRIPTS` — **LIKELY:** localized or compiled sound scripts based on path names.
@@ -69,3 +75,4 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Actual codecs and schemas for `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries.
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
+- Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
