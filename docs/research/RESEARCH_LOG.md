@@ -50,3 +50,15 @@
 - `MISC.TXT` is an ordered cross-platform audio configuration with duplicate-key record groups. It configures sound volumes, stream fading, character fall sounds, a 7×7 crowd sound grid, and 19 PS2/Xbox reverb presets; `GC_EFFECTS` is present but empty.
 - No direct audio asset filenames occur in `MISC.TXT`; effect identifiers are presets rather than confirmed gameplay sound events.
 - No other PAK was opened or extracted. The project-wide “PAK archives successfully unpacked” milestone remains incomplete.
+
+## 2026-08-29 - FE_LANG.PAK extracted and analyzed
+
+- Reverified `DATA/FE_LANG.PAK`: 1,348,160 bytes, SHA-256 `b805a6dd51074b35e9b69fe06bd585a167b663ac3e4c8e009c289eb4efb9fbcb`, `PAK1` version 1, 32 entries, and `0x800` alignment.
+- Ran QuickBMS list-only first. All 32 paths passed traversal, absolute-path, duplicate, collision, alignment, overlap, and bounds checks.
+- Extracted only FE_LANG to ignored `game-extracted/pak/FE_LANG`; all 32 paths and sizes matched the listing, no unexpected files appeared, and the source hash remained unchanged.
+- Inventoried 12 `.TM2`, 8 `.TXT`, 8 `.DIM`, 3 `.ICO`, and 1 `.MTL` file totaling 1,312,166 extracted bytes. Generated reports remain local under `logs/analysis`.
+- Confirmed TIM2 texture headers and dimensions from 16×16 through 256×256. Eight `FONT14.TM2` atlases pair with 576-byte `.DIM` tables containing 256 little-endian width-like values.
+- Confirmed seven synchronized UI localization tables (English, French, German, Italian, Spanish, Polish, Czech): each has 699 records, 678 unique keys, and the same 21 duplicated key names. Japanese has a font pair but no UI table in this archive.
+- Confirmed `FE_LANG.TXT` as a boot-time language menu script. It defines language selection and explicitly transfers control to `fe_tv`, matching GENERAL's `start_section="fe_lang"` and sibling `FNT_END` declarations.
+- Found the three memory-card `.ICO` files are byte-identical proprietary payloads rather than conventional Windows ICO containers. Stock Noesis TIM2 support is present; recognition of the custom `.ICO` payload remains unconfirmed. No conversion or plugin installation occurred.
+- No other PAK was opened. No Ghidra, PS2Recomp, conversion, modification, or upscaling work occurred, and broad Milestone 0 completion boxes remain unchanged.

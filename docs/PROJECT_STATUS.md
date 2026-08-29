@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Milestone 0 - Archive Structure Analysis
+Milestone 0 - Front-End Format Discovery
 
 ## Milestone 0 - Discovery
 
-The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. The small root `GENERAL.PAK` has now been extracted in isolation and its two text configuration files analyzed. No other PAK has been extracted.
+The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. Root `GENERAL.PAK` and `DATA/FE_LANG.PAK` have been extracted in separate ignored directories after list-only safety audits. FE_LANG establishes the boot-time language-selection flow and the first front-end resource formats. The other 28 PAKs have not been extracted.
 
 ## Environment
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. `GENERAL.PAK` reveals an ordered section/allocation manifest and a cross-platform audio configuration syntax. No texture, model, animation, or inner audio format has yet been identified; see `research/FILE_FORMAT_REGISTRY.md`.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. GENERAL reveals the section/allocation manifest and audio configuration syntax. FE_LANG confirms paletted TIM2 textures, TIM2-plus-DIM bitmap fonts, ordered legacy-encoded localization tables, a front-end world/menu script, a binary material table, and proprietary memory-card icon payloads. Model, animation, and inner audio formats remain unidentified; see `research/FILE_FORMAT_REGISTRY.md`.
 
 ## Executable Analysis
 
@@ -37,12 +37,13 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - Was the source physical copy sold in European or Australian packaging? The disc data is identical for both catalogued variants.
 - What executable and archive revisions exist across releases?
 - Which PAK operations are safely supported beyond extraction?
-- Which formats and content categories are stored in the level, arena, and front-end PAK archives?
+- Which additional formats and content categories are stored in the level, arena, and remaining front-end PAK archives?
 - What does `FNT_END` mean, and how are `DATA\ENV` logical paths resolved to disc PAKs?
+- What are the exact schemas for FE_LANG `.DIM`, `.MTL`, and memory-card `.ICO` files, and which legacy code pages does the game use for each UI language?
 - Where are the `fe_splash` and `level99/testlevel` sections stored?
 - What are the actual codecs and schemas for the `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries?
 - Which PS2 hardware and middleware dependencies block recompilation?
 
 ## Next Actions
 
-In a separately authorized task, list `DATA/FE_LANG.PAK` and, if coherent, extract it into an isolated ignored directory; it is the confirmed initial section and a small 32-entry archive.
+In a separately authorized task, list `DATA/FE_TV.PAK` and, if coherent, extract it into an isolated ignored directory. FE_LANG directly loads `fe_tv`, making it the next bounded front-end target.

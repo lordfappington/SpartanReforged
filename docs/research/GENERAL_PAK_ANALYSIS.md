@@ -126,7 +126,6 @@ Other recurring namespaces and patterns include `PS2_`, `XBOX_`, `GC_`, `SOUND_F
 - Units or runtime interpretation for parameters not described by comments.
 - Whether the referenced MultiStream documentation describes proprietary middleware or an internal subsystem.
 
-## Recommended Next Target
+## Follow-up status
 
-In a separately authorized task, perform list-only inspection of `DATA/FE_LANG.PAK`, then—if its table is coherent—extract it into its own isolated directory. It is 1,348,160 bytes, declares 32 entries, and corresponds to the confirmed initial `start_section`.
-
+The recommended FE_LANG task was completed on 2026-08-29; see `FE_LANG_ANALYSIS.md`. FE_LANG safely extracted 32 entries and its script directly loads `fe_tv`. A separately authorized list-only inspection of `DATA/FE_TV.PAK` is therefore the next bounded front-end target.
