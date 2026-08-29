@@ -2,13 +2,13 @@
 
 - [x] Development environment installed
 - [x] Canonical Spartan game version identified
-- [ ] Original game ISO safely backed up
-- [ ] Disc filesystem extracted
-- [ ] Disc contents catalogued
+- [x] Original game ISO safely backed up
+- [x] Disc filesystem extracted
+- [x] Disc contents catalogued
 - [x] Main executable identified
-- [ ] PAK archives identified
+- [x] PAK archives identified
 - [ ] PAK archives successfully unpacked
-- [ ] Extracted file extensions catalogued
+- [x] Extracted file extensions catalogued
 - [ ] Texture formats identified
 - [ ] Model formats investigated
 - [ ] Animation formats investigated
