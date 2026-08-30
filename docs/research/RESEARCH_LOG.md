@@ -110,3 +110,16 @@
 - Assessed LEVEL00 as a suitable initial gameplay Rosetta Stone because it includes every major visual/gameplay category except audio payloads and provides several explicit cross-file joins. Recommended next target is bounded structural analysis of `MODELS.BIN`.
 - Advanced the phase to `Milestone 0 - Gameplay Asset Architecture` and marked texture, model investigation, animation investigation, level/scene investigation, and scripts/config/data-table investigation as supported. All-PAK unpacking and audio remain incomplete.
 - No other PAK was opened. No conversion, rendering, asset modification, Ghidra, PS2Recomp, speculative parser, or installation occurred.
+
+## 2026-08-30 - LEVEL00 MODELS world structures mapped
+
+- Reverified all seven ignored MODELS-family inputs directly. `MODELS.BIN` is 2,293,536 bytes with SHA-256 `8d091d4104fa556ccff90d78d3feb9ea1b656356f2fabc667a8457c1382e4cf3`; AAB and MTL identities are recorded in the new family document.
+- Confirmed the BIN header's exact-size field and 1,338-count descriptor table. Its 16-byte descriptors are contiguous, aligned, cover the complete payload from `0x53c0` to EOF, and carry ordered MTL indices in their high u16.
+- Parsed all 1,338 payload blocks end-to-end as 2,128 coherent PS2 VIF batches: STCYCL, duplicated V4-32 control vectors, V4-32 position/control data, V2-16 attributes, V4-8 attributes, and MSCALF with alignment NOPs. No unknown command or recovery scan was required.
+- Counted 88,314 streamed vertex instances. Position W is only zero or `0x8000`, and the first two vertices of every batch are `0x8000`; this strongly supports implicit ADC-controlled triangle strips, but the 46,336 candidate emitted triangles remain likely until winding/restart behavior is proven.
+- Proved that BIN is name-free and binds numerically to the 55 ordered MTL records. Thirty-nine MTL indices are used; the AAB-indexed static partition uses world records 5–20 and 33–35.
+- Traversed AAB as a complete seven-level 4-way tree: 5,461 nodes, 1,365 internal nodes, and 4,096 leaves. Its 484 non-empty leaf-associated lists contain 1,224 unique descriptor IDs covering BIN 114–1337 exactly once.
+- Confirmed STL as a 32-slot table whose eight active values select MTL particle records 40–47. Confirmed FLP as fourteen 80-byte records and MVR as six 264-byte `Brazier_Dark.CAS` records; exact FLP records recur in MVR. INS remains an unexplained eight-u32 table.
+- Added deterministic standard-library `tools/analysis/models_family_probe.py`; syntax checks pass and repeated reports are byte-identical. Generated output remains local under `logs/analysis`.
+- Advanced the phase to `Milestone 0 - World Geometry Format Reverse Engineering`. MODELS container/VIF/AAB/MTL relationships are established, but the format is not marked understood and no production parser, converter, renderer, or geometry export was created.
+- No PAK was opened, no extracted game file was changed, and no Ghidra, PS2Recomp, mutation, installation, or push occurred.

@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - Gameplay Asset Architecture
+Milestone 0 - World Geometry Format Reverse Engineering
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 confirms gameplay TIM2 textures, including 4-bit mipmapped environment pages, and exposes the first proprietary world, character, bone/bind, animation, cutscene, entity, collision, navigation, terrain, and particle families. Their architectural roles are mapped, not fully decoded. MTL remains a stable resource/property container across front-end and gameplay sections. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 `MODELS.BIN` is now segmented into 1,338 descriptor-indexed PS2 VIF blocks containing 2,128 batches and 88,314 streamed vertex instances. Numeric MTL binding and the AAB quadtree's exact 1,224-descriptor static-world mapping are established. Triangle topology/control, UV scaling, and packed V4-8 semantics remain unresolved, so no production geometry parser or renderer is justified yet. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
 
 ## Executable Analysis
 
@@ -42,7 +42,9 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- What are the boundaries and references inside `MODELS.BIN`, and how do they correlate with AAB/MTL/environment textures?
+- Does position W=`0x8000` implement the expected PS2 ADC strip-control rule, including internal restarts, degenerates, and winding?
+- What scale/bias applies to MODELS.BIN's V2-16 attribute, and what does its unsigned V4-8 attribute encode?
+- What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
 - What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
 - Where are the `fe_splash` and `level99/testlevel` sections stored?
@@ -51,4 +53,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Perform a bounded read-only structural reverse-engineering task on LEVEL00 `MODELS.BIN`: establish its header, segment/offset table, bounds, and references to `MODELS.AAB` and MTL resources. Do not write a converter or renderer until those structures are evidenced.
+Perform one bounded read-only topology task on a representative set of MODELS.BIN VIF batches: prove the position-W `0x8000` ADC/restart/winding rule and determine whether the 46,336 zero-control vertices correspond one-to-one with emitted triangles. Do not export or render geometry.

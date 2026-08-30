@@ -6,12 +6,19 @@ Priorities reflect reconstruction dependencies exposed by LEVEL00, not format co
 
 | Extension / target | Files | Bytes | Suspected purpose | Confidence | Dependencies and evidence | Recommended order |
 |---|---:|---:|---|---|---|---:|
-| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | primary world geometry/render payload | **LIKELY** | MODELS family, exact-size header, numeric segments, paired AAB/MTL/environment textures | 1 |
-| `.AAB` | 1 | 448,048 | world bounds/spatial acceleration | **LIKELY** | `master_L00A`, structured floats/indices, paired MODELS family | 2 |
-| `.MTL` / `MODELS.MTL` | 1 | 5,952 | texture/resource/property declarations | **CONFIRMED container; properties UNKNOWN** | 55 records, 41 direct basename joins, exact shared engine records | 3 |
+| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF; topology LIKELY** | 1,338 contiguous descriptors, 2,128 valid VIF batches, 88,314 streamed vertices, exact AAB/MTL joins | 1 |
+| `.AAB` | 1 | 448,048 | world spatial quadtree and BIN descriptor lookup | **CONFIRMED structure; traversal semantics partial** | Full seven-level 4-way tree; 1,224 unique leaf references exactly cover BIN descriptors 114–1337 | 2 |
+| `.MTL` / `MODELS.MTL` | 1 | 5,952 | ordered resource/material declarations | **CONFIRMED binding; properties UNKNOWN** | BIN descriptor high-u16 selects 39 meaningful records; 55 total records and 41 direct resource-stem joins | 3 |
 | `.HMP` | 1 | 166,400 | land height/terrain field | **LIKELY** | `WORLD/LAND`, repeated float-like grid, low entropy | 4 |
 
-The first reverse-engineering task should isolate the `MODELS.BIN` header and segment table and correlate its offsets/counts with AAB and MTL. A converter or renderer should wait until those boundaries are demonstrated.
+Container segmentation is complete. Remaining P0 geometry work is now:
+
+1. **P0a — topology control:** prove the position-W `0x8000` ADC/restart/winding rule. This is the next task.
+2. **P0b — attribute semantics:** determine V2-16 UV scale/bias and the unsigned V4-8 attribute role.
+3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
+4. **P0d — spatial placement:** resolve AAB leaf trailing fields and how cell bounds/culling select the referenced BIN blocks.
+
+A converter or renderer must wait until P0a and the minimum P0b attribute rules are demonstrated.
 
 ## P1 — required for characters and functional gameplay
 
@@ -36,10 +43,10 @@ ENT should be studied before animation internals if the immediate goal is a play
 |---|---:|---:|---|---|---|
 | `.BIG` | 1 | 2,901 | compiled interactive prop/model | **LIKELY** | `big1`, BRAZIER_DARK ENT link, MVR source path |
 | `.DAT` | 1 | 4,114 | compiled particle samples/lookup | **LIKELY** | particle directory and parameter fragments |
-| `.FLP` | 1 | 1,136 | MODELS companion | **UNKNOWN** | 14 records, vector-like content |
-| `.MVR` | 1 | 1,600 | model-source/variant reference table | **LIKELY** | six embedded `Brazier_Dark.CAS` paths |
-| `.INS` | 1 | 32 | MODELS companion | **UNKNOWN** | basename adjacency only; too small to classify |
-| `.STL` | 1 | 136 | MODELS index/lookup companion | **UNKNOWN** | small integer table; not standard STL |
+| `.FLP` | 1 | 1,136 | transform/parameter companion | **CONFIRMED 14×80 structure; role LIKELY** | 16-byte header plus fourteen matrix-like 80-byte records; exact sequences recur in MVR |
+| `.MVR` | 1 | 1,600 | model-source/variant reference table | **CONFIRMED 6×264 structure; role LIKELY** | six fixed records with `Brazier_Dark.CAS` path and FLP-compatible transform data |
+| `.INS` | 1 | 32 | MODELS companion | **UNKNOWN** | eight u32 values `(32,0,32,0,0,32,0,0)`; no proven join |
+| `.STL` | 1 | 136 | 32-slot MTL lookup companion | **CONFIRMED structure/reference; purpose UNKNOWN** | eight active slots resolve exactly to MTL particle records 40–47; not standard STL |
 
 Particle TXT definitions are already human-readable and should be used to validate DAT later rather than treated as an unknown format target.
 

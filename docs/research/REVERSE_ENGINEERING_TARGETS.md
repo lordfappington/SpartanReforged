@@ -27,11 +27,14 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## MODELS
 
-- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 LIKELY:** primary world-geometry/render payload; next structural target.
-- `LEVEL00/.../WORLD/MODELS.AAB` — **P0 LIKELY:** bounds/spatial companion naming `master_L00A`.
+- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED container/VIF:** 1,338 contiguous descriptor blocks contain 2,128 coherent PS2 VIF batches with 88,314 matching position/V2-16/V4-8 entries. The next gate is topology/attribute semantics, not container segmentation.
+- `LEVEL00/.../WORLD/MODELS.AAB` — **P0 CONFIRMED structure:** complete seven-level 4-way spatial tree; its leaf lists enumerate static BIN descriptors 114–1337 exactly once.
+- `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join:** BIN descriptor high-u16 values select ordered resource records; 39 record indices are used.
+- `LEVEL00/.../WORLD/MODELS.STL` — **CONFIRMED lookup structure:** 32 slots, eight of which select MTL particle records 40–47.
+- `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- Model roles are identified by strong evidence; vertex/index/UV/normal/weight schemas remain unknown.
+- World positions and stream widths are now located, but the ADC/restart/winding rule, V2-16 UV scale, V4-8 attribute meaning, and character vertex/index/weight schemas remain unknown.
 
 ## ANIMATIONS
 
@@ -88,5 +91,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
-- Exact schemas for LEVEL00 world BIN/AAB/HMP, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data.
-- Roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.
+- Exact topology/attribute semantics for LEVEL00 world BIN, AAB leaf trailing fields, HMP layout, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data.
+- Runtime roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.
