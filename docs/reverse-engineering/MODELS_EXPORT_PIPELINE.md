@@ -138,20 +138,28 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 - 1,463 collapsed-UV triangles are preserved.
 - 632 unreferenced streamed vertices are preserved in glTF accessors; importers may omit them.
 - V4-8 semantics are unknown and absent from glTF.
-- Exact MTL sampler/render properties are unknown; materials are placeholders.
+- Exact native MTL sampler/render equations remain unknown. Raw mode retains conservative materials; an opt-in experimental mapping is available for bounded culling/alpha validation.
 - The existing full geometry export references textures by provenance only and does not display them; complete strongly bound texture decode is now available for a later full textured export.
 - Source coordinates and source winding are now confirmed for determinant-positive glTF export using descriptor 118.
 - Source V is confirmed by descriptor 5's upright lower-banner lambda.
 - Exact repeat-versus-mirror semantics remain unresolved; both modes are explicit.
 - The MODELS geometry/UV/image pipeline is VISUALLY VALIDATED and all strongly bound geometry TIM2 variants decode faithfully. Full material fidelity still requires broader MTL and sampler semantics.
-- glTF's default single-sided materials produce widespread culling holes across the full scene; a local two-sided diagnostic restores coherent surfaces. Native MTL culling/two-sided flags must be decoded before this can become a faithful visual default.
-- The partial-alpha level-scale `CLOUD` shell occludes the scene under conservative `OPAQUE` rendering. Alpha blend/mask semantics remain intentionally unset.
+- glTF's default single-sided materials produce widespread culling holes. The PS2 GS has no face-cull field, and opt-in all-double-sided output restores coherent surfaces; Spartan pre-GS CPU/VU culling remains unknown.
+- The level-scale `CLOUD` shell occludes the scene under conservative `OPAQUE` rendering. Its decoded texture alpha is fully opaque, correcting the earlier partial-alpha description. Standard source-alpha blend cannot reproduce its native effect.
 
 ## Complete textured assembly gate
 
 `LEVEL00_TEXTURED.gltf` was generated locally with 1,338 meshes, 39 materials, 30 images, and the canonical 46,336 triangles. Blender 5.2.1 LTS reports 1,338 mesh objects, 87,682 referenced vertices, 46,336 polygons, 39 materials, 30 images, and one UV layer on every mesh. All links and dimensions match.
 
 This establishes **TEXTURED ASSEMBLY VALIDATED**, not complete visual reconstruction. See [LEVEL00_TEXTURED_RECONSTRUCTION.md](../milestones/LEVEL00_TEXTURED_RECONSTRUCTION.md).
+
+## Experimental MTL render-semantics gate
+
+`spartan_models.py` retains every unknown numeric MTL child as its property type and raw u32 payload. `models_mtl_render_probe.py` produces a strict ignored matrix for all 55 records and joins the 39 used records to descriptor/triangle totals and decoded alpha classes.
+
+`--mtl-render-semantics raw` remains the default. The explicit `experimental` mode emits `doubleSided=true` for all submitted materials because the PS2 GS primitive state has no cull selector, while documenting that Spartan may cull earlier. It emits standard glTF `BLEND` only when MTL child type 2 is present and a confirmed decoded image has binary/partial alpha. It emits neither `MASK` nor `alphaCutoff`; no threshold has been identified. Opaque type-2 images, including `CLOUD`, remain `OPAQUE`.
+
+The controlled complete export contains 39 double-sided materials, 30 `OPAQUE`, zero `MASK`, and nine `BLEND`. Exact geometry/UV/material round trip remains 1,338 descriptors, 2,128 batches, 88,314 streamed records, and 46,336 triangles. Blender imports all counts and links; the culling holes disappear and alpha vegetation/effect pages improve. `CLOUD` remains an occluder, so this mode is a diagnostic approximation rather than the canonical native material pipeline. Detailed evidence is in [MODELS_MTL_RENDER_SEMANTICS.md](MODELS_MTL_RENDER_SEMANTICS.md).
 
 ## Descriptor-118 visual convention gate
 
@@ -173,4 +181,10 @@ Full validation:
 
 ```powershell
 python tools/conversion/export_models_gltf.py game-extracted/pak/LEVEL00/DATA/ENV/LEVEL00/WORLD temp/exports/level00_validation/LEVEL00.gltf --all --coords source --winding source --v-mode source --inventory logs/analysis/LEVEL00_inventory.json --report temp/exports/level00_validation/LEVEL00_validation.json --manifest temp/exports/level00_validation/manifest.json
+```
+
+Experimental render-semantic validation adds:
+
+```powershell
+--mtl-render-semantics experimental
 ```

@@ -78,7 +78,7 @@ Blender's bounds are the expected glTF Y-up to Blender Z-up mapping: min `(-176,
 ### Known unresolved semantics
 
 - All 39 imported glTF materials use the format's default single-sided behavior because native MTL culling flags are unknown. The full render consequently contains widespread missing backfaces. A local diagnostic with backface culling disabled reveals a coherent level without those holes. This strongly localizes the visual issue to material culling semantics rather than geometry/topology reconstruction, but it does not prove that every native material is two-sided.
-- Descriptor 48 / MTL 31 `CLOUD` is a level-scale shell with partial-alpha texture data. Conservative `OPAQUE` rendering makes it a large white occluder. Blend/mask behavior is not yet established, so the exported material was not changed speculatively.
+- Descriptor 48 / MTL 31 `CLOUD` is a level-scale shell. A later strict alpha audit corrected this document's original classification: its decoded texture alpha is fully opaque. Conservative `OPAQUE` rendering makes it a large white occluder, and standard source-alpha blend cannot resolve the native effect. See `MODELS_MTL_RENDER_SEMANTICS.md`.
 - Binary/partial-alpha vegetation and effect pages render opaquely. Dark fringes or filled transparent regions are expected until MTL alpha modes and thresholds are decoded.
 - `REPEAT` appears spatially plausible on terrain, masonry, roofs, and floors, but repeat versus mirrored-repeat remains unresolved.
 

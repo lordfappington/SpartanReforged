@@ -8,17 +8,17 @@ Priorities reflect reconstruction dependencies exposed by LEVEL00, not format co
 |---|---:|---:|---|---|---|---:|
 | `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF/topology/UV; VISUALLY VALIDATED** | 1,338 descriptors, 2,128 batches, 88,314 vertices, 46,336 triangles; descriptors 118/5 validate coordinates, winding, source V, and image mapping | 1 |
 | `.AAB` | 1 | 448,048 | world spatial quadtree and BIN descriptor lookup | **CONFIRMED tree/reference/bounds relationship; trailing fields partial** | Seven-level 4-way tree; 1,224 unique leaf references exactly cover descriptors 114–1337 and all referenced geometry fits its cell bounds | 2 |
-| `.MTL` / `MODELS.MTL` | 1 | 5,952 | ordered resource/material declarations | **CONFIRMED binding; properties UNKNOWN** | BIN descriptor high-u16 selects 39 meaningful records; 55 total records and 41 direct resource-stem joins | 3 |
+| `.MTL` / `MODELS.MTL` | 1 | 5,952 | ordered resource/material declarations | **CONFIRMED binding; type 2 STRONG render-family candidate** | all 55 records matrixed; type 2 covers 9/9 nonopaque bound materials with three opaque false positives; exact blend/test enums remain unknown | 3 |
 | `.HMP` | 1 | 166,400 | land height/terrain field | **LIKELY** | `WORLD/LAND`, repeated float-like grid, low entropy | 4 |
 
 Container segmentation is complete. Remaining P0 geometry work is now:
 
 1. **P0a — topology control: COMPLETE for LEVEL00.** W `0x8000` suppresses the current triangle without resetting strip history; source-vertex parity continues.
 2. **P0b — minimum attribute semantics: COMPLETE and visually validated.** V2-16 is signed normalized Q4.12 (`raw / 4096`) with zero global bias and source V orientation. Out-of-range values must be preserved for sampler-driven tiling. V4-8 remains unknown but is nonessential to positions/topology/material groups/UV export. Readiness is **VISUALLY VALIDATED**.
-3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
+3. **P0c — material semantics:** property type 2 is a strong alpha/render-family selector. No per-material cull bit or alpha threshold is identified; native type-2 equations and `CLOUD` inputs remain P0.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**. All 30 unique strongly bound geometry TIM2 textures attach correctly, and Blender preserves all 46,336 polygons. Full renders expose systematic single-sided culling holes and opaque partial-alpha effect pages; diagnostic two-sided viewing restores coherent geometry. The next bounded P0 gate is therefore the minimum MODELS.MTL render-state study needed to identify culling/two-sided and alpha blend/mask fields. Repeat versus mirrored repeat remains secondary and explicit.
+The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**. All 30 unique strongly bound geometry TIM2 textures attach correctly, and Blender preserves all 46,336 polygons. The opt-in render-semantic experiment emits all 39 materials double-sided and maps nine nonopaque type-2 materials to standard glTF `BLEND`; this removes the culling holes and dark foliage regions without changing 46,336-triangle geometry. `CLOUD` has fully opaque decoded alpha and remains an occluding shell, proving that exact native type-2 blend/attribute semantics are still the bounded P0 gate. Repeat versus mirrored repeat remains secondary and explicit.
 
 ## P1 — required for characters and functional gameplay
 

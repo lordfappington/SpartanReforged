@@ -55,6 +55,13 @@ class MaterialRecord:
     index: int
     name: str
     resource_stems: tuple[str, ...]
+    # Unknown engine property identifiers and their raw little-endian u32
+    # payloads. String-bearing child types 0/1 remain represented through
+    # resource_stems; no render meaning is assigned here.
+    numeric_properties: tuple[tuple[int, tuple[int, ...]], ...] = ()
+
+    def property_values(self, property_type: int) -> tuple[tuple[int, ...], ...]:
+        return tuple(value for item_type, value in self.numeric_properties if item_type == property_type)
 
 
 @dataclass(frozen=True)
@@ -172,6 +179,7 @@ def parse_mtl(data: bytes) -> tuple[MaterialRecord, ...]:
         _require_range(data, position, record_length, f"MTL record {index}")
         child_position = position + 16
         stems: list[str] = []
+        numeric_properties: list[tuple[int, tuple[int, ...]]] = []
         for child_index in range(child_count):
             _require_range(data, child_position, 8, f"MTL record {index} child {child_index}")
             child_length, child_type = struct.unpack_from("<2I", data, child_position)
@@ -190,10 +198,19 @@ def parse_mtl(data: bytes) -> tuple[MaterialRecord, ...]:
                         stem = pathlib.PureWindowsPath(value).stem
                         if stem and stem.casefold() not in {item.casefold() for item in stems}:
                             stems.append(stem)
+            elif child_type not in (0, 1):
+                if len(payload) % 4:
+                    raise ModelsFormatError(
+                        f"MTL record {index} child {child_index} numeric payload is not u32-aligned"
+                    )
+                numeric_properties.append((
+                    child_type,
+                    struct.unpack("<" + "I" * (len(payload) // 4), payload),
+                ))
             child_position += child_length
         if child_position != record_end:
             raise ModelsFormatError(f"MTL record {index} children do not fill record")
-        records.append(MaterialRecord(index, name, tuple(stems)))
+        records.append(MaterialRecord(index, name, tuple(stems), tuple(numeric_properties)))
         position = record_end
     if position != len(data):
         raise ModelsFormatError("MTL records do not end at EOF")

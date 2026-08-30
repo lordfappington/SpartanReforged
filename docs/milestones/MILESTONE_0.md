@@ -19,6 +19,8 @@
 - [x] All strongly bound LEVEL00 MODELS TIM2 variants decoded and independently pixel-verified
 - [x] Complete LEVEL00 confirmed texture assembly exported and structurally/round-trip validated
 - [x] Complete textured scene imported into Blender with all 46,336 polygons and correct image links
+- [x] All 55 MODELS.MTL records/property fields matrixed against geometry use and decoded texture alpha
+- [x] Experimental GS-derived two-sided and type-2/nonopaque glTF mapping validated without changing geometry
 - [ ] LEVEL00 world reconstruction visually complete (blocked by MTL culling/alpha semantics)
 - [x] Animation formats investigated
 - [ ] Audio formats identified

@@ -31,6 +31,7 @@ from spartan_models import (  # noqa: E402
     ModelsData,
     ModelsFormatError,
     decode_uv,
+    parse_mtl,
     parse_models_bin,
     reconstruct_triangles,
     select_descriptors,
@@ -187,6 +188,70 @@ class SelectionAndExportTests(unittest.TestCase):
         self.assertEqual(document["samplers"], [{"wrapS": MIRRORED_REPEAT, "wrapT": MIRRORED_REPEAT}])
         self.assertEqual(report["samplerMode"], "mirrored-repeat")
 
+    def test_experimental_render_semantics_are_opt_in_and_threshold_free(self) -> None:
+        base = synthetic_model()
+        model = ModelsData(
+            base.descriptors, base.batches,
+            (MaterialRecord(0, "SYNTHETIC_A", ("SYNTHETIC_A",), ((2, (3, 0)),)),),
+            base.aab, base.header_values,
+        )
+        texture_map = {"synthetic_a": [TextureReference("DATA/SYNTHETIC_A.TM2", "ABC")]}
+        image_map = {"synthetic_a": TextureImageInfo(
+            "textures/SYNTHETIC_A.png", 4, 4, "PARTIAL_ALPHA", "PNG", "RGBA"
+        )}
+        raw, raw_buffer, raw_report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map, "repeat", "raw",
+        )
+        experimental, experimental_buffer, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map, "repeat", "experimental",
+        )
+        validate_gltf(raw, raw_buffer)
+        validate_gltf(experimental, experimental_buffer)
+        self.assertNotIn("doubleSided", raw["materials"][0])
+        self.assertNotIn("alphaMode", raw["materials"][0])
+        self.assertEqual(raw_report["alphaModeCounts"], {"OPAQUE": 1})
+        self.assertTrue(experimental["materials"][0]["doubleSided"])
+        self.assertEqual(experimental["materials"][0]["alphaMode"], "BLEND")
+        self.assertNotIn("alphaCutoff", experimental["materials"][0])
+        self.assertEqual(report["doubleSidedMaterialCount"], 1)
+        self.assertEqual(report["alphaModeCounts"], {"BLEND": 1})
+
+    def test_experimental_type2_opaque_texture_remains_opaque(self) -> None:
+        base = synthetic_model()
+        model = ModelsData(
+            base.descriptors, base.batches,
+            (MaterialRecord(0, "SYNTHETIC_A", ("SYNTHETIC_A",), ((2, (5, 0)),)),),
+            base.aab, base.header_values,
+        )
+        texture_map = {"synthetic_a": [TextureReference("DATA/SYNTHETIC_A.TM2", "ABC")]}
+        image_map = {"synthetic_a": TextureImageInfo(
+            "textures/SYNTHETIC_A.png", 4, 4, "FULLY_OPAQUE", "PNG", "RGBA"
+        )}
+        document, buffer_data, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map, "repeat", "experimental",
+        )
+        validate_gltf(document, buffer_data)
+        self.assertNotIn("alphaMode", document["materials"][0])
+        self.assertEqual(report["alphaModeCounts"], {"OPAQUE": 1})
+
+    def test_experimental_nonopaque_without_type2_is_not_guessed(self) -> None:
+        model = synthetic_model()
+        texture_map = {"synthetic_a": [TextureReference("DATA/SYNTHETIC_A.TM2", "ABC")]}
+        image_map = {"synthetic_a": TextureImageInfo(
+            "textures/SYNTHETIC_A.png", 4, 4, "PARTIAL_ALPHA", "PNG", "RGBA"
+        )}
+        document, buffer_data, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map, "repeat", "experimental",
+        )
+        validate_gltf(document, buffer_data)
+        self.assertTrue(document["materials"][0]["doubleSided"])
+        self.assertNotIn("alphaMode", document["materials"][0])
+        self.assertEqual(report["alphaModeCounts"], {"OPAQUE": 1})
+
     def test_static_and_special_selection(self) -> None:
         model = synthetic_model(two_materials=True)
         self.assertEqual([item.index for item in select_descriptors(model, "static")], [0])
@@ -194,6 +259,13 @@ class SelectionAndExportTests(unittest.TestCase):
 
 
 class MalformedInputTests(unittest.TestCase):
+    def test_mtl_numeric_property_is_retained_without_semantic_assignment(self) -> None:
+        names = b"SYNTHETIC\0"
+        record_offset = 8 + len(names)
+        record = struct.pack("<4I", 32, 1, 0, 0) + struct.pack("<4I", 16, 2, 5, 0)
+        materials = parse_mtl(struct.pack("<2I", record_offset, 1) + names + record)
+        self.assertEqual(materials[0].numeric_properties, ((2, (5, 0)),))
+
     def test_descriptor_extent_out_of_bounds_rejected(self) -> None:
         header = struct.pack("<8I", 48, 15, 1, 48, 30, 0, 0, 0)
         descriptor = struct.pack("<4I", 48, 16, 0, 11)

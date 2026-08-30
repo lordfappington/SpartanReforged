@@ -16,6 +16,7 @@ import pathlib
 import struct
 import subprocess
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Iterable
 
@@ -45,7 +46,7 @@ TRIANGLES = 4
 REPEAT = 10497
 MIRRORED_REPEAT = 33648
 VALIDATED_MODERN_V_MODE = "source"
-EXPORTER_VERSION = "1.3.0"
+EXPORTER_VERSION = "1.4.0"
 
 
 @dataclass(frozen=True)
@@ -254,10 +255,13 @@ def build_gltf(
     v_mode: str,
     texture_images: dict[str, str | TextureImageInfo] | None = None,
     sampler_mode: str = "repeat",
+    mtl_render_semantics: str = "raw",
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     sampler_values = {"repeat": REPEAT, "mirrored-repeat": MIRRORED_REPEAT}
     if sampler_mode not in sampler_values:
         raise ModelsFormatError(f"unsupported sampler mode {sampler_mode!r}")
+    if mtl_render_semantics not in {"raw", "experimental"}:
+        raise ModelsFormatError(f"unsupported MTL render semantics mode {mtl_render_semantics!r}")
     reverse = winding == "reverse"
     selected_ids = {item.index for item in selected}
     batches_by_descriptor: dict[int, list[Batch]] = {item.index: [] for item in selected}
@@ -353,6 +357,35 @@ def build_gltf(
                     "samplerMode": sampler_mode,
                     "placeholder": False,
                 })
+        property_2_values = source.property_values(2)
+        extras["sourceMtlNumericProperties"] = [
+            {"type": property_type, "u32": list(values)}
+            for property_type, values in source.numeric_properties
+        ]
+        extras["mtlRenderSemanticsMode"] = mtl_render_semantics.upper()
+        if mtl_render_semantics == "experimental":
+            # The PS2 GS primitive state has no face-culling selector. Keeping
+            # all submitted triangles visible is therefore the least lossy GS
+            # rasterization approximation, while remaining opt-in because
+            # Spartan could still cull earlier in its CPU/VU pipeline.
+            material_item["doubleSided"] = True
+            extras["doubleSidedEvidence"] = "GENERIC_PS2_GS_NO_CULL_BIT; SPARTAN_PRE_GS_CULLING_UNKNOWN"
+            alpha_classification = mapping.get("alphaClassification")
+            # Type 2 is present on every geometry material whose bound texture
+            # has binary/partial alpha (9/9), but also on three opaque textures.
+            # BLEND is only a glTF validation approximation: it avoids an
+            # invented alpha-test threshold and does not claim the native GS
+            # equation. Opaque type-2 textures, including CLOUD, remain OPAQUE.
+            if property_2_values and alpha_classification in {"BINARY_ALPHA", "PARTIAL_ALPHA"}:
+                material_item["alphaMode"] = "BLEND"
+                extras["alphaPolicy"] = "EXPERIMENTAL_GLTF_BLEND_FROM_MTL_TYPE_2_AND_SOURCE_PIXEL_ALPHA"
+                mapping["alphaMode"] = "BLEND"
+                mapping["sourceMtlType2"] = [list(values) for values in property_2_values]
+            else:
+                mapping["alphaMode"] = "OPAQUE"
+            mapping["doubleSided"] = True
+        else:
+            mapping["doubleSided"] = False
         materials.append(material_item)
         material_reports.append(mapping)
 
@@ -480,6 +513,7 @@ def build_gltf(
                 "vMode": v_mode,
                 "validatedModernVMode": VALIDATED_MODERN_V_MODE,
                 "samplerMode": sampler_mode,
+                "mtlRenderSemantics": mtl_render_semantics,
                 "normals": "OMITTED",
                 "textures": "LOCAL_NATIVE_TIM2_DECODES_ATTACHED" if images else "REFERENCED_IN_EXTRAS_ONLY_NOT_CONVERTED",
             },
@@ -518,6 +552,11 @@ def build_gltf(
         "vMode": v_mode,
         "validatedModernVMode": VALIDATED_MODERN_V_MODE,
         "samplerMode": sampler_mode,
+        "mtlRenderSemantics": mtl_render_semantics,
+        "doubleSidedMaterialCount": sum(bool(item.get("doubleSided")) for item in materials),
+        "alphaModeCounts": dict(sorted(Counter(
+            item.get("alphaMode", "OPAQUE") for item in materials
+        ).items())),
         "normalsGenerated": False,
         "texturesConverted": bool(images),
         "textureImageCount": len(images),
@@ -775,6 +814,10 @@ def main() -> int:
         "--sampler", choices=("repeat", "mirrored-repeat"), default="repeat",
         help="explicit validation sampler; native MTL semantics remain unresolved",
     )
+    parser.add_argument(
+        "--mtl-render-semantics", choices=("raw", "experimental"), default="raw",
+        help="opt-in culling/alpha validation mapping; raw preserves conservative prior behavior",
+    )
     parser.add_argument("--report", type=pathlib.Path)
     parser.add_argument("--manifest", type=pathlib.Path)
     parser.add_argument("--inventory", type=pathlib.Path, help="existing LEVEL00 inventory JSON")
@@ -828,6 +871,7 @@ def main() -> int:
     document, buffer_data, report = build_gltf(
         model, selected, args.output.with_suffix(".bin").name, identities, textures,
         args.coords, args.winding, args.v_mode, texture_images, args.sampler,
+        args.mtl_render_semantics,
     )
     validation = validate_gltf(document, buffer_data)
     report["gltfValidation"] = validation
@@ -857,9 +901,15 @@ def main() -> int:
     if args.manifest:
         warnings = [
             "V4-8 attributes are retained by the parser but not exported or interpreted.",
-            "MTL sampler/render properties remain unknown; seven unresolved bindings remain explicit neutral placeholders.",
+            "Seven unresolved bindings remain explicit neutral placeholders.",
             "REPEAT is an explicit conservative validation sampler, not a confirmed native MTL state.",
-            "Source alpha is retained in PNGs; glTF materials remain OPAQUE because blend/mask semantics and thresholds are unresolved.",
+            (
+                "Experimental render semantics make submitted triangles double-sided and map nonopaque type-2 materials to standard glTF BLEND; this is not a decoded native GS blend equation."
+                if args.mtl_render_semantics == "experimental" else
+                "Raw render semantics retain conservative single-sided OPAQUE glTF materials."
+            ),
+            "No MTL alpha-test threshold was identified; MASK/alphaCutoff are never invented.",
+            "CLOUD has opaque decoded alpha, so standard glTF source-alpha blending cannot resolve its native effect semantics.",
             (
                 "Explicit local native PNG decodes were attached; source TIM2 resources were not modified or embedded."
                 if report["textureImageCount"] else
@@ -892,6 +942,9 @@ def main() -> int:
             "windingOption": args.winding,
             "vOption": args.v_mode,
             "samplerOption": args.sampler,
+            "mtlRenderSemantics": args.mtl_render_semantics,
+            "doubleSidedMaterialCount": report["doubleSidedMaterialCount"],
+            "alphaModeCounts": report["alphaModeCounts"],
             "normalsGenerated": False,
             "texturesConverted": report["texturesConverted"],
             "attachedTextureImages": report["attachedTextureImages"],
