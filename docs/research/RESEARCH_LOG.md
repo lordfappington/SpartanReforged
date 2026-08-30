@@ -1,5 +1,16 @@
 # Research Log
 
+## 2026-08-30 - Complete LEVEL00 textured assembly validated
+
+- Reverified the canonical MODELS hashes, all 58 TIM2 inventory hashes, and deterministic bytes for all 30 strongly bound native PNG decodes. A repeat run reused all 30 cached images and reproduced identical glTF JSON and binary hashes.
+- Extended the glTF exporter to decode unique bound textures once, reuse shared images, classify source alpha, emit explicit neutral `UNRESOLVED_*` materials, and record complete material/descriptor provenance. No source asset changed.
+- Exported all 1,338 descriptors, 2,128 VIF batches, 88,314 source position/UV records, and 46,336 triangles with source coordinates/winding/V and Q4.12 UVs. Written-file glTF, external-link, and exact source round-trip checks pass.
+- Attached 32 confirmed materials to 30 unique images; seven unresolved MTL bindings remain placeholders. Of the unique images, 22 are opaque, one has binary alpha, and seven have partial alpha. All glTF materials remain conservatively opaque and use explicit unconfirmed `REPEAT`.
+- Blender 5.2.1 LTS imported 1,338 meshes, 87,682 referenced vertices, 46,336 polygons, 39 materials, 30 images, and 1,338 UV layers. No image, material, dimension, or cross-binding failure occurred.
+- Controlled full renders exposed systemic single-sided culling holes and opaque occlusion by descriptor 48's partial-alpha `CLOUD` shell. A two-sided diagnostic restores coherent architecture/terrain without changing geometry, localizing the primary blocker to unknown MTL render flags rather than detected topology corruption.
+- Expanded the synthetic MODELS/TIM2 suite to 26 passing tests. All glTF/PNG/manifests/logs/renders remain ignored and uncommitted.
+- Advanced the phase to `Milestone 0 - Textured LEVEL00 Assembly Validated`. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` remains unmarked until culling and alpha semantics are established.
+
 ## 2026-08-30 - LEVEL00 geometry TIM2 decode completed
 
 - Reverified canonical MODELS hashes and all 58 extracted LEVEL00 TIM2 hashes against the local inventory. The 39 geometry-used MTL records produce 32 strong bindings to 30 unique TIM2 textures; seven material/resource names remain unresolved.

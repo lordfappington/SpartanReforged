@@ -18,7 +18,7 @@ Container segmentation is complete. Remaining P0 geometry work is now:
 3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for LEVEL00 geometry**. Descriptor 118 confirms source coordinates/source winding and periodic sampling; descriptor 5 confirms source V using an upright lower-banner lambda. All 30 unique strongly bound geometry TIM2 textures now decode pixel-identically to Noesis across the required PSMT4/PSMT8 and RGB5A1/RGBA8888 combinations. Exact MTL repeat-versus-mirror semantics remain unknown but explicit. The next bounded P0 asset-pipeline gate is a complete textured LEVEL00 validation export using these verified native decodes.
+The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**. All 30 unique strongly bound geometry TIM2 textures attach correctly, and Blender preserves all 46,336 polygons. Full renders expose systematic single-sided culling holes and opaque partial-alpha effect pages; diagnostic two-sided viewing restores coherent geometry. The next bounded P0 gate is therefore the minimum MODELS.MTL render-state study needed to identify culling/two-sided and alpha blend/mask fields. Repeat versus mirrored repeat remains secondary and explicit.
 
 ## P1 — required for characters and functional gameplay
 

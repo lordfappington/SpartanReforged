@@ -88,3 +88,5 @@ The previously validated outputs remain unchanged:
 - **CONFIRMED:** all strongly bound LEVEL00 MODELS textures are faithfully base-level decodable.
 - **UNKNOWN / unsupported:** image type 3, CLUT types 0/2 or compound flag variants, direct color, multi-picture containers, other versions/container formats, and TIM2 combinations outside this geometry-required set.
 - **UNRESOLVED BINDING:** seven geometry-used MTL records do not uniquely resolve to a LEVEL00 TIM2. This is a material/resource-reference question, not a failure of any encountered strongly bound texture format.
+
+The first full textured validation assembly successfully attached all 30 decoded images to 32 confirmed materials with exact dimensions and no missing or cross-bound image in Blender. This adds pipeline-level evidence but no new TIM2 decode rule. Twenty-two unique images are fully opaque, one has binary alpha, and seven have partial alpha; native material alpha modes remain outside TIM2 and unresolved.

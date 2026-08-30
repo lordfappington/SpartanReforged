@@ -17,6 +17,9 @@
 - [x] LEVEL00 target V orientation visually validated
 - [x] LEVEL00 MODELS geometry pipeline classified VISUALLY VALIDATED
 - [x] All strongly bound LEVEL00 MODELS TIM2 variants decoded and independently pixel-verified
+- [x] Complete LEVEL00 confirmed texture assembly exported and structurally/round-trip validated
+- [x] Complete textured scene imported into Blender with all 46,336 polygons and correct image links
+- [ ] LEVEL00 world reconstruction visually complete (blocked by MTL culling/alpha semantics)
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pathlib
 import struct
 import sys
+import tempfile
 import unittest
 
 
@@ -15,9 +16,11 @@ from export_models_gltf import (  # noqa: E402
     MIRRORED_REPEAT,
     REPEAT,
     VALIDATED_MODERN_V_MODE,
+    TextureImageInfo,
     TextureReference,
     build_gltf,
     validate_consistency,
+    validate_external_images,
     validate_gltf,
 )
 from spartan_models import (  # noqa: E402
@@ -121,6 +124,56 @@ class SelectionAndExportTests(unittest.TestCase):
         self.assertEqual(document["samplers"], [{"wrapS": REPEAT, "wrapT": REPEAT}])
         self.assertEqual(document["materials"][0]["pbrMetallicRoughness"]["baseColorTexture"]["index"], 0)
         self.assertEqual(report["textureImageCount"], 1)
+        self.assertEqual(report["texturedMaterialCount"], 1)
+        self.assertEqual(report["unresolvedPlaceholderMaterialCount"], 0)
+
+    def test_unresolved_material_is_explicit_neutral_placeholder(self) -> None:
+        model = synthetic_model()
+        document, buffer_data, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, {}, "source", "source", "source",
+        )
+        validate_gltf(document, buffer_data)
+        material = document["materials"][0]
+        self.assertEqual(material["name"], "UNRESOLVED_SYNTHETIC_A")
+        self.assertEqual(material["extras"]["placeholderOnly"], True)
+        self.assertEqual(report["materialMappings"][0]["bindingStatus"], "PLACEHOLDER_UNRESOLVED")
+
+    def test_shared_texture_is_reused_and_structure_is_deterministic(self) -> None:
+        model = synthetic_model(two_materials=True)
+        shared = TextureReference("DATA/SHARED.TM2", "ABC")
+        texture_map = {"synthetic_a": [shared], "synthetic_b": [shared]}
+        info = TextureImageInfo("textures/SHARED.png", 4, 4, "BINARY_ALPHA", "PNG", "RGBA")
+        image_map = {"shared": info}
+        # Image lookup is by source stem, irrespective of the MTL alias.
+        document_a, buffer_a, report_a = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map,
+        )
+        document_b, buffer_b, report_b = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", image_map,
+        )
+        validate_gltf(document_a, buffer_a)
+        self.assertEqual(len(document_a["images"]), 1)
+        self.assertEqual(len(document_a["textures"]), 1)
+        self.assertEqual(report_a["texturedMaterialCount"], 2)
+        self.assertEqual(document_a, document_b)
+        self.assertEqual(buffer_a, buffer_b)
+        self.assertEqual(report_a, report_b)
+
+    def test_external_image_dimensions_and_links(self) -> None:
+        document = {"images": [{
+            "uri": "textures/SYNTHETIC.png",
+            "extras": {"sourceWidth": 4, "sourceHeight": 2},
+        }]}
+        with tempfile.TemporaryDirectory() as temp_value:
+            root = pathlib.Path(temp_value)
+            image = root / "textures" / "SYNTHETIC.png"
+            image.parent.mkdir()
+            image.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\0\0\0\rIHDR" + struct.pack(">II", 4, 2))
+            result = validate_external_images(document, root / "scene.gltf")
+            self.assertEqual(result["missingImageCount"], 0)
+            self.assertEqual(result["dimensions"]["textures/SYNTHETIC.png"], [4, 2])
 
     def test_mirrored_repeat_sampler_is_explicit(self) -> None:
         model = synthetic_model()

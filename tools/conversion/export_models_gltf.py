@@ -2,7 +2,8 @@
 """Export confirmed LEVEL00 MODELS geometry to traceable glTF 2.0.
 
 The exporter writes only beneath a temp directory. It never modifies input
-resources, converts textures, invents normals, or interprets V4-8 attributes.
+resources, invents normals, or interprets V4-8 attributes. Optional texture
+decoding creates native-resolution derived PNGs beside the ignored export.
 """
 
 from __future__ import annotations
@@ -18,8 +19,9 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+from tim2_decode import decode_file
+
 from spartan_models import (
-    EXPORTER_VERSION,
     Batch,
     Descriptor,
     ModelsData,
@@ -43,12 +45,23 @@ TRIANGLES = 4
 REPEAT = 10497
 MIRRORED_REPEAT = 33648
 VALIDATED_MODERN_V_MODE = "source"
+EXPORTER_VERSION = "1.3.0"
 
 
 @dataclass(frozen=True)
 class TextureReference:
     relative_path: str
     sha256: str
+
+
+@dataclass(frozen=True)
+class TextureImageInfo:
+    uri: str
+    width: int
+    height: int
+    alpha_classification: str
+    png_sha256: str
+    rgba_sha256: str
 
 
 COORDINATE_METADATA = {
@@ -179,6 +192,57 @@ def resolve_texture(material_name: str, resource_stems: tuple[str, ...], texture
     return next(iter(unique.values())) if len(unique) == 1 else None
 
 
+def decode_bound_textures(
+    model: ModelsData,
+    selected: tuple[Descriptor, ...],
+    level_root: pathlib.Path,
+    textures: dict[str, list[TextureReference]],
+    output: pathlib.Path,
+) -> tuple[dict[str, TextureImageInfo], dict[str, Any]]:
+    """Decode each unique strongly resolved selected texture exactly once."""
+    output_dir = output.parent / "textures"
+    images: dict[str, TextureImageInfo] = {}
+    decoded_sources: set[str] = set()
+    cached = written = 0
+    for material_id in sorted({item.material_id for item in selected}):
+        material = model.materials[material_id]
+        reference = resolve_texture(material.name, material.resource_stems, textures)
+        if reference is None:
+            continue
+        source_key = reference.relative_path.casefold()
+        if source_key in decoded_sources:
+            continue
+        decoded_sources.add(source_key)
+        source = level_root / pathlib.PurePosixPath(reference.relative_path)
+        image, png, report = decode_file(source)
+        target = output_dir / f"{source.stem}.png"
+        if target.is_file() and target.read_bytes() == png:
+            cached += 1
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(png)
+            written += 1
+        alpha_values = set(image.rgba[3::4])
+        alpha_classification = (
+            "FULLY_OPAQUE" if alpha_values == {255}
+            else "BINARY_ALPHA" if alpha_values <= {0, 255}
+            else "PARTIAL_ALPHA"
+        )
+        stem = source.stem.casefold()
+        if stem in images:
+            raise ModelsFormatError(f"decoded texture basename collision: {source.stem}")
+        images[stem] = TextureImageInfo(
+            target.relative_to(output.parent).as_posix(), image.width, image.height,
+            alpha_classification, str(report["pngSha256"]), str(report["rgbaSha256"]),
+        )
+    return images, {
+        "uniqueDecodedTextureCount": len(images),
+        "cachedDecodeCount": cached,
+        "writtenDecodeCount": written,
+        "decodedPngBytes": sum((output.parent / item.uri).stat().st_size for item in images.values()),
+    }
+
+
 def build_gltf(
     model: ModelsData,
     selected: tuple[Descriptor, ...],
@@ -188,7 +252,7 @@ def build_gltf(
     coords: str,
     winding: str,
     v_mode: str,
-    texture_images: dict[str, str] | None = None,
+    texture_images: dict[str, str | TextureImageInfo] | None = None,
     sampler_mode: str = "repeat",
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     sampler_values = {"repeat": REPEAT, "mirrored-repeat": MIRRORED_REPEAT}
@@ -207,6 +271,8 @@ def build_gltf(
     materials: list[dict[str, Any]] = []
     images: list[dict[str, Any]] = []
     gltf_textures: list[dict[str, Any]] = []
+    texture_slots_by_source: dict[str, tuple[int, int]] = {}
+    material_reports: list[dict[str, Any]] = []
     bound_textures = 0
     for material_id in material_ids:
         source = model.materials[material_id]
@@ -216,27 +282,79 @@ def build_gltf(
             "resourceStems": list(source.resource_stems),
             "placeholderOnly": True,
         }
-        material_item: dict[str, Any] = {"name": f"mtl_{material_id:02d}_{source.name}", "extras": extras}
+        material_item: dict[str, Any] = {
+            "name": f"UNRESOLVED_{source.name}",
+            "extras": extras,
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [0.5, 0.5, 0.5, 1.0],
+                "metallicFactor": 0.0,
+            },
+            "extensions": {"KHR_materials_unlit": {}},
+        }
+        mapping: dict[str, Any] = {
+            "mtlIndex": material_id,
+            "mtlName": source.name,
+            "bindingStatus": "PLACEHOLDER_UNRESOLVED",
+            "placeholder": True,
+        }
         if texture:
             bound_textures += 1
             extras["sourceTextureReference"] = texture.relative_path
             extras["sourceTextureSha256"] = texture.sha256
-            image_uri = texture_images.get(pathlib.PurePosixPath(texture.relative_path).stem.casefold())
-            if image_uri:
-                image_index = len(images)
-                images.append({"name": pathlib.PurePosixPath(texture.relative_path).stem, "uri": image_uri})
-                texture_index = len(gltf_textures)
-                gltf_textures.append({"source": image_index, "sampler": 0})
+            material_item["name"] = f"mtl_{material_id:02d}_{source.name}"
+            mapping.update({
+                "bindingStatus": "TEXTURE_REFERENCE_ONLY",
+                "sourceTim2": texture.relative_path,
+                "sourceTim2Sha256": texture.sha256,
+            })
+            image_value = texture_images.get(pathlib.PurePosixPath(texture.relative_path).stem.casefold())
+            if image_value:
+                image_info = image_value if isinstance(image_value, TextureImageInfo) else TextureImageInfo(
+                    image_value, 0, 0, "UNKNOWN", "UNKNOWN", "UNKNOWN",
+                )
+                source_key = texture.relative_path.casefold()
+                if source_key in texture_slots_by_source:
+                    image_index, texture_index = texture_slots_by_source[source_key]
+                else:
+                    image_index = len(images)
+                    image_item: dict[str, Any] = {
+                        "name": pathlib.PurePosixPath(texture.relative_path).stem,
+                        "uri": image_info.uri,
+                    }
+                    if image_info.width and image_info.height:
+                        image_item["extras"] = {
+                            "sourceWidth": image_info.width,
+                            "sourceHeight": image_info.height,
+                            "pngSha256": image_info.png_sha256,
+                            "rgbaSha256": image_info.rgba_sha256,
+                        }
+                    images.append(image_item)
+                    texture_index = len(gltf_textures)
+                    gltf_textures.append({"source": image_index, "sampler": 0})
+                    texture_slots_by_source[source_key] = (image_index, texture_index)
                 material_item["pbrMetallicRoughness"] = {
                     "baseColorFactor": [1.0, 1.0, 1.0, 1.0],
                     "baseColorTexture": {"index": texture_index},
+                    "metallicFactor": 0.0,
                 }
-                material_item["extensions"] = {"KHR_materials_unlit": {}}
                 extras["placeholderOnly"] = False
                 extras["renderSemantics"] = "GENERATED_UNLIT_VALIDATION_MATERIAL"
                 extras["samplerWrapS"] = sampler_mode.upper().replace("-", "_")
                 extras["samplerWrapT"] = sampler_mode.upper().replace("-", "_")
+                extras["sourceAlphaClassification"] = image_info.alpha_classification
+                extras["alphaPolicy"] = "OPAQUE_MATERIAL; SOURCE_ALPHA_RETAINED_IN_PNG"
+                mapping.update({
+                    "bindingStatus": "TEXTURED_CONFIRMED",
+                    "decodedPng": image_info.uri,
+                    "width": image_info.width,
+                    "height": image_info.height,
+                    "alphaClassification": image_info.alpha_classification,
+                    "alphaMode": "OPAQUE",
+                    "samplerMode": sampler_mode,
+                    "placeholder": False,
+                })
         materials.append(material_item)
+        material_reports.append(mapping)
 
     builder = BufferBuilder()
     meshes: list[dict[str, Any]] = []
@@ -340,6 +458,10 @@ def build_gltf(
             "outputBounds": {"min": position_min, "max": position_max},
             "sourceUvRange": {"min": source_uv_min, "max": source_uv_max},
             "outputUvRange": {"min": uv_min, "max": uv_max},
+            "textureBindingStatus": material_reports[material_map[descriptor.material_id]]["bindingStatus"],
+            "sourceTim2": material_reports[material_map[descriptor.material_id]].get("sourceTim2"),
+            "decodedPng": material_reports[material_map[descriptor.material_id]].get("decodedPng"),
+            "placeholder": material_reports[material_map[descriptor.material_id]]["placeholder"],
         })
 
     source_min, source_max = bounds(all_source_positions, 3)
@@ -371,8 +493,9 @@ def build_gltf(
         "bufferViews": builder.views,
         "accessors": builder.accessors,
     }
-    if images:
+    if materials:
         document["extensionsUsed"] = ["KHR_materials_unlit"]
+    if images:
         document["images"] = images
         document["textures"] = gltf_textures
         document["samplers"] = [{"wrapS": sampler_values[sampler_mode], "wrapT": sampler_values[sampler_mode]}]
@@ -398,6 +521,9 @@ def build_gltf(
         "normalsGenerated": False,
         "texturesConverted": bool(images),
         "textureImageCount": len(images),
+        "texturedMaterialCount": sum(item["bindingStatus"] == "TEXTURED_CONFIRMED" for item in material_reports),
+        "unresolvedPlaceholderMaterialCount": sum(item["bindingStatus"] == "PLACEHOLDER_UNRESOLVED" for item in material_reports),
+        "materialMappings": material_reports,
         "attachedTextureImages": [item["uri"] for item in images],
         "attachedSourceTextures": [
             {
@@ -505,6 +631,41 @@ def validate_gltf(document: dict[str, Any], buffer_data: bytes) -> dict[str, Any
         "textureCount": len(textures),
         "meshCount": len(document.get("meshes", [])),
         "nodeCount": len(document.get("nodes", [])),
+    }
+
+
+def validate_external_images(document: dict[str, Any], gltf_path: pathlib.Path) -> dict[str, Any]:
+    """Validate every external PNG link and any recorded source dimensions."""
+    missing: list[str] = []
+    broken: list[str] = []
+    dimensions: dict[str, list[int]] = {}
+    for item in document.get("images", []):
+        uri = item.get("uri")
+        if not isinstance(uri, str):
+            broken.append(str(uri))
+            continue
+        path = gltf_path.parent / pathlib.PurePosixPath(uri)
+        if not path.is_file():
+            missing.append(uri)
+            continue
+        data = path.read_bytes()
+        if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+            broken.append(uri)
+            continue
+        width, height = struct.unpack_from(">II", data, 16)
+        dimensions[uri] = [width, height]
+        extras = item.get("extras", {})
+        expected = (extras.get("sourceWidth"), extras.get("sourceHeight"))
+        if all(isinstance(value, int) for value in expected) and expected != (width, height):
+            broken.append(uri)
+    if missing or broken:
+        raise ModelsFormatError(f"external image validation failed: missing={missing}, broken={broken}")
+    return {
+        "valid": True,
+        "imageCount": len(document.get("images", [])),
+        "missingImageCount": 0,
+        "brokenImageCount": 0,
+        "dimensions": dimensions,
     }
 
 
@@ -621,11 +782,15 @@ def main() -> int:
         "--texture-image", type=pathlib.Path, action="append", default=[],
         help="native decoded PNG beside the output glTF; matched to a TM2 by basename",
     )
+    parser.add_argument(
+        "--decode-bound-textures", action="store_true",
+        help="decode all strongly resolved selected TIM2 files to native PNGs under the ignored export directory",
+    )
     args = parser.parse_args()
     paths = [args.output] + [value for value in (args.report, args.manifest) if value] + args.texture_image
     if args.output.suffix.casefold() != ".gltf" or any(not _allowed_output(path) for path in paths):
         parser.error("all generated outputs must be .gltf/JSON beneath a temp directory")
-    texture_images: dict[str, str] = {}
+    texture_images: dict[str, str | TextureImageInfo] = {}
     for image_path in args.texture_image:
         if image_path.suffix.casefold() != ".png" or not image_path.is_file():
             parser.error(f"texture image does not exist or is not PNG: {image_path}")
@@ -648,6 +813,18 @@ def main() -> int:
         descriptor_ids=set(args.descriptor) or None,
         material_ids=set(args.material) or None,
     )
+    decode_summary: dict[str, Any] = {
+        "uniqueDecodedTextureCount": 0,
+        "cachedDecodeCount": 0,
+        "writtenDecodeCount": 0,
+        "decodedPngBytes": 0,
+    }
+    if args.decode_bound_textures:
+        if texture_images:
+            parser.error("--decode-bound-textures cannot be combined with --texture-image")
+        texture_images, decode_summary = decode_bound_textures(
+            model, selected, level_root, textures, args.output,
+        )
     document, buffer_data, report = build_gltf(
         model, selected, args.output.with_suffix(".bin").name, identities, textures,
         args.coords, args.winding, args.v_mode, texture_images, args.sampler,
@@ -659,6 +836,7 @@ def main() -> int:
     )
     report["sourceHashes"] = identities
     report["verifiedTim2InventoryCount"] = verified_textures
+    report["textureDecode"] = decode_summary
     report["outputGltf"] = str(args.output.resolve())
     report["outputBuffer"] = str(args.output.with_suffix(".bin").resolve())
     write_export(args.output, document, buffer_data)
@@ -669,6 +847,9 @@ def main() -> int:
     report["writtenRoundTripConsistency"] = validate_consistency(
         written_document, written_buffer, model, selected, args.coords, args.winding, args.v_mode
     )
+    report["externalImageValidation"] = validate_external_images(written_document, args.output)
+    report["outputGltfBytes"] = args.output.stat().st_size
+    report["outputBufferBytes"] = args.output.with_suffix(".bin").stat().st_size
 
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
@@ -676,7 +857,9 @@ def main() -> int:
     if args.manifest:
         warnings = [
             "V4-8 attributes are retained by the parser but not exported or interpreted.",
-            "MTL sampler/render properties remain unknown; materials are placeholders.",
+            "MTL sampler/render properties remain unknown; seven unresolved bindings remain explicit neutral placeholders.",
+            "REPEAT is an explicit conservative validation sampler, not a confirmed native MTL state.",
+            "Source alpha is retained in PNGs; glTF materials remain OPAQUE because blend/mask semantics and thresholds are unresolved.",
             (
                 "Explicit local native PNG decodes were attached; source TIM2 resources were not modified or embedded."
                 if report["textureImageCount"] else
@@ -700,6 +883,11 @@ def main() -> int:
             "unreferencedStreamedPositionCount": report["unreferencedStreamedPositionCount"],
             "triangleCount": report["triangleCount"],
             "materialCount": report["materialCount"],
+            "texturedMaterialCount": report["texturedMaterialCount"],
+            "unresolvedPlaceholderMaterialCount": report["unresolvedPlaceholderMaterialCount"],
+            "uniqueTextureImageCount": report["textureImageCount"],
+            "materialMappings": report["materialMappings"],
+            "descriptors": report["descriptors"],
             "coordinateConversion": report["coordinateTransform"],
             "windingOption": args.winding,
             "vOption": args.v_mode,
@@ -709,6 +897,12 @@ def main() -> int:
             "attachedTextureImages": report["attachedTextureImages"],
             "attachedSourceTextures": report["attachedSourceTextures"],
             "verifiedTim2InventoryCount": verified_textures,
+            "textureDecode": decode_summary,
+            "gltfValidation": report["writtenGltfValidation"],
+            "roundTripConsistency": report["writtenRoundTripConsistency"],
+            "externalImageValidation": report["externalImageValidation"],
+            "outputGltfBytes": report["outputGltfBytes"],
+            "outputBufferBytes": report["outputBufferBytes"],
             "warnings": warnings,
         }
         args.manifest.parent.mkdir(parents=True, exist_ok=True)

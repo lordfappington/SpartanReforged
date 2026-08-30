@@ -12,6 +12,7 @@ The first LEVEL00 world-geometry reconstruction was completed on 2026-08-30 usin
 
 - `tools/conversion/spartan_models.py` is target-neutral. It parses MODELS.BIN/MTL/AAB, validates boundaries and cross-references, reconstructs ADC topology, decodes Q4.12 UVs, exposes selection, and implements explicit coordinate transforms.
 - `tools/conversion/export_models_gltf.py` builds glTF 2.0 buffers/accessors, creates traceable descriptor meshes/materials, optionally attaches explicit native decoded PNGs with an unlit selectable sampler, validates serialized glTF, and performs an exact source-to-accessor consistency check.
+- With `--decode-bound-textures`, the exporter decodes each unique strongly resolved selected TIM2 once beneath the ignored export, reuses deterministic cached PNG bytes, classifies source alpha, and emits explicit neutral `UNRESOLVED_*` placeholders rather than substituting resources.
 - `tools/conversion/tim2_decode.py` strictly decodes the geometry-required PSMT4/PSMT8 and RGB5A1/RGBA8888 TIM2 combinations to deterministic native-resolution PNG.
 - `tests/formats/test_spartan_models.py` and `test_tim2_decode.py` use synthetic, non-copyrighted inputs only.
 
@@ -72,7 +73,9 @@ Strongly resolved TIM2 references are recorded in material extras with source-re
 
 For descriptor 118, `002.TM2` decoded to native 256×256 RGBA8 and matched Noesis pixel-for-pixel. Periodic sampling is required by its two-period UV span; exact native repeat-versus-mirror semantics remain unresolved.
 
-Across all geometry materials, 32 of 39 used MTL records resolve strongly to 30 unique TIM2 files. The decoder now covers all six image/CLUT/mip combinations in that set. Every native base-level RGBA buffer matches Noesis 4.474 byte-for-byte. PSMT4 is linear low-nibble-first; PSMT8 is linear byte-indexed with the standard CSM1 palette permutation; no image unswizzle is required. Type-3 CLUT alpha uses saturated PS2 doubling. The full textured LEVEL00 export is deliberately deferred to the next task.
+Across all geometry materials, 32 of 39 used MTL records resolve strongly to 30 unique TIM2 files. The decoder covers all six image/CLUT/mip combinations in that set. Every native base-level RGBA buffer matches Noesis 4.474 byte-for-byte. PSMT4 is linear low-nibble-first; PSMT8 is linear byte-indexed with the standard CSM1 palette permutation; no image unswizzle is required. Type-3 CLUT alpha uses saturated PS2 doubling.
+
+The complete textured assembly has now been performed locally. Thirty-two materials attach to 30 reused images; seven remain explicit placeholders. All source alpha is retained, but glTF materials deliberately remain `OPAQUE` because blend/mask modes and cutout thresholds are unknown. The serialized glTF and external links validate, exact reconstruction round-trip passes, and Blender imports all 46,336 polygons with no missing or cross-bound images.
 
 ## Selection
 
@@ -141,6 +144,14 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 - Source V is confirmed by descriptor 5's upright lower-banner lambda.
 - Exact repeat-versus-mirror semantics remain unresolved; both modes are explicit.
 - The MODELS geometry/UV/image pipeline is VISUALLY VALIDATED and all strongly bound geometry TIM2 variants decode faithfully. Full material fidelity still requires broader MTL and sampler semantics.
+- glTF's default single-sided materials produce widespread culling holes across the full scene; a local two-sided diagnostic restores coherent surfaces. Native MTL culling/two-sided flags must be decoded before this can become a faithful visual default.
+- The partial-alpha level-scale `CLOUD` shell occludes the scene under conservative `OPAQUE` rendering. Alpha blend/mask semantics remain intentionally unset.
+
+## Complete textured assembly gate
+
+`LEVEL00_TEXTURED.gltf` was generated locally with 1,338 meshes, 39 materials, 30 images, and the canonical 46,336 triangles. Blender 5.2.1 LTS reports 1,338 mesh objects, 87,682 referenced vertices, 46,336 polygons, 39 materials, 30 images, and one UV layer on every mesh. All links and dimensions match.
+
+This establishes **TEXTURED ASSEMBLY VALIDATED**, not complete visual reconstruction. See [LEVEL00_TEXTURED_RECONSTRUCTION.md](../milestones/LEVEL00_TEXTURED_RECONSTRUCTION.md).
 
 ## Descriptor-118 visual convention gate
 

@@ -29,12 +29,12 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 - `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED and operationally exported:** strict parsing reconstructs 1,338 descriptor meshes from 2,128 batches, retains all 88,314 position/Q4.12 UV records and 39 material groups, and emits exactly 46,336 triangles to validated glTF. Exact byte-level accessor round-trip and Blender import pass. V4-8 remains unknown and material/render fidelity is not claimed.
 - `LEVEL00/.../WORLD/MODELS.AAB` — **P0 CONFIRMED structure/reference/bounds:** complete seven-level 4-way spatial tree; leaf lists enumerate static BIN descriptors 114–1337 exactly once, and every referenced descriptor's vertices fit its associated cell bounds.
-- `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join:** BIN descriptor high-u16 values select ordered resource records; 39 record indices are used.
+- `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join / P0 render-state target:** BIN descriptor high-u16 values select 39 ordered records. Thirty-two bind 30 verified images; seven remain placeholders. Full-scene diagnostics now make culling/two-sided and alpha mode/threshold the immediate unknown properties.
 - `LEVEL00/.../WORLD/MODELS.STL` — **CONFIRMED lookup structure:** 32 slots, eight of which select MTL particle records 40–47.
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions, ADC topology, material assignment, V2-16 UV mapping, and all strongly bound native geometry textures are reconstructable outside the PS2 runtime. Descriptor 118 confirms coordinates/winding and periodic texture use; descriptor 5 confirms source V. Exact repeat-versus-mirror/MTL properties, seven unresolved material bindings, V4-8 meaning, unrelated TIM2 variants, and character schemas remain open.
+- World positions, ADC topology, material assignment, V2-16 UV mapping, and all strongly bound native geometry textures assemble into a validated complete glTF outside the PS2 runtime. Blender retains all 46,336 polygons and all expected links. Exact culling, alpha, repeat-versus-mirror/MTL properties, seven unresolved material bindings, V4-8 meaning, unrelated TIM2 variants, and character schemas remain open.
 
 ## ANIMATIONS
 
