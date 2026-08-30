@@ -6,7 +6,7 @@ This analysis was completed on 2026-08-30 against the already-extracted canonica
 
 **Topology result: CONFIRMED. Current overall readiness: GEOMETRY READY after the subsequent UV investigation.** The supported reconstruction is an implicit triangle strip per VIF batch. A position W word of `0x8000` suppresses the primitive ending at that vertex while retaining the vertex in the rolling strip history. It does not reset history. A zero W word emits the triangle. Alternating parity follows every submitted source vertex, including suppressed vertices.
 
-This establishes connectivity and relative winding. A later bounded analysis confirmed V2-16 as signed Q4.12 normalized UV and advanced the aggregate format to **GEOMETRY READY**; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). V4-8 semantics and MTL property semantics remain partial, and the VU program that routes the fields to the GS was not present in these batches. The absolute front-face convention is also not observable from GS behavior because the GS has no conventional back-face culling state; reversing every triangle remains a target/export convention choice.
+This establishes connectivity and relative winding. A later bounded analysis confirmed V2-16 as signed Q4.12 normalized UV and advanced the aggregate format to **GEOMETRY READY**; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). Descriptor-118 validation subsequently confirmed source winding as the glTF/Blender front-face order when using the determinant-positive source coordinate mapping. V4-8 and MTL properties remain partial, and the VU program routing fields to the GS was not present.
 
 The confirmed algorithm has now been implemented in the strict conversion parser and reproduced all 46,336 triangles in glTF. The exporter exposes source/reverse winding explicitly and never joins batches. Exact accessor round-trip and Blender polygon counts independently retain the topology; see [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md).
 
@@ -125,7 +125,7 @@ AAB validation is independent of topology: 484 non-empty cells reference all 1,2
 ## Remaining unknowns
 
 - Direct proof of the VU microprogram's W-to-GIF ADC routing.
-- Absolute global front-face choice in a target renderer/coordinate system.
+- Whether other coordinate transforms require the determinant-appropriate global index reversal; source coordinates/source winding are confirmed for glTF/Blender.
 - V2-16 scale, bias, wrap, and texture-coordinate convention.
 - V4-8 semantic role.
 - Descriptor/block fields not needed for topology and detailed MTL property semantics.

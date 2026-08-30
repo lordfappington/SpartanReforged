@@ -20,7 +20,7 @@ CANONICAL_HASHES = {
     "MODELS.AAB": "CE46A8C58509D74CEEABEDF22D1832DCD365C87D2F8BC583120F1F37797E99D7",
     "MODELS.MTL": "57283516FC3CC8589EEC4817CF8C25DC3FF0CC2185E4FF99E262FA6F3A4A54B2",
 }
-EXPORTER_VERSION = "1.0.0"
+EXPORTER_VERSION = "1.1.0"
 
 
 class ModelsFormatError(ValueError):
@@ -415,6 +415,12 @@ def transform_position(position: tuple[float, float, float], coords: str = "sour
     if coords == "gltf":
         # Explicit reflection across Z; determinant -1. No semantic relabeling.
         return position[0], position[1], -position[2]
+    if coords == "x_z_neg_y":
+        # Proper +90-degree rotation about X: source Y becomes target Z.
+        return position[0], position[2], -position[1]
+    if coords == "x_z_y":
+        # Axis exchange with determinant -1; retained as an explicit validation mode.
+        return position[0], position[2], position[1]
     raise ValueError(f"unsupported coordinate mode {coords!r}")
 
 

@@ -11,8 +11,9 @@ The first LEVEL00 world-geometry reconstruction was completed on 2026-08-30 usin
 ## Tools and architecture
 
 - `tools/conversion/spartan_models.py` is target-neutral. It parses MODELS.BIN/MTL/AAB, validates boundaries and cross-references, reconstructs ADC topology, decodes Q4.12 UVs, exposes selection, and implements explicit coordinate transforms.
-- `tools/conversion/export_models_gltf.py` builds glTF 2.0 buffers/accessors, creates traceable descriptor meshes and placeholder materials, validates the serialized glTF, and performs an exact source-to-accessor consistency check.
-- `tests/formats/test_spartan_models.py` uses synthetic, non-copyrighted inputs only.
+- `tools/conversion/export_models_gltf.py` builds glTF 2.0 buffers/accessors, creates traceable descriptor meshes/materials, optionally attaches explicit native decoded PNGs with an unlit repeat sampler, validates serialized glTF, and performs an exact source-to-accessor consistency check.
+- `tools/conversion/tim2_decode.py` strictly decodes only the verified PSMT4/RGB5A1 TIM2 subset to deterministic native-resolution PNG.
+- `tests/formats/test_spartan_models.py` and `test_tim2_decode.py` use synthetic, non-copyrighted inputs only.
 
 The parser and exporter are separate so the confirmed source representation is not coupled to glTF policy.
 
@@ -47,8 +48,10 @@ No scale is applied. Source positions remain available internally and are record
 |---|---|---:|---|
 | `--coords source` | `(X,Y,Z) -> (X,Y,Z)` | +1 | no coordinate-induced reversal |
 | `--coords gltf` | `(X,Y,Z) -> (X,Y,-Z)` | -1 | reflection reverses orientation unless `--winding reverse` is also selected |
+| `--coords x_z_neg_y` | `(X,Y,Z) -> (X,Z,-Y)` | +1 | explicit proper-rotation validation mode |
+| `--coords x_z_y` | `(X,Y,Z) -> (X,Z,Y)` | -1 | explicit reflected validation mode |
 
-The `gltf` name denotes a documented modern-target alternative, not a claim about otherwise unknown source handedness. The exporter never automatically changes winding.
+Descriptor-118 validation establishes that source Y already matches glTF +Y-up. `--coords source` is therefore the selected glTF convention; Blender performs its normal glTF Y-up to Blender Z-up import conversion. The exporter never automatically changes winding.
 
 ## Winding and UV options
 
@@ -65,7 +68,9 @@ Normals are omitted by default and no normal-generation option is used in this f
 
 One placeholder glTF material is created for every selected, geometry-used MTL record. Names retain the source MTL index and name. No metallic, roughness, alpha, blend, emissive, or sampler property is assigned by the exporter. These remain glTF defaults rather than claims about Spartan materials.
 
-Strongly resolved TIM2 references are recorded in material extras with their source-relative paths and SHA-256 values. No TIM2 is converted, embedded, filtered, or modified. The full export resolves 32 of 39 used material records to one TIM2 reference.
+Strongly resolved TIM2 references are recorded in material extras with source-relative paths and SHA-256 values. An explicit `--texture-image` PNG beside the output glTF may be attached by matching basename. Attached validation materials use `KHR_materials_unlit`, a neutral base color, and S/T `REPEAT`; this avoids interpreting unknown MTL lighting/render properties. Source TIM2 files are never modified. The strict decoder performs no scale, filter, enhancement, or color correction.
+
+For descriptor 118, `002.TM2` decoded to native 256×256 RGBA8 and matched Noesis pixel-for-pixel. Periodic sampling is required by its two-period UV span; exact native repeat-versus-mirror semantics remain unresolved.
 
 ## Selection
 
@@ -130,8 +135,13 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 - V4-8 semantics are unknown and absent from glTF.
 - Exact MTL sampler/render properties are unknown; materials are placeholders.
 - Textures are referenced by provenance only and are not displayed.
-- Absolute native front-face and V orientation are not claimed.
-- The source-mode export is suitable for structural inspection; faithful rendered appearance requires later convention and material validation.
+- Source coordinates and source winding are now confirmed for determinant-positive glTF export using descriptor 118.
+- V orientation and exact repeat-versus-mirror semantics remain unresolved because texture `002` is directionally ambiguous.
+- The source-mode export is structurally and geometrically validated; faithful full-level textured appearance still requires a directional V test and broader MTL semantics.
+
+## Descriptor-118 visual convention gate
+
+Eight controlled variants tested source/`(X,Z,-Y)` coordinates, source/reversed winding, and source/flipped V with the native decoded `002` image. Source coordinates import as terrain with all eight face normals upward in Blender; `(X,Z,-Y)` makes the patch near-vertical. Source winding remains front-facing; reversed winding points all faces downward and is culled from the top view. Both V choices remain plausible. Full evidence and bounds are recorded in [MODELS_VISUAL_CONVENTIONS.md](MODELS_VISUAL_CONVENTIONS.md).
 
 ## Commands
 

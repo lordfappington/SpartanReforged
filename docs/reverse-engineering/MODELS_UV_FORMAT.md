@@ -95,7 +95,7 @@ Spartan instead supplies signed V2-16 values to a VU program and stores the same
 
 ## V-axis orientation
 
-The V2 stream defines a consistent signed normalized V coordinate, but asset data alone does not identify image semantics such as “top” and “bottom.” Generic PS2 textured-sprite examples map V=0 to the top edge and V=texture height to the bottom edge, so top-to-bottom V is **LIKELY for the native PS2 path**. Whether a target renderer or exported image needs `1-v` depends on that consumer's image origin and texture upload convention and remains **UNKNOWN until a target-path validation**. The source V values must be preserved in a first exporter.
+The V2 stream defines a consistent signed normalized V coordinate, but asset data alone does not identify image semantics such as “top” and “bottom.” Descriptor-118 target-path testing attached the verified native `002` decode and compared `v` against `1-v`. Both are coherent vertical mirrors because the stone texture lacks a directional landmark. Target V therefore remains **UNKNOWN after this sample**; source V remains the forensic default and both modes remain explicit. See [MODELS_VISUAL_CONVENTIONS.md](MODELS_VISUAL_CONVENTIONS.md).
 
 ## Binding confidence
 
@@ -112,8 +112,8 @@ Direct bindings: 29. Explicit aliases: `PICKUPS_2SIDED -> PICKUPS.TM2`, `APP_FIR
 
 ## Readiness and remaining unknowns
 
-MODELS.BIN advances from **TOPOLOGY READY** to **GEOMETRY READY** for a first read-only export. Positions, per-batch strips, ADC suppression, winding parity, descriptor material assignment, and useful UV decoding are established. Source XYZ coordinates and source winding can be preserved; the AAB evidence establishes Y as the vertical axis and X/Z as the horizontal plane. A target-specific handedness/front-face transform must be explicit rather than silently assumed.
+MODELS.BIN is **GEOMETRY READY**. Positions, per-batch strips, ADC suppression, winding parity, descriptor material assignment, and useful UV decoding are established. AAB evidence establishes Y as vertical and X/Z as horizontal; descriptor 118 confirms source XYZ and source winding as the determinant-positive glTF/Blender path. Alternative reflections/axis conversions remain explicit rather than silently changing indices.
 
-V4-8 semantics do not block exporting positions, triangles, material groups, and UVs. They may later be required for faithful lighting, vertex color, or other rendering attributes. Exact MTL sampler properties, native V orientation proof, target renderer conversion, VU rounding, and unresolved effect-resource bindings remain open. These limitations prevent calling the whole rendering format understood, but do not prevent a bounded first geometry exporter.
+V4-8 semantics do not block exporting positions, triangles, material groups, and UVs. They may later be required for faithful lighting, vertex color, or other rendering attributes. Exact MTL sampler properties, native V orientation proof, VU rounding, and unresolved effect-resource bindings remain open. These limitations prevent calling the pipeline VISUALLY VALIDATED.
 
 The first exporter now implements the formula directly, preserves all signed/out-of-range values, and offers explicit `source`/`flip` V modes. Reading the serialized glTF accessors back produced exact matches for all 88,314 Q4.12-derived UV pairs. No texture conversion or visual-orientation assumption was used. Pipeline details are in [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md).

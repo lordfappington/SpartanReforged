@@ -11,7 +11,7 @@ import unittest
 CONVERSION = pathlib.Path(__file__).resolve().parents[2] / "tools" / "conversion"
 sys.path.insert(0, str(CONVERSION))
 
-from export_models_gltf import build_gltf, validate_consistency, validate_gltf  # noqa: E402
+from export_models_gltf import TextureReference, build_gltf, validate_consistency, validate_gltf  # noqa: E402
 from spartan_models import (  # noqa: E402
     AabData,
     Batch,
@@ -68,6 +68,8 @@ class AttributeTests(unittest.TestCase):
     def test_coordinate_conversion(self) -> None:
         self.assertEqual(transform_position((1.0, 2.0, 3.0), "source"), (1.0, 2.0, 3.0))
         self.assertEqual(transform_position((1.0, 2.0, 3.0), "gltf"), (1.0, 2.0, -3.0))
+        self.assertEqual(transform_position((1.0, 2.0, 3.0), "x_z_neg_y"), (1.0, 3.0, -2.0))
+        self.assertEqual(transform_position((1.0, 2.0, 3.0), "x_z_y"), (1.0, 3.0, 2.0))
 
 
 class SelectionAndExportTests(unittest.TestCase):
@@ -97,6 +99,19 @@ class SelectionAndExportTests(unittest.TestCase):
         document["accessors"][index_accessor]["max"] = [999]
         with self.assertRaises(ModelsFormatError):
             validate_gltf(document, buffer_data)
+
+    def test_material_image_repeat_sampler_linkage(self) -> None:
+        model = synthetic_model()
+        texture_map = {"synthetic_a": [TextureReference("DATA/SYNTHETIC_A.TM2", "ABC")]}
+        document, buffer_data, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", {"synthetic_a": "SYNTHETIC_A.png"},
+        )
+        result = validate_gltf(document, buffer_data)
+        self.assertEqual(result["imageCount"], 1)
+        self.assertEqual(document["samplers"], [{"wrapS": 10497, "wrapT": 10497}])
+        self.assertEqual(document["materials"][0]["pbrMetallicRoughness"]["baseColorTexture"]["index"], 0)
+        self.assertEqual(report["textureImageCount"], 1)
 
     def test_static_and_special_selection(self) -> None:
         model = synthetic_model(two_materials=True)

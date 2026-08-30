@@ -1,5 +1,15 @@
 # Research Log
 
+## 2026-08-30 - Descriptor 118 visual-convention validation
+
+- Reverified canonical `MODELS.BIN`, `MODELS.MTL`, and `002.TM2` hashes and descriptor 118's MTL 5 / `002`, 12-vertex, eight-triangle reconstruction.
+- Implemented a strict bounds-checked TIM2 v4 PSMT4/RGB5A1 decoder. The native 256×256 RGBA output for `002.TM2` matches Noesis 4.474 across all 262,144 bytes; source assets remained unchanged.
+- Generated eight ignored/local glTF variants spanning source versus `(X,Z,-Y)` coordinates, source versus reversed winding, and source versus flipped V. All pass structural and exact accessor consistency checks with one attached unlit repeat-sampled image.
+- Blender 5.2.1 LTS imported every variant as one mesh, 12 vertices, eight polygons, one material, one image, and one UV layer. Source coordinates make the AAB-evidenced Y height axis Blender Z-up; `(X,Z,-Y)` makes the terrain near-vertical.
+- Source winding produces eight positive-Z Blender face normals and renders from above; reversed winding produces eight negative-Z normals and is back-face culled. Source coordinates/winding are confirmed for determinant-positive glTF export.
+- Both V variants tile coherently but are vertical mirrors. `002` is a directionless stone texture and no local PCSX2 reference was available, so target V orientation and exact native repeat-versus-mirror remain unknown. Readiness stays **GEOMETRY READY**, not VISUALLY VALIDATED.
+- Added synthetic tests for palette/alpha/nibble decoding, malformed TIM2 rejection, coordinate variants, V flip, winding reversal, and glTF material/image/repeat linkage. Derived PNG/glTF/renders/reports remain ignored and uncommitted.
+
 ## 2026-08-28 - Initial environment audit
 
 - Created the Milestone 0 workspace structure without inspecting or modifying game data.

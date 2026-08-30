@@ -155,7 +155,7 @@ Examples include index 5 → `002`, 7 → `BASEWALL`, 12 → `TEMPLE_FLAGS`, 33 
 
 The global header, descriptor table, block boundaries, VIF command grammar, attribute stream widths, numeric MTL binding, AAB static-descriptor partition, triangle topology, and V2-16 UV decode are established strongly enough for a bounds-checked first geometry exporter.
 
-Readiness is **GEOMETRY READY** for a first read-only export that preserves source coordinates, winding, material groups, and signed normalized UV values. This does not mean the format is complete: V4-8 semantics, exact MTL sampler/property states, target-renderer V orientation/front-face conversion, and the literal VU-to-GS dataflow remain unresolved. V4-8 is not required to export positions, topology, material assignment, and usable UVs.
+Readiness is **GEOMETRY READY**. Descriptor-118 validation confirms source coordinates and source winding for determinant-positive glTF/Blender export. This does not mean the format is complete: V4-8 semantics, exact MTL sampler/property states, target V orientation, and the literal VU-to-GS dataflow remain unresolved. V4-8 is not required to export positions, topology, material assignment, and usable UVs.
 
 The first strict parser and glTF reconstruction now validate this readiness operationally. All 1,338 descriptors parse through independent bounds checks and export as traceable descriptor meshes containing 88,314 source records and exactly 46,336 triangles. See [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md). This is a geometry reconstruction milestone, not proof of native material or rendering fidelity.
 

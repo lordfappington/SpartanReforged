@@ -22,7 +22,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** 12 single-picture, 256-color TIM2 textures from 16×16 through 256×256; includes eight font atlases.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** 35 single-picture, 8-bit indexed TIM2 textures from 16×16 through 512×512; includes 32 font atlases.
 - `DATA/FE_MAIN.PAK` — **CONFIRMED:** 68 single-picture, one-mip, 8-bit indexed TIM2 textures from 16×16 through 512×512; 32 font atlases plus UI cards, maps, icons, logos, and effect pages.
-- `DATA/LEVEL00.PAK` — **CONFIRMED:** 58 one-picture TIM2 resources using image types 3/4/5, CLUT types 0/1/3, 16/256 colors, and one/four mip levels; covers world, character, particle, UI, and font resources.
+- `DATA/LEVEL00.PAK` — **CONFIRMED:** 58 one-picture TIM2 resources using image types 3/4/5, CLUT types 0/1/3, 16/256 colors, and one/four mip levels. The `002` type-4/RGB5A1 subset now has a strict native decoder whose RGBA matches Noesis exactly; other variants remain unsupported.
 - Other `DATA/FE_*.PAK`, `DATA/LEVEL*.PAK`, and `DATA/ARENA*.PAK` files — **UNKNOWN candidates:** not opened.
 
 ## MODELS
@@ -34,7 +34,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions, ADC strip topology, source winding, material assignment, and V2-16 UV mapping are established and reconstructed outside the PS2 runtime. The exporter exposes source/Z-reflection coordinates, source/reverse winding, and source/flipped V explicitly. Target-specific visual convention validation, V4-8 meaning, exact MTL sampler properties, and character vertex/index/weight schemas remain open.
+- World positions, ADC strip topology, material assignment, and V2-16 UV mapping are reconstructed outside the PS2 runtime. Descriptor 118 confirms source coordinates and source winding for glTF/Blender and validates native TIM2 image linkage with periodic UVs. Target V orientation, exact repeat-versus-mirror/MTL properties, V4-8 meaning, and character schemas remain open.
 
 ## ANIMATIONS
 
@@ -91,5 +91,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
-- V4-8 packed-attribute semantics for LEVEL00 world BIN, exact per-material MTL sampler states, remaining AAB leaf fields, HMP layout, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data. LEVEL00 BIN connectivity/topology and V2-16 UVs are established; direct VU routing and target-renderer coordinate/front-face/V convention remain open.
+- V4-8 packed-attribute semantics for LEVEL00 world BIN, exact per-material MTL sampler states, remaining AAB leaf fields, HMP layout, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data. LEVEL00 target coordinates and front-face order are now confirmed for glTF/Blender; direct VU routing, target V orientation, and native repeat-versus-mirror remain open.
 - Runtime roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.

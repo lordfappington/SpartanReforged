@@ -48,6 +48,14 @@ class TextureReference:
     sha256: str
 
 
+COORDINATE_METADATA = {
+    "source": ("(X,Y,Z)->(X,Y,Z)", 1),
+    "gltf": ("(X,Y,Z)->(X,Y,-Z)", -1),
+    "x_z_neg_y": ("(X,Y,Z)->(X,Z,-Y)", 1),
+    "x_z_y": ("(X,Y,Z)->(X,Z,Y)", -1),
+}
+
+
 class BufferBuilder:
     def __init__(self) -> None:
         self.data = bytearray()
@@ -177,6 +185,7 @@ def build_gltf(
     coords: str,
     winding: str,
     v_mode: str,
+    texture_images: dict[str, str] | None = None,
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     reverse = winding == "reverse"
     selected_ids = {item.index for item in selected}
@@ -187,7 +196,10 @@ def build_gltf(
 
     material_ids = sorted({item.material_id for item in selected})
     material_map = {source_id: export_id for export_id, source_id in enumerate(material_ids)}
+    texture_images = texture_images or {}
     materials: list[dict[str, Any]] = []
+    images: list[dict[str, Any]] = []
+    gltf_textures: list[dict[str, Any]] = []
     bound_textures = 0
     for material_id in material_ids:
         source = model.materials[material_id]
@@ -197,11 +209,27 @@ def build_gltf(
             "resourceStems": list(source.resource_stems),
             "placeholderOnly": True,
         }
+        material_item: dict[str, Any] = {"name": f"mtl_{material_id:02d}_{source.name}", "extras": extras}
         if texture:
             bound_textures += 1
             extras["sourceTextureReference"] = texture.relative_path
             extras["sourceTextureSha256"] = texture.sha256
-        materials.append({"name": f"mtl_{material_id:02d}_{source.name}", "extras": extras})
+            image_uri = texture_images.get(pathlib.PurePosixPath(texture.relative_path).stem.casefold())
+            if image_uri:
+                image_index = len(images)
+                images.append({"name": pathlib.PurePosixPath(texture.relative_path).stem, "uri": image_uri})
+                texture_index = len(gltf_textures)
+                gltf_textures.append({"source": image_index, "sampler": 0})
+                material_item["pbrMetallicRoughness"] = {
+                    "baseColorFactor": [1.0, 1.0, 1.0, 1.0],
+                    "baseColorTexture": {"index": texture_index},
+                }
+                material_item["extensions"] = {"KHR_materials_unlit": {}}
+                extras["placeholderOnly"] = False
+                extras["renderSemantics"] = "GENERATED_UNLIT_VALIDATION_MATERIAL"
+                extras["samplerWrapS"] = "REPEAT"
+                extras["samplerWrapT"] = "REPEAT"
+        materials.append(material_item)
 
     builder = BufferBuilder()
     meshes: list[dict[str, Any]] = []
@@ -318,11 +346,11 @@ def build_gltf(
             "extras": {
                 "sourceHashes": identities,
                 "coords": coords,
-                "coordinateTransform": "(X,Y,Z)->(X,Y,Z)" if coords == "source" else "(X,Y,Z)->(X,Y,-Z)",
+                "coordinateTransform": COORDINATE_METADATA[coords][0],
                 "winding": winding,
                 "vMode": v_mode,
                 "normals": "OMITTED",
-                "textures": "REFERENCED_IN_EXTRAS_ONLY_NOT_CONVERTED",
+                "textures": "LOCAL_NATIVE_TIM2_DECODES_ATTACHED" if images else "REFERENCED_IN_EXTRAS_ONLY_NOT_CONVERTED",
             },
         },
         "scene": 0,
@@ -334,6 +362,11 @@ def build_gltf(
         "bufferViews": builder.views,
         "accessors": builder.accessors,
     }
+    if images:
+        document["extensionsUsed"] = ["KHR_materials_unlit"]
+        document["images"] = images
+        document["textures"] = gltf_textures
+        document["samplers"] = [{"wrapS": 10497, "wrapT": 10497}]
     report = {
         "exporterVersion": EXPORTER_VERSION,
         "descriptorCount": len(selected),
@@ -347,12 +380,21 @@ def build_gltf(
         "nodeCount": len(nodes),
         "boundTextureReferenceCount": bound_textures,
         "coordinateMode": coords,
-        "coordinateTransform": "(X,Y,Z)->(X,Y,Z)" if coords == "source" else "(X,Y,Z)->(X,Y,-Z)",
-        "coordinateTransformDeterminant": 1 if coords == "source" else -1,
+        "coordinateTransform": COORDINATE_METADATA[coords][0],
+        "coordinateTransformDeterminant": COORDINATE_METADATA[coords][1],
         "windingMode": winding,
         "vMode": v_mode,
         "normalsGenerated": False,
-        "texturesConverted": False,
+        "texturesConverted": bool(images),
+        "textureImageCount": len(images),
+        "attachedTextureImages": [item["uri"] for item in images],
+        "attachedSourceTextures": [
+            {
+                "relativePath": item["extras"]["sourceTextureReference"],
+                "sha256": item["extras"]["sourceTextureSha256"],
+            }
+            for item in materials if "sourceTextureReference" in item["extras"] and "pbrMetallicRoughness" in item
+        ],
         "sourceBounds": {"min": source_min, "max": source_max},
         "outputBounds": {"min": output_min, "max": output_max},
         "sourceUvRange": {"min": source_uv_min, "max": source_uv_max},
@@ -373,6 +415,16 @@ def validate_gltf(document: dict[str, Any], buffer_data: bytes) -> dict[str, Any
     views = document.get("bufferViews", [])
     accessors = document.get("accessors", [])
     materials = document.get("materials", [])
+    images = document.get("images", [])
+    textures = document.get("textures", [])
+    samplers = document.get("samplers", [])
+    for index, texture in enumerate(textures):
+        if texture.get("source", -1) not in range(len(images)) or texture.get("sampler", -1) not in range(len(samplers)):
+            raise ModelsFormatError(f"glTF texture {index} has invalid image/sampler linkage")
+    for index, material in enumerate(materials):
+        texture_info = material.get("pbrMetallicRoughness", {}).get("baseColorTexture")
+        if texture_info and texture_info.get("index", -1) not in range(len(textures)):
+            raise ModelsFormatError(f"glTF material {index} has invalid base-color texture")
     component_sizes = {FLOAT: 4, UNSIGNED_SHORT: 2, UNSIGNED_INT: 4}
     type_widths = {"SCALAR": 1, "VEC2": 2, "VEC3": 3}
     for index, view in enumerate(views):
@@ -438,6 +490,8 @@ def validate_gltf(document: dict[str, Any], buffer_data: bytes) -> dict[str, Any
         "indexCount": total_indices,
         "triangleCount": total_indices // 3,
         "materialCount": len(materials),
+        "imageCount": len(images),
+        "textureCount": len(textures),
         "meshCount": len(document.get("meshes", [])),
         "nodeCount": len(document.get("nodes", [])),
     }
@@ -539,16 +593,32 @@ def main() -> int:
     scope.add_argument("--all", action="store_true")
     parser.add_argument("--descriptor", type=int, action="append", default=[])
     parser.add_argument("--material", type=int, action="append", default=[])
-    parser.add_argument("--coords", choices=("source", "gltf"), default="source")
+    parser.add_argument("--coords", choices=tuple(COORDINATE_METADATA), default="source")
     parser.add_argument("--winding", choices=("source", "reverse"), default="source")
     parser.add_argument("--v-mode", choices=("source", "flip"), default="source")
     parser.add_argument("--report", type=pathlib.Path)
     parser.add_argument("--manifest", type=pathlib.Path)
     parser.add_argument("--inventory", type=pathlib.Path, help="existing LEVEL00 inventory JSON")
+    parser.add_argument(
+        "--texture-image", type=pathlib.Path, action="append", default=[],
+        help="native decoded PNG beside the output glTF; matched to a TM2 by basename",
+    )
     args = parser.parse_args()
-    paths = [args.output] + [value for value in (args.report, args.manifest) if value]
+    paths = [args.output] + [value for value in (args.report, args.manifest) if value] + args.texture_image
     if args.output.suffix.casefold() != ".gltf" or any(not _allowed_output(path) for path in paths):
         parser.error("all generated outputs must be .gltf/JSON beneath a temp directory")
+    texture_images: dict[str, str] = {}
+    for image_path in args.texture_image:
+        if image_path.suffix.casefold() != ".png" or not image_path.is_file():
+            parser.error(f"texture image does not exist or is not PNG: {image_path}")
+        if image_path.resolve().parent != args.output.resolve().parent:
+            parser.error("texture images must be beside the output glTF")
+        stem = image_path.stem.casefold()
+        if stem.endswith("_native"):
+            stem = stem[:-7]
+        if stem in texture_images:
+            parser.error(f"duplicate texture image stem: {stem}")
+        texture_images[stem] = image_path.name
 
     model, identities = load_models(args.world, verify_hashes=True)
     level_root = args.world.parents[3]
@@ -562,7 +632,7 @@ def main() -> int:
     )
     document, buffer_data, report = build_gltf(
         model, selected, args.output.with_suffix(".bin").name, identities, textures,
-        args.coords, args.winding, args.v_mode,
+        args.coords, args.winding, args.v_mode, texture_images,
     )
     validation = validate_gltf(document, buffer_data)
     report["gltfValidation"] = validation
@@ -589,8 +659,12 @@ def main() -> int:
         warnings = [
             "V4-8 attributes are retained by the parser but not exported or interpreted.",
             "MTL sampler/render properties remain unknown; materials are placeholders.",
-            "TIM2 resources are hash-referenced only and were not converted or embedded.",
-            "Absolute target front-face and V orientation are explicit user-selected conventions.",
+            (
+                "Explicit local native PNG decodes were attached; source TIM2 resources were not modified or embedded."
+                if report["textureImageCount"] else
+                "TIM2 resources are hash-referenced only and were not converted or embedded."
+            ),
+            "Coordinate and winding options are recorded; target V orientation remains an explicit unresolved choice.",
             f"Retained {report['geometricDegenerateTriangles']} exact geometric degenerates.",
             f"Retained {report['collapsedUvTriangles']} collapsed-UV triangles.",
             f"Retained {report['unreferencedStreamedPositionCount']} streamed vertices not referenced by emitted triangles; importers may omit them.",
@@ -612,7 +686,9 @@ def main() -> int:
             "windingOption": args.winding,
             "vOption": args.v_mode,
             "normalsGenerated": False,
-            "texturesConverted": False,
+            "texturesConverted": report["texturesConverted"],
+            "attachedTextureImages": report["attachedTextureImages"],
+            "attachedSourceTextures": report["attachedSourceTextures"],
             "verifiedTim2InventoryCount": verified_textures,
             "warnings": warnings,
         }

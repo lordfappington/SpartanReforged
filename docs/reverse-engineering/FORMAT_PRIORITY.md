@@ -18,7 +18,7 @@ Container segmentation is complete. Remaining P0 geometry work is now:
 3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The first bounded, read-only MODELS glTF exporter is now **COMPLETE for LEVEL00**. It reconstructs all 1,338 descriptors and 46,336 triangles, preserves 88,314 position/UV records and 39 MTL groups, passes exact accessor round-trip validation, and imports into Blender. Rendering and complete material reconstruction still require target coordinate/front-face/V validation and MTL sampler/property semantics. The next bounded P0 task is a controlled visual convention validation using the existing derived export and unmodified texture references.
+The first bounded, read-only MODELS glTF exporter is **COMPLETE for LEVEL00**. Descriptor-118 visual testing now confirms source `(X,Y,Z)` for glTF and source winding, and a strict decoder reproduces `002.TM2` pixel-for-pixel against Noesis. Native image attachment and periodic sampling work. Readiness remains **GEOMETRY READY**, not VISUALLY VALIDATED: `002` is directionally ambiguous, so source versus flipped V and native repeat versus mirror cannot be distinguished. The next bounded P0 gate is a directional-texture descriptor validation using only existing LEVEL00 data.
 
 ## P1 — required for characters and functional gameplay
 

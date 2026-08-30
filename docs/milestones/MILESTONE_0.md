@@ -12,6 +12,9 @@
 - [x] Texture formats identified
 - [x] Model formats investigated
 - [x] First LEVEL00 world geometry reconstruction exported and validated
+- [x] Descriptor-118 glTF coordinate and front-face conventions validated
+- [x] First deterministic native TIM2 subset decoded and independently pixel-verified
+- [ ] LEVEL00 target V orientation visually validated
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated
