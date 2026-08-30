@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Milestone 0 - Section Asset Architecture
+Milestone 0 - Gameplay Asset Architecture
 
 ## Milestone 0 - Discovery
 
-The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. GENERAL, FE_LANG, FE_TV, and FE_MAIN have been extracted into separate ignored directories after list-only safety audits. The evidenced boot path is GENERAL → FE_LANG → FE_TV → FE_MAIN, with FE_TV → FE_LOAD used by its display tester. FE_MAIN explicitly dispatches to 16 campaign section names, six arena sections, and FE_XTRA. The other 26 PAKs have not been extracted.
+The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. GENERAL, FE_LANG, FE_TV, FE_MAIN, and LEVEL00 have been extracted into separate ignored directories after list-only safety audits. The evidenced path GENERAL → FE_LANG → FE_TV → FE_MAIN → LEVEL00 now reaches the first mapped gameplay section; LEVEL00's entity graph explicitly transitions to LEVEL01. The other 25 PAKs have not been extracted.
 
 ## Environment
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers have been identified. FE_LANG/FE_TV/FE_MAIN establish a repeated self-contained section-package architecture: WORLD state scripts and resource indexes, per-language localization snapshots and TIM2-plus-DIM fonts, plus duplicated `GENERIC_GRAPHICS`. FE_MAIN adds confirmed MPEG-2 `.PSS` attract videos, a large UI/state graph, and script-driven 2D emitters. MTL is structurally parsed as a resource/property container, and DIM has a confirmed 256-entry measurement layout with likely glyph-advance semantics. Geometry, skeletal animation, world/scene, and inner audio formats remain unidentified.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 confirms gameplay TIM2 textures, including 4-bit mipmapped environment pages, and exposes the first proprietary world, character, bone/bind, animation, cutscene, entity, collision, navigation, terrain, and particle families. Their architectural roles are mapped, not fully decoded. MTL remains a stable resource/property container across front-end and gameplay sections. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
 
 ## Executable Analysis
 
@@ -37,12 +37,13 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - Was the source physical copy sold in European or Australian packaging? The disc data is identical for both catalogued variants.
 - What executable and archive revisions exist across releases?
 - Which PAK operations are safely supported beyond extraction?
-- Which additional formats and content categories are stored in the level, arena, and remaining front-end PAK archives?
+- Which additional formats and content categories recur or differ across the other level, arena, and remaining front-end PAK archives?
 - What does `FNT_END` mean, and how are `DATA\ENV` logical paths resolved to disc PAKs?
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- Do gameplay sections reuse the script/MTL/TIM2 section snapshot architecture, and which formats carry geometry, skeletons, animation, placement, and 3D rendering data?
+- What are the boundaries and references inside `MODELS.BIN`, and how do they correlate with AAB/MTL/environment textures?
+- What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
 - Where are the `fe_splash` and `level99/testlevel` sections stored?
 - What are the actual codecs and schemas for the `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries?
@@ -50,4 +51,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-In a separately authorized task, list `DATA/LEVEL00.PAK` and, if coherent, extract it into an isolated ignored directory. FE_MAIN explicitly dispatches to `level00`; it is the shortest evidenced route for testing the section-snapshot model against gameplay assets.
+Perform a bounded read-only structural reverse-engineering task on LEVEL00 `MODELS.BIN`: establish its header, segment/offset table, bounds, and references to `MODELS.AAB` and MTL resources. Do not write a converter or renderer until those structures are evidenced.

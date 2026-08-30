@@ -9,12 +9,12 @@
 - [x] PAK archives identified
 - [ ] PAK archives successfully unpacked
 - [x] Extracted file extensions catalogued
-- [ ] Texture formats identified
-- [ ] Model formats investigated
-- [ ] Animation formats investigated
+- [x] Texture formats identified
+- [x] Model formats investigated
+- [x] Animation formats investigated
 - [ ] Audio formats identified
-- [ ] Level/scene data investigated
-- [ ] Scripts/config/data tables investigated
+- [x] Level/scene data investigated
+- [x] Scripts/config/data tables investigated
 - [ ] Main ELF loaded into Ghidra
 - [ ] Function discovery/export investigated
 - [ ] PS2Recomp compatibility investigated

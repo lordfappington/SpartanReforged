@@ -91,3 +91,22 @@
 - Exact duplicated content includes 12 FE_MAIN files found in FE_TV and seven found in FE_LANG by hash. Seven UI tables exactly match FE_TV, and shared generic icons/remapping resources remain identical across all three sections.
 - The self-contained-section model is strengthened: FE_MAIN embeds its script, declarations, localized text, fonts, UI/effect textures, generic assets, and both large videos. The phase is now `Milestone 0 - Section Asset Architecture`; broad format/unpacking milestones remain incomplete.
 - No other PAK was opened. No asset conversion/modification, Ghidra, PS2Recomp, or installation occurred.
+
+## 2026-08-30 - LEVEL00.PAK gameplay architecture mapped
+
+- Verified `DATA/LEVEL00.PAK`: 13,652,833 bytes, SHA-256 `e708df44976b93b4d0fa355f850e387f04dee580b27f927f4e906f1f9d095d80`, `PAK1` version 1, 640 entries, and `0x800` alignment.
+- Ran QuickBMS list-only first. Every ordered path and extent passed traversal, malformed/reserved-name, duplicate, collision, alignment, overlap, and bounds checks; the final extent ends exactly at archive EOF.
+- Extracted only LEVEL00 to ignored `game-extracted/pak/LEVEL00`. All 640 paths and sizes matched, no extra appeared, total output is 12,890,963 bytes, and the source hash remained unchanged.
+- Catalogued 23 extensions: 461 ANM, 58 TM2, 46 TXT, 39 PSQ, 7 BNS, 7 DIM, 4 MPH, 2 BIN, 2 SAM, and one each AAB/BIG/COL/DAT/ENT/FLP/HMP/IND/INS/MTL/MVR/PSW/PT2/STL. Nineteen extensions are new relative to the three front-end sections.
+- Confirmed 461 `anm1` animation resources and two `sam2` cutscene animation containers. Embedded metadata identifies impact timing/offsets, loop/ladder behavior, weapon attachments, and cutscene tracks; binary track schemas remain unknown.
+- Identified PSQ, PSW, MPH, and BNS character families. The Spartan body is the richest set: standard geometry candidate, multiweighted candidate, face candidate, BNS, two textures, and display flags. Five NPC BNS files are byte-identical, supporting a shared humanoid compatibility class.
+- Mapped the seven-file `MODELS.*` world family. `MODELS.BIN` is the P0 world-geometry candidate; AAB likely carries spatial bounds, MTL provides 55 resource records, MVR embeds `Brazier_Dark.CAS` source identities, and FLP/INS/STL remain unresolved companions.
+- Confirmed LEVEL00 TIM2 use across environment, characters, particles, UI, and fonts. Gameplay adds image types 3/4/5, multiple CLUT modes, 16/256 colors, and four-mip 4-bit indexed environment pages. Only `NON_LINEAR_REMAPPING.TM2` matches the front-end trees by hash.
+- Recovered a 227-identifier string area in `TEST.ENT` covering player start/checkpoint, spawners/squads/character zones, cameras and relays, SAM filenames, particles, an interactive brazier, voice/music IDs, and a transition to LEVEL01.
+- Proved that the seven u32 values in `CHAR_TYPES.BIN` resolve through identical NAMES tables to the seven packaged model families: Spartan, Hoplite, Swordsman, Athenian Archer, Castor, Pollux, and Leonidas.
+- Identified the OLFS collision/navigation family: `PLANES.COL`, `WAYPTS3D.PT2`, and `WAYPT_INDICES.IND`. Together with ENT spawners/zones and the 75-character BATTLE combat/AI tuning table, these are high-value crowd-system targets.
+- Mapped the readable particle dependency chain from eight APP_* TIM2 pages through same-named page-description TXT files, base material/effect lists, `MARS_SMOKE2` emitter parameters, and compiled `SAMPLES.DAT` candidate.
+- Confirmed audio is external to LEVEL00: ENT and localization files provide symbolic voice/music references, but no audio payload or E_DATA mapping is packaged.
+- Assessed LEVEL00 as a suitable initial gameplay Rosetta Stone because it includes every major visual/gameplay category except audio payloads and provides several explicit cross-file joins. Recommended next target is bounded structural analysis of `MODELS.BIN`.
+- Advanced the phase to `Milestone 0 - Gameplay Asset Architecture` and marked texture, model investigation, animation investigation, level/scene investigation, and scripts/config/data-table investigation as supported. All-PAK unpacking and audio remain incomplete.
+- No other PAK was opened. No conversion, rendering, asset modification, Ghidra, PS2Recomp, speculative parser, or installation occurred.

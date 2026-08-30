@@ -14,22 +14,30 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** PAK1, 32 entries safely listed and extracted in isolation; contains language tables, font resources, front-end script/material data, textures, and memory-card icon assets.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** PAK1, 79 entries safely listed, extracted, inventoried, analyzed, and compared with FE_LANG.
 - `DATA/FE_MAIN.PAK` — **CONFIRMED:** PAK1, 114 entries safely listed, extracted, inventoried, and compared with FE_LANG/FE_TV; adds MPEG-2 `.PSS` video and a large main-menu script.
-- `DATA/LEVEL*.PAK`, `DATA/ARENA*.PAK`, the other two `DATA/FE_*.PAK` files, and `IOP/GENERAL.PAK` — **CONFIRMED:** PAK1 containers; contents not listed.
+- `DATA/LEVEL00.PAK` — **CONFIRMED:** PAK1, 640 entries safely listed, extracted, inventoried, and architecture-mapped; first gameplay sample.
+- The other `DATA/LEVEL*.PAK`, `DATA/ARENA*.PAK`, the other two `DATA/FE_*.PAK` files, and `IOP/GENERAL.PAK` — **CONFIRMED:** PAK1 containers; contents not listed.
 
 ## TEXTURES
 
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** 12 single-picture, 256-color TIM2 textures from 16×16 through 256×256; includes eight font atlases.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** 35 single-picture, 8-bit indexed TIM2 textures from 16×16 through 512×512; includes 32 font atlases.
 - `DATA/FE_MAIN.PAK` — **CONFIRMED:** 68 single-picture, one-mip, 8-bit indexed TIM2 textures from 16×16 through 512×512; 32 font atlases plus UI cards, maps, icons, logos, and effect pages.
+- `DATA/LEVEL00.PAK` — **CONFIRMED:** 58 one-picture TIM2 resources using image types 3/4/5, CLUT types 0/1/3, 16/256 colors, and one/four mip levels; covers world, character, particle, UI, and font resources.
 - Other `DATA/FE_*.PAK`, `DATA/LEVEL*.PAK`, and `DATA/ARENA*.PAK` files — **UNKNOWN candidates:** not opened.
 
 ## MODELS
 
-- `DATA/LEVEL*.PAK` and `DATA/ARENA*.PAK` — **UNKNOWN candidates:** no model format has been identified.
+- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 LIKELY:** primary world-geometry/render payload; next structural target.
+- `LEVEL00/.../WORLD/MODELS.AAB` — **P0 LIKELY:** bounds/spatial companion naming `master_L00A`.
+- LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
+- `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
+- Model roles are identified by strong evidence; vertex/index/UV/normal/weight schemas remain unknown.
 
 ## ANIMATIONS
 
-- `DATA/LEVEL*.PAK` and `DATA/ARENA*.PAK` — **UNKNOWN candidates:** no animation format has been identified.
+- LEVEL00 `.ANM` — **CONFIRMED role / P1:** 461 `anm1` character/action clips with impact, loop, ladder, timing, and weapon-attachment metadata; track encoding unknown.
+- LEVEL00 `.BNS` — **LIKELY / P1:** seven `bns2` bone/bind candidates; five files form an exact humanoid compatibility group.
+- LEVEL00 `.SAM` — **CONFIRMED role / P1:** two `sam2` cutscene animation containers directly referenced by ENT.
 
 ## LEVEL DATA
 
@@ -38,7 +46,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** boot-time language-selection front end; `SECTIONS.TXT` declares it as `start_section`, and its script loads `fe_tv` after selection.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** video-mode/progressive-scan front end reached from FE_LANG; conditionally loads `fe_main` or `fe_load`.
 - `DATA/FE_MAIN.PAK` — **CONFIRMED:** main-menu runtime section; dispatches to `level00`–`level14`, `level07d`, six arena sections, and `fe_xtra`.
-- `DATA/LEVEL00.PAK` — **HIGH-VALUE NEXT TARGET:** direct FE_MAIN destination and first candidate for comparing gameplay asset architecture with the established front-end section model.
+- `DATA/LEVEL00.PAK` — **CONFIRMED:** first mapped gameplay section; explicitly transitions to `LEVEL01` through its entity graph.
 
 ## AUDIO
 
@@ -58,6 +66,10 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `FE_TV.PAK/DATA/ENV/FE_TV/WORLD/FE.MTL` — **HIGH-VALUE FORMAT TARGET:** confirmed length-delimited resource/property container; numeric child-property meanings remain unknown.
 - `FE_MAIN.PAK/DATA/ENV/FE_MAIN/WORLD/FE_MAIN.TXT` — **CONFIRMED:** large main-menu state graph binding 35 TIM2 filenames, 13 emitters, symbolic SFX/music, MPEG playback, save/profile/unlock logic, and gameplay/front-end section exits.
 - `FE_MAIN.PAK/DATA/ENV/FE_MAIN/WORLD/FE.MTL` — **CONFIRMED structure:** 45-record resource table; every shared FE_LANG/FE_TV record is byte-identical, strengthening the stable declaration/property model.
+- `LEVEL00.PAK/DATA/ENV/LEVEL00/ENTITIES/TEST.ENT` — **P1 TARGET:** binary entity/state graph with a recovered string area for checkpoints, spawns, squads, cameras, cutscenes, particles, audio, and section transition.
+- `LEVEL00.PAK/DATA/BATTLE.TXT` — **CONFIRMED:** global battle/combat/crowd-AI tuning snapshot with 75 character sections.
+- `LEVEL00.PAK/.../CHAR_TYPES.BIN` + `DATA/TEXT/*/NAMES.TXT` — **CONFIRMED JOIN:** seven numeric IDs resolve to the seven packaged character families.
+- `LEVEL00.PAK/DATA/ENV/LEVEL00/OLFS/*` — **P1 TARGETS:** collision-plane and 3D waypoint/connectivity candidates.
 - Front-end `FONT*.DIM` — **HIGH-VALUE FORMAT TARGET:** confirmed 256-entry u16 measurement structure; exact character mapping and sentinel semantics remain unknown.
 - Future executable string targets: `start_section`, `FNT_END`, `STD_LEVEL`, `SOUND_GRID`, `EFFECT_NAME`, and `DATA\ENV`.
 - `E_DATA.PAK` entries below `DATA\SOUND\SCRIPTS` — **LIKELY:** localized or compiled sound scripts based on path names.
@@ -76,3 +88,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
+- Exact schemas for LEVEL00 world BIN/AAB/HMP, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data.
+- Roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.
