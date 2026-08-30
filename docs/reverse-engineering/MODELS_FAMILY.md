@@ -191,4 +191,4 @@ The static-world path is directly evidenced. The FLP/MVR/INS runtime relationshi
 
 ## Next research gate
 
-Do not write a renderer/importer yet. The next bounded task should prove the BIN position-W topology rule and identify the V2-16 scale/bias and V4-8 attribute meaning. A real geometry parser becomes justified only after triangle assembly and attribute semantics are repeatably validated.
+Subsequent bounded work proved the BIN position-W topology rule and identified V2-16 as signed normalized Q4.12 with zero global bias. A first read-only geometry exporter is now justified; see [MODELS_TOPOLOGY.md](MODELS_TOPOLOGY.md) and [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). Rendering, full material reconstruction, and V4-8 interpretation remain separate later tasks.

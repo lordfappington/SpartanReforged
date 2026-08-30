@@ -85,7 +85,7 @@ The remainder parses end-to-end as 2,128 repeated PS2 VIF batches. No recovery s
 | 1 | `STCYCL 1,1` | none | One-to-one source/destination vector cycle | **CONFIRMED command** |
 | 2 | `UNPACK V4-32`, NUM=2 | 32 bytes | Two identical control vectors: packet span, vertex count, `0x8000`, zero | **CONFIRMED layout; field semantics LIKELY** |
 | 3 | `UNPACK V4-32`, NUM=N | `16N` bytes | XYZ float positions plus u32 control value | **CONFIRMED layout; position role LIKELY/strong** |
-| 4 | `UNPACK V2-16`, NUM=N | `4N` bytes | Signed two-component attribute, probably UV | **CONFIRMED layout; UV role LIKELY** |
+| 4 | `UNPACK V2-16`, NUM=N | `4N` bytes | Signed Q4.12 normalized UV pair | **CONFIRMED for LEVEL00** |
 | 5 | `UNPACK V4-8`, NUM=N | `4N` bytes | Unsigned packed four-component attribute; fourth byte is always `0x80` | **CONFIRMED layout; semantic role UNKNOWN** |
 | 6 | `MSCALF 0` | none | Execute/continue VU microprogram at address zero with flush | **CONFIRMED command and VU relationship** |
 | 7 | zero to two `NOP` words | none | 16-byte batch/block padding | **CONFIRMED** |
@@ -106,7 +106,7 @@ Pinned PCSX2 GS source defines packed XYZ ADC through the `0x8000` bit and shows
 - The position W word is always either zero or `0x8000`.
 - The first two vertices of every batch carry `0x8000`; additional `0x8000` values occur inside batches.
 - Counts are 46,336 zero control words and 41,978 `0x8000` control words.
-- Signed V2-16 ranges are U `-32763..32734` and V `-32758..32757`; scaling/wrapping is unknown.
+- Signed V2-16 ranges are U `-32763..32734` and V `-32758..32757`. They decode as signed Q4.12 normalized coordinates: `u = int16(raw_u) / 4096`, `v = int16(raw_v) / 4096`. Texture-space coordinates are obtained by multiplying by the bound TIM2 width/height. There is no global half-texel bias. Values outside `0..1` are intentional and must be preserved for material sampler handling. Full evidence is in [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md).
 - V4-8's fourth component is `0x80` for all 88,314 vertices; the first three components remain semantically unresolved.
 
 Complete control-pattern and geometric analysis now establishes implicit triangle strips. `0x8000` suppresses the primitive ending at that vertex while the vertex remains in the rolling three-vertex history; zero emits. It does not reset the strip. Parity follows every submitted source vertex, including suppressed vertices. This yields exactly **46,336** triangles, equal to the zero-W count, with no bad index references, three exact zero-area triangles, and eight doubled-area values at or below `1e-6`.
@@ -153,9 +153,9 @@ Examples include index 5 → `002`, 7 → `BASEWALL`, 12 → `TEMPLE_FLAGS`, 33 
 
 ## Tentative schema status
 
-The global header, descriptor table, block boundaries, VIF command grammar, attribute stream widths, numeric MTL binding, AAB static-descriptor partition, and triangle topology are established strongly enough for a bounds-checked **container/topology parser**.
+The global header, descriptor table, block boundaries, VIF command grammar, attribute stream widths, numeric MTL binding, AAB static-descriptor partition, triangle topology, and V2-16 UV decode are established strongly enough for a bounds-checked first geometry exporter.
 
-Readiness is **TOPOLOGY READY**, not geometry-ready. UV scaling/wrapping and the V4-8 attribute meaning are still required before textured output could be considered faithful. The absent VU microprogram also leaves literal W-to-GIF ADC routing as a strongly supported inference rather than a directly observed dataflow.
+Readiness is **GEOMETRY READY** for a first read-only export that preserves source coordinates, winding, material groups, and signed normalized UV values. This does not mean the format is complete: V4-8 semantics, exact MTL sampler/property states, target-renderer V orientation/front-face conversion, and the literal VU-to-GS dataflow remain unresolved. V4-8 is not required to export positions, topology, material assignment, and usable UVs.
 
 ## Outstanding questions
 
@@ -164,6 +164,7 @@ Readiness is **TOPOLOGY READY**, not geometry-ready. UV scaling/wrapping and the
 - What does descriptor field `+0x0c` (11/0) control?
 - Are the two block constants `0x45` VU layout/program identifiers, and where is the actual VU microprogram supplied?
 - Where is the VU microprogram that routes the strongly ADC-like position W field to the GS?
-- What scale/bias converts the V2-16 pair to UV coordinates?
+- Which MTL properties select repeat, mirror, or clamp for each material?
+- Does the VU program multiply Q4.12 values by texture dimensions and 16 exactly as inferred before writing GS UV, or perform equivalent rounding/offset operations?
 - Is V4-8 normal, color/lighting, or another packed attribute?
 - How do the unindexed special blocks obtain transforms/instances at runtime?

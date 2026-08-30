@@ -135,3 +135,17 @@
 - Validated AAB placement independently of topology: all vertices for all 1,224 static descriptors lie inside their associated decoded cell bounds. Each descriptor continues to select exactly one ordered MTL record, and no triangle crosses batch, descriptor, or material boundaries.
 - Added deterministic read-only `models_topology_probe.py`, local per-batch/report outputs, `MODELS_TOPOLOGY.md`, and updated format/target/priority/status documentation. Readiness advanced to **TOPOLOGY READY** and the phase to `Milestone 0 - World Geometry Topology Reverse Engineering`.
 - No PAK was opened, no extracted game data was modified, and no geometry was exported/rendered. No Ghidra, PS2Recomp, Blender, Noesis, installation, or push occurred.
+
+## 2026-08-30 - LEVEL00 MODELS UV mapping established
+
+- Reverified the ignored canonical inputs: MODELS.BIN SHA-256 `8d091d4104fa556ccff90d78d3feb9ea1b656356f2fabc667a8457c1382e4cf3` and MODELS.MTL SHA-256 `57283516fc3cc8589eec4817cf8c25dc3ff0cc2185e4ff99e262fa6f3a4a54b2`. All 58 LEVEL00 TIM2 hashes matched the existing inventory.
+- Surveyed all 88,314 V2-16 pairs. Signed ranges are U `-32763..32734` and V `-32758..32757`; negatives account for 12,502 U and 7,852 V values. Signed edge deltas are far more coherent than unsigned reinterpretation.
+- Confirmed V2-16 as signed normalized Q4.12: `u = int16(raw_u) / 4096`, `v = int16(raw_v) / 4096`. Bound texture dimensions then convert normalized coordinates to texels. Divisors 16–1024 and fixed-texel interpretations fail cross-dimension checks.
+- Strengthened the descriptor → MTL record → resource stem/alias → TIM2 chain for 32 of 39 used MTL records: 29 direct and three explicit alias bindings. The bound set covers 83,959 vertices, 42,686 triangles, and texture dimensions from 16×16 through 256×256.
+- Established zero global bias. Exact endpoints/grid alignments dominate the evidence, with 40,320 exact texel-grid hits versus 8,663 half-texel-grid hits; asset-specific insets are not a universal half-texel rule.
+- Confirmed intentional out-of-range coordinates: 21 of 32 bound material groups and 13,970 of 42,686 bound triangles leave one `0..1` extent. Walls, temple surfaces, and other architectural materials span multiple periods; exact MTL repeat/mirror/clamp states remain unknown.
+- Evaluated every emitted triangle after decode. Exactly 1,463 of 46,336 have zero UV area, and no additional nonzero triangles fall below the `1e-8` near-area threshold. Strongly bound ordinary textures account for only 339 of these.
+- Found 16,487 differing-UV repeated-position pair combinations in strongly bound materials, including 312 exact integer-period pairs, independently supporting seams and wrap transitions.
+- Added deterministic read-only `models_uv_probe.py` and local aggregate reports. Syntax passed and repeated output hashes were identical; no raw vertex/UV table or game asset was committed.
+- Advanced readiness to **GEOMETRY READY** and the phase to `Milestone 0 - World Geometry UV Reverse Engineering`. V4-8 does not block a first position/topology/material/UV export; exact MTL sampler semantics and target coordinate/V conventions remain later validation work.
+- No PAK was opened, no game data was modified, and no geometry was exported or rendered. No Ghidra, PS2Recomp, Blender, Noesis, installation, or push occurred.

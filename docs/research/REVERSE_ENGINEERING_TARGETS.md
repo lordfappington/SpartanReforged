@@ -27,14 +27,14 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## MODELS
 
-- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED container/VIF/topology; TOPOLOGY READY:** 1,338 blocks contain 2,128 batches and 88,314 matching position/V2-16/V4-8 entries. W `0x8000` suppresses the current strip primitive while retaining history; zero emits exactly 46,336 triangles. The next gate is V2-16/V4-8 attribute semantics.
+- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED container/VIF/topology/UV; GEOMETRY READY:** 1,338 blocks contain 2,128 batches and 88,314 matching position/V2-16/V4-8 entries. W `0x8000` suppresses the current strip primitive while retaining history; zero emits exactly 46,336 triangles. V2-16 is signed normalized Q4.12 (`int16 / 4096`) with zero global bias and intentional out-of-range tiling coordinates. V4-8 remains unknown but does not block a first geometry export.
 - `LEVEL00/.../WORLD/MODELS.AAB` — **P0 CONFIRMED structure/reference/bounds:** complete seven-level 4-way spatial tree; leaf lists enumerate static BIN descriptors 114–1337 exactly once, and every referenced descriptor's vertices fit its associated cell bounds.
 - `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join:** BIN descriptor high-u16 values select ordered resource records; 39 record indices are used.
 - `LEVEL00/.../WORLD/MODELS.STL` — **CONFIRMED lookup structure:** 32 slots, eight of which select MTL particle records 40–47.
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions and stream widths are now located, but the ADC/restart/winding rule, V2-16 UV scale, V4-8 attribute meaning, and character vertex/index/weight schemas remain unknown.
+- World positions, ADC strip topology, source winding, material assignment, and V2-16 UV mapping are established. Target-specific handedness/front-face and V orientation require an explicit exporter convention; V4-8 meaning, exact MTL sampler properties, and character vertex/index/weight schemas remain unknown.
 
 ## ANIMATIONS
 
@@ -91,5 +91,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
-- Exact packed-attribute semantics for LEVEL00 world BIN, remaining AAB leaf fields, HMP layout, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data. LEVEL00 BIN connectivity/topology is established; direct VU routing and target-renderer global front-face convention remain open.
+- V4-8 packed-attribute semantics for LEVEL00 world BIN, exact per-material MTL sampler states, remaining AAB leaf fields, HMP layout, character PSQ/PSW/MPH/BNS, ANM/SAM tracks, ENT records, and OLFS COL/PT2/IND data. LEVEL00 BIN connectivity/topology and V2-16 UVs are established; direct VU routing and target-renderer coordinate/front-face/V convention remain open.
 - Runtime roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.

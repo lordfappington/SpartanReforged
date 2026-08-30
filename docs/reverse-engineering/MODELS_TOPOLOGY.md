@@ -4,9 +4,9 @@ This analysis was completed on 2026-08-30 against the already-extracted canonica
 
 ## Result and readiness
 
-**Readiness: TOPOLOGY READY.** The supported reconstruction is an implicit triangle strip per VIF batch. A position W word of `0x8000` suppresses the primitive ending at that vertex while retaining the vertex in the rolling strip history. It does not reset history. A zero W word emits the triangle. Alternating parity follows every submitted source vertex, including suppressed vertices.
+**Topology result: CONFIRMED. Current overall readiness: GEOMETRY READY after the subsequent UV investigation.** The supported reconstruction is an implicit triangle strip per VIF batch. A position W word of `0x8000` suppresses the primitive ending at that vertex while retaining the vertex in the rolling strip history. It does not reset history. A zero W word emits the triangle. Alternating parity follows every submitted source vertex, including suppressed vertices.
 
-This establishes connectivity and relative winding. It does **not** make the format geometry-ready: V2-16 scaling/wrapping and V4-8 semantics remain unresolved, MTL property semantics are partial, and the VU program that routes the field to the GS was not present in these batches. The absolute front-face convention is also not observable from GS behavior because the GS has no conventional back-face culling state; reversing every triangle remains a global convention choice.
+This establishes connectivity and relative winding. A later bounded analysis confirmed V2-16 as signed Q4.12 normalized UV and advanced the aggregate format to **GEOMETRY READY**; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). V4-8 semantics and MTL property semantics remain partial, and the VU program that routes the fields to the GS was not present in these batches. The absolute front-face convention is also not observable from GS behavior because the GS has no conventional back-face culling state; reversing every triangle remains a target/export convention choice.
 
 ## Canonical inputs
 

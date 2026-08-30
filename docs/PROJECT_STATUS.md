@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - World Geometry Topology Reverse Engineering
+Milestone 0 - World Geometry UV Reverse Engineering
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 `MODELS.BIN` is segmented into 1,338 descriptor-indexed PS2 VIF blocks containing 2,128 batches and 88,314 vertex instances. Its implicit ADC-controlled strip topology is established: W `0x8000` suppresses without resetting history, and 46,336 zero-W vertices emit exactly 46,336 triangles. Numeric MTL binding and the AAB quadtree's exact 1,224-descriptor static-world mapping are established, including 1,224/1,224 descriptor bounds containment. Readiness is **TOPOLOGY READY**, not geometry-ready: UV scaling/wrapping and V4-8 semantics still block faithful textured geometry. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 `MODELS.BIN` is segmented into 1,338 descriptor-indexed PS2 VIF blocks containing 2,128 batches and 88,314 vertex instances. Its implicit ADC-controlled strip topology is established: W `0x8000` suppresses without resetting history, and 46,336 zero-W vertices emit exactly 46,336 triangles. Numeric MTL binding and the AAB quadtree's exact 1,224-descriptor static-world mapping are established, including 1,224/1,224 descriptor bounds containment. V2-16 is confirmed as signed normalized Q4.12 UV (`int16 / 4096`) with zero global bias; intentional out-of-range coordinates support tiled materials. Readiness is **GEOMETRY READY** for a first read-only export. V4-8, MTL sampler properties, and target-specific coordinate/V conventions remain unresolved but do not block exporting positions, topology, material groups, and source UVs. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
 
 ## Executable Analysis
 
@@ -42,7 +42,7 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- What scale/bias applies to MODELS.BIN's V2-16 attribute, and what does its unsigned V4-8 attribute encode?
+- What does MODELS.BIN's unsigned V4-8 attribute encode, and which MTL properties select repeat/mirror/clamp and other render states?
 - What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
 - What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Perform one bounded read-only MODELS.BIN attribute task: determine the V2-16 texture-coordinate scale/bias/wrap convention and identify the V4-8 field using numeric correlations and existing MTL/TIM2 evidence. Do not export or render geometry.
+Implement one bounded, read-only first MODELS geometry exporter using the confirmed positions, ADC topology, descriptor/MTL groups, and signed Q4.12 UVs. Preserve source data, make coordinate/front-face/V conversion explicit, perform no rendering, and leave V4-8 and unknown material properties optional/uninterpreted.
