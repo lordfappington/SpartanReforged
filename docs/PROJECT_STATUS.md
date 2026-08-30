@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - MODELS Render Semantics Investigation
+Milestone 0 - Effect Attribute / Blend Reverse Engineering
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Its complete confirmed texture assembly uses 32 textured materials, seven explicit placeholders, and 30 unique native images. Blender imports every polygon, material, image, and UV layer with no broken/cross-bound link. The pipeline is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**, not native game rendering or a complete visual reconstruction. A 55-record MTL property matrix makes child type 2 a strong alpha/render-family discriminator. An opt-in GS-derived double-sided plus conservative glTF-BLEND experiment removes culling holes and opaque foliage regions, but `CLOUD` remains a fully-opaque-pixel shell whose native blend/attribute semantics are unresolved.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Its complete confirmed texture assembly uses 32 textured materials, seven explicit placeholders, and 30 unique native images. Blender imports every polygon, material, image, and UV layer with no broken/cross-bound link. The pipeline is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**, not native game rendering or complete visual reconstruction. All 88,314 V4-8 records have now been surveyed: bytes 0–2 are likely PS2 vertex color/light modulation, while byte 3 is globally full-scale `0x80`. CLOUD's V4 gradient explains its dark dome/bright ring but cannot supply transparency; its exact type-2-selected GS blend/depth/order state remains the blocker.
 
 ## Executable Analysis
 
@@ -42,7 +42,7 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- What does MODELS.BIN's unsigned V4-8 attribute encode, how do MTL type-2 values 1–5 select native render/blend families, and what are the alpha-test threshold and repeat/mirror/clamp rules?
+- How does Spartan route likely V4-8 vertex color/light data through its VU program, how do MTL type-2 values 1–5 select native GS blend/depth families, and what are the alpha-test threshold and repeat/mirror/clamp rules?
 - What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
 - What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Determine whether MODELS.BIN V4-8 and/or MTL type-2 values supply the color/alpha/blend inputs required by `CLOUD` and special effects. Keep the study structural and bounded to existing LEVEL00 data; do not broaden into complete MTL or character reverse engineering.
+Perform a bounded Ghidra/VU-path investigation of the native render-state mapping for MTL type-2 values 2–5, beginning with CLOUD. Recover the GS `ALPHA` operands/fixed factor and relevant depth-write/order behavior without broadening into complete engine or character analysis.

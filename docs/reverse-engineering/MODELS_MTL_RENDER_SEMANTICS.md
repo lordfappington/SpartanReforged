@@ -88,7 +88,7 @@ The false positives are meaningful, not noise: `CLOUD`, `GIBS`, and `MEDUSA_TOWE
 
 `CLOUD` is MTL index 31, used by one descriptor (48), 1,957 streamed vertices, and 1,728 triangles. Its properties are type 21 value 1, type 2 value 5, resource `CLOUD`, and type 19 value 0. Its native 256×256 decode has alpha 255 at every pixel. The previous statement that it was a “partial-alpha texture” was incorrect and is superseded here.
 
-The white level-scale shell remains opaque under standard glTF `BLEND` because source alpha is 1.0. Resolving it requires the native type-2 value-5 blend intent, a vertex/packet attribute such as unresolved V4-8, texture-color-driven logic, draw ordering, or some combination. No arbitrary opacity was introduced.
+The V4-8 survey resolves part of this question. CLOUD has six structured V4 tuples forming a dark upper dome and brighter warm lower ring, but byte 3 is `0x80` for all 1,957 vertices. In the common PS2 `/128` convention that is full vertex alpha. Texture alpha and vertex alpha are therefore both full: ordinary source-alpha blending cannot make the shell transparent. Bytes 0–2 are **LIKELY** RGB/color modulation; transparency itself is **LIKELY** supplied by a type-2-selected GS blend/fixed-factor and depth/order family. Exact state remains unknown. See [MODELS_V4_ATTRIBUTES.md](MODELS_V4_ATTRIBUTES.md).
 
 ### Vegetation
 
@@ -115,6 +115,14 @@ The complete controlled export remains exactly 1,338 descriptors, 2,128 batches,
 
 The experiment removes the systemic culling holes and exposes coherent architecture/terrain. It improves foliage/effect transparency. `CLOUD` remains a white occluding shell, exactly as expected from its opaque pixels. Standard glTF blend ordering/equations are not a faithful substitute for arbitrary PS2 GS `ALPHA` state.
 
+## V4 correlation and GS blend hypotheses
+
+Every geometry record has a paired V4-8 tuple. Byte 3 is globally `0x80`; bytes 0–2 vary coherently by material and space. Type-2 values 3 (`APP_BLOOD_02`, `APP_FIRE_BASE`, `RING_GLOW`) and 4 (`FLARE_NOZREAD`) use the neutral tuple `(127,127,127,128)`, while type-2 value 5 spans both neutral and highly modulated resources. `GRKTREE` (value 2) and `GREENERY` (value 5) retain partial source texture alpha and full vertex alpha, so their transparency is texture-alpha driven even though V4 supplies likely tint/lighting.
+
+The generic GS blend equation is `(A - B) * C + D`, commonly described for color as `(Cs - Cd) * alpha + Cd`. With CLOUD source and vertex alpha both full, that standard equation reduces to opaque source color. Plausible families that can expose the destination instead include additive source color (`Cs + Cd`) or fixed-factor additive color (`Cs * FIX + Cd`). Multiply/subtractive interpretations are weaker against the observed bright cloud-ring intent. This ranking is structural and diagnostic only: no MTL property has been mapped directly to GS `ALPHA` operands or `FIX`.
+
+A local Blender diagnostic exported V4 as glTF-safe `COLOR_0 = min(byte / 128, 1)`. CLOUD values require no clamp. Opaque texture-times-color retained the shell; transparent-plus-emission additive approximations exposed the complete scene while retaining the spatial ring. Geometry stayed at 46,336 polygons. The result explains the failure mode but is not a native mapping and is not a default exporter semantic.
+
 ## Confidence and readiness
 
 | Semantic | Classification | Reason |
@@ -124,7 +132,9 @@ The experiment removes the systemic culling holes and exposes coherent architect
 | type 2 selects an alpha/render family | **STRONG** | 9/9 nonopaque positives, no false negatives, structured values 1–5 |
 | native alpha mask for value 1 | **LIKELY** | binary-alpha `MISCALPHA` anchor only |
 | exact mask threshold/operator | **UNKNOWN** | no correlated threshold field |
+| V4 bytes 0–2 are color/light modulation | **LIKELY** | material and spatial gradients; normal models fail; opt-in COLOR_0 diagnostic is coherent |
+| V4 byte 3 is full vertex alpha | **LIKELY Spartan routing; CONFIRMED generic PS2 scale** | globally `0x80`; ps2sdk/gsKit use 128 as 1.0 |
 | native alpha blend families for values 2–5 | **LIKELY family, UNKNOWN equations** | repeated foliage/effect anchors; opaque false positives prove broader semantics |
 | exact depth-write/additive/multiplicative behavior | **UNKNOWN** | glTF cannot encode arbitrary GS state and the record mapping is incomplete |
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation rather than a proven Spartan submission rule, and the systemic `CLOUD` artifact remains. The next single task should determine whether MODELS.BIN V4-8 and/or MTL type-2 values encode the color/alpha/blend inputs required by `CLOUD` and the effect materials, using structural correlation and the existing render discriminators.
+Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation, and CLOUD's exact GS blend operands/fixed alpha/depth-write/order state remain unknown. The next single task should recover only the native render-state mapping for MTL type-2 values 2–5 from the executable/VU path; that bounded step now requires Ghidra rather than further asset-only correlation.

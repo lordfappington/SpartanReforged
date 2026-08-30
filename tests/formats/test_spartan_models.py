@@ -252,6 +252,29 @@ class SelectionAndExportTests(unittest.TestCase):
         self.assertNotIn("alphaMode", document["materials"][0])
         self.assertEqual(report["alphaModeCounts"], {"OPAQUE": 1})
 
+    def test_v4_color_export_is_opt_in_and_gltf_clamped(self) -> None:
+        model = synthetic_model()
+        raw, raw_buffer, _ = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, {},
+            "source", "source", "source",
+        )
+        colored, colored_buffer, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, {},
+            "source", "source", "source", None, "repeat", "raw", "ps2-rgba",
+        )
+        validate_gltf(raw, raw_buffer)
+        validate_gltf(colored, colored_buffer)
+        self.assertNotIn("COLOR_0", raw["meshes"][0]["primitives"][0]["attributes"])
+        self.assertIn("COLOR_0", colored["meshes"][0]["primitives"][0]["attributes"])
+        self.assertEqual(report["v4ColorMode"], "ps2-rgba")
+        color_accessor = colored["meshes"][0]["primitives"][0]["attributes"]["COLOR_0"]
+        self.assertLessEqual(max(colored["accessors"][color_accessor]["max"]), 1.0)
+        consistency = validate_consistency(
+            colored, colored_buffer, model, model.descriptors,
+            "source", "source", "source", "ps2-rgba",
+        )
+        self.assertTrue(consistency["v4ColorMatchesExactly"])
+
     def test_static_and_special_selection(self) -> None:
         model = synthetic_model(two_materials=True)
         self.assertEqual([item.index for item in select_descriptors(model, "static")], [0])

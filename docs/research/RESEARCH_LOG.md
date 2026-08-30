@@ -1,5 +1,18 @@
 # Research Log
 
+## 2026-08-30 - LEVEL00 MODELS V4 effect attributes analyzed
+
+- Reverified canonical MODELS.BIN (`8d091d4104fa556ccff90d78d3feb9ea1b656356f2fabc667a8457c1382e4cf3`) and MODELS.MTL (`57283516fc3cc8589eec4817cf8c25dc3ff0cc2185e4ff99e262fa6f3a4a54b2`) and confirmed CLOUD remains descriptor 48 / MTL 31 / type-2 value 5 with 1,957 records and 1,728 triangles.
+- Surveyed all 88,314 V4-8 tuples. Bytes 0–2 span 0..255 with 147/147/125 unique values; byte 3 is exactly `0x80` globally. Signed and biased unit-normal hypotheses fit poorly.
+- Established a six-tuple CLOUD gradient: its first three channels darken strongly with height and brighten toward the lower radial ring, while alpha never varies. The native opaque texture multiplied by full vertex alpha remains fully opaque.
+- Correlated V4 behavior by all 39 used materials and MTL type-2 families. Type-2 values 3 and 4 use neutral `(127,127,127,128)`; GRKTREE/GREENERY use texture alpha plus likely tint; value 5 remains a broad mixed render family.
+- Checked primary PS2 sources: ps2sdk and gsKit use component scaling by 128 and document `0x80` as 1.0 alpha; PCSX2/ps2sdk distinguish vertex modulation from programmable GS ALPHA operands. Spartan-specific VU routing remains likely, not confirmed.
+- Added deterministic `models_v4_probe.py` and synthetic tests. The ignored aggregate report contains no raw dump and repeated generation is deterministic.
+- Added opt-in exporter `--v4-color ps2-rgba`; forensic output still omits V4. The glTF-safe `min(byte/128,1)` transform round trip passes for all 88,314 records, and Blender imports 1,338 objects / 46,336 polygons with the color layer intact. Raw values above 128 remain lossless in the parser.
+- Local opaque versus additive-family diagnostics explain CLOUD's shell: opaque texture-times-V4 occludes, while additive approximations expose the scene and retain its ring gradient. They do not establish exact GS operands or FIX.
+- Classified V4 semantics **LIKELY color/light modulation**, CLOUD transparency source **LIKELY native blend/depth family**, and type-2 value 5 **LIKELY broad render family / exact equation UNKNOWN**. Readiness remains **TEXTURED ASSEMBLY VALIDATED**; world reconstruction is not complete.
+- No other PAK was opened, no game asset was changed, and no Ghidra, PS2Recomp, installation, or push occurred.
+
 ## 2026-08-30 - MODELS MTL culling/alpha semantics bounded
 
 - Reverified the canonical 5,952-byte `MODELS.MTL` SHA-256 and parsed all 55 records to EOF. Generated an ignored record/property matrix joined to all 39 geometry-used materials, descriptor/triangle counts, confirmed texture bindings, and decoded alpha classes.

@@ -65,7 +65,7 @@ Descriptor-5 banner validation confirms `--v-mode source` as the modern glTF/Ble
 
 ## Normals, materials, and textures
 
-Normals are omitted by default and no normal-generation option is used in this first pipeline. V4-8 remains retained in the parser but is not exported or interpreted.
+Normals are omitted by default and no normal-generation option is used. V4-8 remains retained raw in the parser. The exporter omits it by default; `--v4-color ps2-rgba` is an explicit diagnostic that emits legal glTF `COLOR_0 = min(byte / 128.0, 1.0)`. This likely represents PS2 vertex color/light modulation, but original VU routing is not confirmed and native values above 128 remain lossless only in the parser.
 
 One placeholder glTF material is created for every selected, geometry-used MTL record. Names retain the source MTL index and name. No metallic, roughness, alpha, blend, or emissive interpretation is claimed. When an image is explicitly attached, an unlit validation material and user-selected wrap mode are emitted; these are target validation settings rather than decoded Spartan material properties.
 
@@ -137,7 +137,7 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 - Three exact geometric degenerates are preserved.
 - 1,463 collapsed-UV triangles are preserved.
 - 632 unreferenced streamed vertices are preserved in glTF accessors; importers may omit them.
-- V4-8 semantics are unknown and absent from glTF.
+- V4-8 bytes 0–2 are likely vertex color/light modulation and byte 3 is globally `0x80`; exact Spartan routing remains unconfirmed. They are absent by default and available only through opt-in diagnostic `COLOR_0`.
 - Exact native MTL sampler/render equations remain unknown. Raw mode retains conservative materials; an opt-in experimental mapping is available for bounded culling/alpha validation.
 - The existing full geometry export references textures by provenance only and does not display them; complete strongly bound texture decode is now available for a later full textured export.
 - Source coordinates and source winding are now confirmed for determinant-positive glTF export using descriptor 118.

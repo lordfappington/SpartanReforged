@@ -2,8 +2,9 @@
 """Export confirmed LEVEL00 MODELS geometry to traceable glTF 2.0.
 
 The exporter writes only beneath a temp directory. It never modifies input
-resources, invents normals, or interprets V4-8 attributes. Optional texture
-decoding creates native-resolution derived PNGs beside the ignored export.
+resources or invents normals. V4-8 is omitted by default and has an explicit
+diagnostic color mode. Optional texture decoding creates native-resolution
+derived PNGs beside the ignored export.
 """
 
 from __future__ import annotations
@@ -46,7 +47,12 @@ TRIANGLES = 4
 REPEAT = 10497
 MIRRORED_REPEAT = 33648
 VALIDATED_MODERN_V_MODE = "source"
-EXPORTER_VERSION = "1.4.0"
+EXPORTER_VERSION = "1.5.0"
+
+
+def decode_v4_color(value: tuple[int, int, int, int]) -> tuple[float, float, float, float]:
+    """Map PS2-range color to legal glTF COLOR_0; retain raw bytes in the model."""
+    return tuple(min(component / 128.0, 1.0) for component in value)
 
 
 @dataclass(frozen=True)
@@ -256,12 +262,15 @@ def build_gltf(
     texture_images: dict[str, str | TextureImageInfo] | None = None,
     sampler_mode: str = "repeat",
     mtl_render_semantics: str = "raw",
+    v4_color: str = "omitted",
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     sampler_values = {"repeat": REPEAT, "mirrored-repeat": MIRRORED_REPEAT}
     if sampler_mode not in sampler_values:
         raise ModelsFormatError(f"unsupported sampler mode {sampler_mode!r}")
     if mtl_render_semantics not in {"raw", "experimental"}:
         raise ModelsFormatError(f"unsupported MTL render semantics mode {mtl_render_semantics!r}")
+    if v4_color not in {"omitted", "ps2-rgba"}:
+        raise ModelsFormatError(f"unsupported V4 color mode {v4_color!r}")
     reverse = winding == "reverse"
     selected_ids = {item.index for item in selected}
     batches_by_descriptor: dict[int, list[Batch]] = {item.index: [] for item in selected}
@@ -409,6 +418,7 @@ def build_gltf(
         output_positions: list[tuple[float, float, float]] = []
         source_uv: list[tuple[float, float]] = []
         output_uv: list[tuple[float, float]] = []
+        output_colors: list[tuple[float, float, float, float]] = []
         indices: list[int] = []
         batch_ranges: list[dict[str, int]] = []
         for batch in descriptor_batches:
@@ -418,6 +428,7 @@ def build_gltf(
             batch_output_positions = [transform_position(value, coords) for value in batch.positions]
             batch_source_uv = [decode_uv(value, "source") for value in batch.uv_raw]
             batch_output_uv = [decode_uv(value, v_mode) for value in batch.uv_raw]
+            batch_output_colors = [decode_v4_color(value) for value in batch.attributes_v4_8]
             batch_triangles = reconstruct_triangles(batch.controls, reverse=reverse)
             for triangle in batch_triangles:
                 indices.extend(vertex_start + value for value in triangle)
@@ -427,6 +438,7 @@ def build_gltf(
             output_positions.extend(batch_output_positions)
             source_uv.extend(batch_source_uv)
             output_uv.extend(batch_output_uv)
+            output_colors.extend(batch_output_colors)
             batch_ranges.append({
                 "globalBatch": batch.global_index,
                 "localBatch": batch.local_index,
@@ -442,6 +454,11 @@ def build_gltf(
         source_uv_min, source_uv_max = bounds(source_uv, 2)
         position_view = builder.add(_pack_floats(output_positions), ARRAY_BUFFER)
         uv_view = builder.add(_pack_floats(output_uv), ARRAY_BUFFER)
+        color_accessor = None
+        if v4_color == "ps2-rgba":
+            color_min, color_max = bounds(output_colors, 4)
+            color_view = builder.add(_pack_floats(output_colors), ARRAY_BUFFER)
+            color_accessor = builder.accessor(color_view, FLOAT, len(output_colors), "VEC4", color_min, color_max)
         component_type = UNSIGNED_SHORT if len(positions) <= 0xFFFF else UNSIGNED_INT
         index_view = builder.add(_pack_indices(indices, component_type), ELEMENT_ARRAY_BUFFER)
         position_accessor = builder.accessor(position_view, FLOAT, len(positions), "VEC3", position_min, position_max)
@@ -449,8 +466,11 @@ def build_gltf(
         index_accessor = builder.accessor(index_view, component_type, len(indices), "SCALAR", [min(indices)], [max(indices)])
         material = model.materials[descriptor.material_id]
         name = f"descriptor_{descriptor.index:04d}_mtl_{descriptor.material_id:02d}_{material.name}"
+        primitive_attributes = {"POSITION": position_accessor, "TEXCOORD_0": uv_accessor}
+        if color_accessor is not None:
+            primitive_attributes["COLOR_0"] = color_accessor
         primitive = {
-            "attributes": {"POSITION": position_accessor, "TEXCOORD_0": uv_accessor},
+            "attributes": primitive_attributes,
             "indices": index_accessor,
             "material": material_map[descriptor.material_id],
             "mode": TRIANGLES,
@@ -458,6 +478,7 @@ def build_gltf(
                 "sourceDescriptorId": descriptor.index,
                 "sourceMaterialId": descriptor.material_id,
                 "batchRanges": batch_ranges,
+                "v4ColorMode": v4_color,
             },
         }
         meshes.append({"name": name, "primitives": [primitive]})
@@ -514,6 +535,8 @@ def build_gltf(
                 "validatedModernVMode": VALIDATED_MODERN_V_MODE,
                 "samplerMode": sampler_mode,
                 "mtlRenderSemantics": mtl_render_semantics,
+                "v4ColorMode": v4_color,
+                "v4ColorFormula": "min(float(component) / 128.0, 1.0)" if v4_color == "ps2-rgba" else "OMITTED",
                 "normals": "OMITTED",
                 "textures": "LOCAL_NATIVE_TIM2_DECODES_ATTACHED" if images else "REFERENCED_IN_EXTRAS_ONLY_NOT_CONVERTED",
             },
@@ -553,6 +576,7 @@ def build_gltf(
         "validatedModernVMode": VALIDATED_MODERN_V_MODE,
         "samplerMode": sampler_mode,
         "mtlRenderSemantics": mtl_render_semantics,
+        "v4ColorMode": v4_color,
         "doubleSidedMaterialCount": sum(bool(item.get("doubleSided")) for item in materials),
         "alphaModeCounts": dict(sorted(Counter(
             item.get("alphaMode", "OPAQUE") for item in materials
@@ -602,7 +626,7 @@ def validate_gltf(document: dict[str, Any], buffer_data: bytes) -> dict[str, Any
         if texture_info and texture_info.get("index", -1) not in range(len(textures)):
             raise ModelsFormatError(f"glTF material {index} has invalid base-color texture")
     component_sizes = {FLOAT: 4, UNSIGNED_SHORT: 2, UNSIGNED_INT: 4}
-    type_widths = {"SCALAR": 1, "VEC2": 2, "VEC3": 3}
+    type_widths = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
     for index, view in enumerate(views):
         start = view.get("byteOffset", 0)
         length = view["byteLength"]
@@ -644,6 +668,13 @@ def validate_gltf(document: dict[str, Any], buffer_data: bytes) -> dict[str, Any
                 raise ModelsFormatError(f"mesh {mesh_index} has invalid vertex accessor types")
             if position_accessor["count"] != uv_accessor["count"]:
                 raise ModelsFormatError(f"mesh {mesh_index} position/UV counts differ")
+            color_index = primitive["attributes"].get("COLOR_0")
+            if color_index is not None:
+                color_accessor = accessors[color_index]
+                if color_accessor["type"] != "VEC4" or color_accessor["count"] != position_accessor["count"]:
+                    raise ModelsFormatError(f"mesh {mesh_index} COLOR_0 layout/count differs")
+                if any(value < 0.0 or value > 1.0 for item in _read_accessor(document, buffer_data, color_index) for value in item):
+                    raise ModelsFormatError(f"mesh {mesh_index} COLOR_0 is outside glTF [0,1]")
             if index_accessor["type"] != "SCALAR" or index_accessor["count"] % 3:
                 raise ModelsFormatError(f"mesh {mesh_index} index count is not triangular")
             actual_indices = [value[0] for value in _read_accessor(document, buffer_data, primitive["indices"])]
@@ -711,7 +742,7 @@ def validate_external_images(document: dict[str, Any], gltf_path: pathlib.Path) 
 def _read_accessor(document: dict[str, Any], buffer_data: bytes, accessor_index: int) -> list[tuple[float | int, ...]]:
     accessor = document["accessors"][accessor_index]
     view = document["bufferViews"][accessor["bufferView"]]
-    widths = {"SCALAR": 1, "VEC2": 2, "VEC3": 3}
+    widths = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
     formats = {FLOAT: "f", UNSIGNED_SHORT: "H", UNSIGNED_INT: "I"}
     width = widths[accessor["type"]]
     code = formats[accessor["componentType"]]
@@ -731,6 +762,7 @@ def validate_consistency(
     coords: str,
     winding: str,
     v_mode: str,
+    v4_color: str = "omitted",
 ) -> dict[str, Any]:
     if len(document["meshes"]) != len(selected) or len(document["nodes"]) != len(selected):
         raise ModelsFormatError("round-trip mesh/node count differs from descriptor selection")
@@ -754,10 +786,12 @@ def validate_consistency(
         expected_positions: list[tuple[float, float, float]] = []
         expected_uv: list[tuple[float, float]] = []
         expected_indices: list[int] = []
+        expected_colors: list[tuple[float, float, float, float]] = []
         for batch in by_descriptor[descriptor.index]:
             base = len(expected_positions)
             expected_positions.extend(transform_position(value, coords) for value in batch.positions)
             expected_uv.extend(decode_uv(value, v_mode) for value in batch.uv_raw)
+            expected_colors.extend(decode_v4_color(value) for value in batch.attributes_v4_8)
             for triangle in reconstruct_triangles(batch.controls, reverse=winding == "reverse"):
                 expected_indices.extend(base + value for value in triangle)
         actual_positions = _read_accessor(document, buffer_data, primitive["attributes"]["POSITION"])
@@ -769,6 +803,12 @@ def validate_consistency(
             raise ModelsFormatError(f"descriptor {descriptor.index} UV round-trip mismatch")
         if actual_indices != expected_indices:
             raise ModelsFormatError(f"descriptor {descriptor.index} index round-trip mismatch")
+        color_index = primitive["attributes"].get("COLOR_0")
+        if v4_color == "ps2-rgba":
+            if color_index is None or _read_accessor(document, buffer_data, color_index) != expected_colors:
+                raise ModelsFormatError(f"descriptor {descriptor.index} V4 color round-trip mismatch")
+        elif color_index is not None:
+            raise ModelsFormatError(f"descriptor {descriptor.index} unexpectedly exports V4 color")
         checked_vertices += len(expected_positions)
         checked_triangles += len(expected_indices) // 3
     if seen != {item.index for item in selected}:
@@ -780,6 +820,7 @@ def validate_consistency(
         "positionsMatchExactly": True,
         "q4_12UvValuesMatchExactly": True,
         "topologyIndicesMatchExactly": True,
+        "v4ColorMatchesExactly": v4_color == "ps2-rgba",
         "descriptorCount": len(seen),
         "vertexCount": checked_vertices,
         "triangleCount": checked_triangles,
@@ -817,6 +858,10 @@ def main() -> int:
     parser.add_argument(
         "--mtl-render-semantics", choices=("raw", "experimental"), default="raw",
         help="opt-in culling/alpha validation mapping; raw preserves conservative prior behavior",
+    )
+    parser.add_argument(
+        "--v4-color", choices=("omitted", "ps2-rgba"), default="omitted",
+        help="opt-in V4-8 COLOR_0 diagnostic using min(component/128, 1); omitted preserves prior output",
     )
     parser.add_argument("--report", type=pathlib.Path)
     parser.add_argument("--manifest", type=pathlib.Path)
@@ -871,12 +916,12 @@ def main() -> int:
     document, buffer_data, report = build_gltf(
         model, selected, args.output.with_suffix(".bin").name, identities, textures,
         args.coords, args.winding, args.v_mode, texture_images, args.sampler,
-        args.mtl_render_semantics,
+        args.mtl_render_semantics, args.v4_color,
     )
     validation = validate_gltf(document, buffer_data)
     report["gltfValidation"] = validation
     report["roundTripConsistency"] = validate_consistency(
-        document, buffer_data, model, selected, args.coords, args.winding, args.v_mode
+        document, buffer_data, model, selected, args.coords, args.winding, args.v_mode, args.v4_color
     )
     report["sourceHashes"] = identities
     report["verifiedTim2InventoryCount"] = verified_textures
@@ -889,7 +934,7 @@ def main() -> int:
     written_buffer = args.output.with_suffix(".bin").read_bytes()
     report["writtenGltfValidation"] = validate_gltf(written_document, written_buffer)
     report["writtenRoundTripConsistency"] = validate_consistency(
-        written_document, written_buffer, model, selected, args.coords, args.winding, args.v_mode
+        written_document, written_buffer, model, selected, args.coords, args.winding, args.v_mode, args.v4_color
     )
     report["externalImageValidation"] = validate_external_images(written_document, args.output)
     report["outputGltfBytes"] = args.output.stat().st_size
@@ -910,6 +955,11 @@ def main() -> int:
             ),
             "No MTL alpha-test threshold was identified; MASK/alphaCutoff are never invented.",
             "CLOUD has opaque decoded alpha, so standard glTF source-alpha blending cannot resolve its native effect semantics.",
+            (
+                "V4-8 is exported experimentally as legal glTF COLOR_0 using min(component/128, 1); raw values above 128 remain only in the parser."
+                if args.v4_color == "ps2-rgba" else
+                "V4-8 remains omitted from glTF vertex attributes."
+            ),
             (
                 "Explicit local native PNG decodes were attached; source TIM2 resources were not modified or embedded."
                 if report["textureImageCount"] else
@@ -943,6 +993,7 @@ def main() -> int:
             "vOption": args.v_mode,
             "samplerOption": args.sampler,
             "mtlRenderSemantics": args.mtl_render_semantics,
+            "v4ColorMode": args.v4_color,
             "doubleSidedMaterialCount": report["doubleSidedMaterialCount"],
             "alphaModeCounts": report["alphaModeCounts"],
             "normalsGenerated": False,

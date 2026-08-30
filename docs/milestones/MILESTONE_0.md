@@ -21,7 +21,9 @@
 - [x] Complete textured scene imported into Blender with all 46,336 polygons and correct image links
 - [x] All 55 MODELS.MTL records/property fields matrixed against geometry use and decoded texture alpha
 - [x] Experimental GS-derived two-sided and type-2/nonopaque glTF mapping validated without changing geometry
-- [ ] LEVEL00 world reconstruction visually complete (blocked by MTL culling/alpha semantics)
+- [x] All 88,314 MODELS V4-8 attributes surveyed and CLOUD color/intensity gradient isolated
+- [x] Optional glTF-safe `/128`-then-clamp V4 `COLOR_0` diagnostic export and Blender import validated
+- [ ] LEVEL00 world reconstruction visually complete (blocked by exact type-2 GS blend/depth/order semantics)
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated
