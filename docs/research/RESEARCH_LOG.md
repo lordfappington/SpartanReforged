@@ -1,5 +1,15 @@
 # Research Log
 
+## 2026-08-30 - Directional V orientation validated
+
+- Ranked geometry-used directional candidates from the existing LEVEL00 extraction. Selected descriptor 5 / MTL 1 `L0_FLAGS`; alternatives included GRKTREE, MEDUSA_TOWER, and ARROW.
+- Reverified canonical MODELS hashes and `L0_FLAGS.TM2` SHA-256 `1dc53a5566f1b0beb27d3717bf7fbad22d95a1e2c60adc0222918257e694b0a3`. Descriptor 5 remains three batches, 150 streamed vertices, 84 triangles, and UV U `0.00415..0.35889`, V `0.00415..1.0`.
+- Decoded `L0_FLAGS.TM2` at native 256×256 PSMT4/RGB5A1. Deterministic project RGBA again matches Noesis across all 262,144 bytes; no source file was modified.
+- Exported source-V and flipped-V variants with identical geometry/material/sampler settings. Blender imports both as one mesh, 84 polygons, one material, one image, one UV layer, and identical bounds.
+- Source V places the lambda upright at the hanging banner's lower edge. Flipped V places it inverted at the top. Main-cloth UV rows increase while source Y decreases, independently confirming source V as the modern glTF/Blender convention.
+- Tested explicit REPEAT and MIRRORED_REPEAT with descriptor 361 / MEDUSA_TOWER across more than 15 U periods. Both remain structurally coherent; without a native reference, exact MTL sampler semantics remain unresolved.
+- Advanced MODELS readiness to **VISUALLY VALIDATED**. Full-level texture validation is now justified as a later task after remaining TIM2 image/CLUT variants are deterministically supported.
+
 ## 2026-08-30 - Descriptor 118 visual-convention validation
 
 - Reverified canonical `MODELS.BIN`, `MODELS.MTL`, and `002.TM2` hashes and descriptor 118's MTL 5 / `002`, 12-vertex, eight-triangle reconstruction.

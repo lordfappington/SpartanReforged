@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - First Native Geometry Reconstruction
+Milestone 0 - Visually Validated Native Geometry
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Descriptor 118 now confirms source `(X,Y,Z)` as the glTF coordinate path and source triangle order as the correct Blender-facing winding. `002.TM2` has a strict 256×256 PSMT4/RGB5A1 native decoder; its RGBA matches Noesis exactly and its image/material/periodic-UV linkage imports correctly. This remains **FIRST NATIVE GEOMETRY RECONSTRUCTION / GEOMETRY READY**, not native game rendering or full visual validation: the directionless texture cannot resolve source versus flipped V or native repeat versus mirror, and V4-8/MTL render properties remain unknown.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Descriptor 118 confirms source coordinates/winding and periodic texture use. Descriptor 5 binds native `L0_FLAGS.TM2` to an 84-triangle hanging banner: source V renders its lambda upright at the bottom, while flipped V inverts it at the top. Geometry-height correlation independently agrees. The MODELS pipeline is now **VISUALLY VALIDATED**, not native game rendering: exact MTL repeat-versus-mirror/render semantics, V4-8, and non-PSMT4 TIM2 variants remain unresolved.
 
 ## Executable Analysis
 
@@ -42,7 +42,7 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- What does MODELS.BIN's unsigned V4-8 attribute encode, which MTL properties select repeat/mirror/clamp, and does target glTF require source or flipped V?
+- What does MODELS.BIN's unsigned V4-8 attribute encode, and which MTL properties select repeat/mirror/clamp?
 - What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
 - What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Perform one bounded directional-texture validation using an already-extracted LEVEL00 descriptor bound to an unmistakably asymmetric TIM2 (text, arrow, logo, or page layout). Compare only source versus flipped V while retaining the now-confirmed source coordinates and source winding. Do not open another PAK or texture the full level.
+Extend the deterministic TIM2 decoder only for the remaining image/CLUT variants used by LEVEL00 geometry, with bounds checks and independent pixel comparison. Do not texture the full level until that coverage is verified.

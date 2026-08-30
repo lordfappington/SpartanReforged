@@ -2,7 +2,7 @@
 """Strict native-resolution decoder for the verified LEVEL00 TIM2 subset.
 
 Supported intentionally narrowly: one-picture TIM2 v4 containers containing
-4-bit indexed pixels (PSMT4/IDTEX4) and a 16-entry RGB5A1 CLUT.  Unsupported
+4-bit indexed pixels (PSMT4/IDTEX4) and a 16-entry RGB5A1 CLUT. Unsupported
 variants fail explicitly.  Source files are read-only and output is permitted
 only beneath a directory named ``temp``.
 """
@@ -58,7 +58,7 @@ def _align(value: int, alignment: int) -> int:
 
 
 def _expand_rgb5(value: int) -> int:
-    # This matches the verified Noesis reference for 002.TM2: 5-bit channels
+    # This matches verified Noesis references: 5-bit channels
     # occupy the high five bits of the resulting byte (0..248).
     return value << 3
 

@@ -11,7 +11,15 @@ import unittest
 CONVERSION = pathlib.Path(__file__).resolve().parents[2] / "tools" / "conversion"
 sys.path.insert(0, str(CONVERSION))
 
-from export_models_gltf import TextureReference, build_gltf, validate_consistency, validate_gltf  # noqa: E402
+from export_models_gltf import (  # noqa: E402
+    MIRRORED_REPEAT,
+    REPEAT,
+    VALIDATED_MODERN_V_MODE,
+    TextureReference,
+    build_gltf,
+    validate_consistency,
+    validate_gltf,
+)
 from spartan_models import (  # noqa: E402
     AabData,
     Batch,
@@ -62,6 +70,7 @@ class TopologyTests(unittest.TestCase):
 
 class AttributeTests(unittest.TestCase):
     def test_q4_12_uv_and_flip(self) -> None:
+        self.assertEqual(VALIDATED_MODERN_V_MODE, "source")
         self.assertEqual(decode_uv((-4096, 6144), "source"), (-1.0, 1.5))
         self.assertEqual(decode_uv((-4096, 6144), "flip"), (-1.0, -0.5))
 
@@ -109,9 +118,21 @@ class SelectionAndExportTests(unittest.TestCase):
         )
         result = validate_gltf(document, buffer_data)
         self.assertEqual(result["imageCount"], 1)
-        self.assertEqual(document["samplers"], [{"wrapS": 10497, "wrapT": 10497}])
+        self.assertEqual(document["samplers"], [{"wrapS": REPEAT, "wrapT": REPEAT}])
         self.assertEqual(document["materials"][0]["pbrMetallicRoughness"]["baseColorTexture"]["index"], 0)
         self.assertEqual(report["textureImageCount"], 1)
+
+    def test_mirrored_repeat_sampler_is_explicit(self) -> None:
+        model = synthetic_model()
+        texture_map = {"synthetic_a": [TextureReference("DATA/SYNTHETIC_A.TM2", "ABC")]}
+        document, buffer_data, report = build_gltf(
+            model, model.descriptors, "synthetic.bin", {}, texture_map,
+            "source", "source", "source", {"synthetic_a": "SYNTHETIC_A.png"},
+            "mirrored-repeat",
+        )
+        validate_gltf(document, buffer_data)
+        self.assertEqual(document["samplers"], [{"wrapS": MIRRORED_REPEAT, "wrapT": MIRRORED_REPEAT}])
+        self.assertEqual(report["samplerMode"], "mirrored-repeat")
 
     def test_static_and_special_selection(self) -> None:
         model = synthetic_model(two_materials=True)

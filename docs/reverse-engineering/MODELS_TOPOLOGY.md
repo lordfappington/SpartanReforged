@@ -4,9 +4,9 @@ This analysis was completed on 2026-08-30 against the already-extracted canonica
 
 ## Result and readiness
 
-**Topology result: CONFIRMED. Current overall readiness: GEOMETRY READY after the subsequent UV investigation.** The supported reconstruction is an implicit triangle strip per VIF batch. A position W word of `0x8000` suppresses the primitive ending at that vertex while retaining the vertex in the rolling strip history. It does not reset history. A zero W word emits the triangle. Alternating parity follows every submitted source vertex, including suppressed vertices.
+**Topology result: CONFIRMED. Current overall readiness: VISUALLY VALIDATED after subsequent UV and directional-texture tests.** The supported reconstruction is an implicit triangle strip per VIF batch. A position W word of `0x8000` suppresses the primitive ending at that vertex while retaining the vertex in the rolling strip history. It does not reset history. A zero W word emits the triangle. Alternating parity follows every submitted source vertex, including suppressed vertices.
 
-This establishes connectivity and relative winding. A later bounded analysis confirmed V2-16 as signed Q4.12 normalized UV and advanced the aggregate format to **GEOMETRY READY**; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). Descriptor-118 validation subsequently confirmed source winding as the glTF/Blender front-face order when using the determinant-positive source coordinate mapping. V4-8 and MTL properties remain partial, and the VU program routing fields to the GS was not present.
+This establishes connectivity and relative winding. Later bounded analyses confirmed V2-16 as signed Q4.12 UV, source winding/coordinates, and source V; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md) and [MODELS_VISUAL_CONVENTIONS.md](MODELS_VISUAL_CONVENTIONS.md). V4-8 and MTL properties remain partial, and the VU program routing fields to the GS was not present.
 
 The confirmed algorithm has now been implemented in the strict conversion parser and reproduced all 46,336 triangles in glTF. The exporter exposes source/reverse winding explicitly and never joins batches. Exact accessor round-trip and Blender polygon counts independently retain the topology; see [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md).
 

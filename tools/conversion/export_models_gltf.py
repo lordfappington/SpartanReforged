@@ -40,6 +40,9 @@ FLOAT = 5126
 UNSIGNED_SHORT = 5123
 UNSIGNED_INT = 5125
 TRIANGLES = 4
+REPEAT = 10497
+MIRRORED_REPEAT = 33648
+VALIDATED_MODERN_V_MODE = "source"
 
 
 @dataclass(frozen=True)
@@ -186,7 +189,11 @@ def build_gltf(
     winding: str,
     v_mode: str,
     texture_images: dict[str, str] | None = None,
+    sampler_mode: str = "repeat",
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
+    sampler_values = {"repeat": REPEAT, "mirrored-repeat": MIRRORED_REPEAT}
+    if sampler_mode not in sampler_values:
+        raise ModelsFormatError(f"unsupported sampler mode {sampler_mode!r}")
     reverse = winding == "reverse"
     selected_ids = {item.index for item in selected}
     batches_by_descriptor: dict[int, list[Batch]] = {item.index: [] for item in selected}
@@ -227,8 +234,8 @@ def build_gltf(
                 material_item["extensions"] = {"KHR_materials_unlit": {}}
                 extras["placeholderOnly"] = False
                 extras["renderSemantics"] = "GENERATED_UNLIT_VALIDATION_MATERIAL"
-                extras["samplerWrapS"] = "REPEAT"
-                extras["samplerWrapT"] = "REPEAT"
+                extras["samplerWrapS"] = sampler_mode.upper().replace("-", "_")
+                extras["samplerWrapT"] = sampler_mode.upper().replace("-", "_")
         materials.append(material_item)
 
     builder = BufferBuilder()
@@ -349,6 +356,8 @@ def build_gltf(
                 "coordinateTransform": COORDINATE_METADATA[coords][0],
                 "winding": winding,
                 "vMode": v_mode,
+                "validatedModernVMode": VALIDATED_MODERN_V_MODE,
+                "samplerMode": sampler_mode,
                 "normals": "OMITTED",
                 "textures": "LOCAL_NATIVE_TIM2_DECODES_ATTACHED" if images else "REFERENCED_IN_EXTRAS_ONLY_NOT_CONVERTED",
             },
@@ -366,7 +375,7 @@ def build_gltf(
         document["extensionsUsed"] = ["KHR_materials_unlit"]
         document["images"] = images
         document["textures"] = gltf_textures
-        document["samplers"] = [{"wrapS": 10497, "wrapT": 10497}]
+        document["samplers"] = [{"wrapS": sampler_values[sampler_mode], "wrapT": sampler_values[sampler_mode]}]
     report = {
         "exporterVersion": EXPORTER_VERSION,
         "descriptorCount": len(selected),
@@ -384,6 +393,8 @@ def build_gltf(
         "coordinateTransformDeterminant": COORDINATE_METADATA[coords][1],
         "windingMode": winding,
         "vMode": v_mode,
+        "validatedModernVMode": VALIDATED_MODERN_V_MODE,
+        "samplerMode": sampler_mode,
         "normalsGenerated": False,
         "texturesConverted": bool(images),
         "textureImageCount": len(images),
@@ -595,7 +606,14 @@ def main() -> int:
     parser.add_argument("--material", type=int, action="append", default=[])
     parser.add_argument("--coords", choices=tuple(COORDINATE_METADATA), default="source")
     parser.add_argument("--winding", choices=("source", "reverse"), default="source")
-    parser.add_argument("--v-mode", choices=("source", "flip"), default="source")
+    parser.add_argument(
+        "--v-mode", choices=("source", "flip"), default=VALIDATED_MODERN_V_MODE,
+        help="V convention; source is validated for modern glTF/Blender output",
+    )
+    parser.add_argument(
+        "--sampler", choices=("repeat", "mirrored-repeat"), default="repeat",
+        help="explicit validation sampler; native MTL semantics remain unresolved",
+    )
     parser.add_argument("--report", type=pathlib.Path)
     parser.add_argument("--manifest", type=pathlib.Path)
     parser.add_argument("--inventory", type=pathlib.Path, help="existing LEVEL00 inventory JSON")
@@ -632,7 +650,7 @@ def main() -> int:
     )
     document, buffer_data, report = build_gltf(
         model, selected, args.output.with_suffix(".bin").name, identities, textures,
-        args.coords, args.winding, args.v_mode, texture_images,
+        args.coords, args.winding, args.v_mode, texture_images, args.sampler,
     )
     validation = validate_gltf(document, buffer_data)
     report["gltfValidation"] = validation
@@ -664,7 +682,7 @@ def main() -> int:
                 if report["textureImageCount"] else
                 "TIM2 resources are hash-referenced only and were not converted or embedded."
             ),
-            "Coordinate and winding options are recorded; target V orientation remains an explicit unresolved choice.",
+            "Source coordinates, winding, and V are validated for modern glTF; raw alternatives remain explicit.",
             f"Retained {report['geometricDegenerateTriangles']} exact geometric degenerates.",
             f"Retained {report['collapsedUvTriangles']} collapsed-UV triangles.",
             f"Retained {report['unreferencedStreamedPositionCount']} streamed vertices not referenced by emitted triangles; importers may omit them.",
@@ -685,6 +703,7 @@ def main() -> int:
             "coordinateConversion": report["coordinateTransform"],
             "windingOption": args.winding,
             "vOption": args.v_mode,
+            "samplerOption": args.sampler,
             "normalsGenerated": False,
             "texturesConverted": report["texturesConverted"],
             "attachedTextureImages": report["attachedTextureImages"],

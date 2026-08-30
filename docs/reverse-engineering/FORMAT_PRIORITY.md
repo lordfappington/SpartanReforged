@@ -6,7 +6,7 @@ Priorities reflect reconstruction dependencies exposed by LEVEL00, not format co
 
 | Extension / target | Files | Bytes | Suspected purpose | Confidence | Dependencies and evidence | Recommended order |
 |---|---:|---:|---|---|---|---:|
-| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF/topology/UV; GEOMETRY READY** | 1,338 descriptors, 2,128 batches, 88,314 vertices, 46,336 ADC-controlled triangles, signed Q4.12 UVs, exact AAB/MTL joins | 1 |
+| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF/topology/UV; VISUALLY VALIDATED** | 1,338 descriptors, 2,128 batches, 88,314 vertices, 46,336 triangles; descriptors 118/5 validate coordinates, winding, source V, and image mapping | 1 |
 | `.AAB` | 1 | 448,048 | world spatial quadtree and BIN descriptor lookup | **CONFIRMED tree/reference/bounds relationship; trailing fields partial** | Seven-level 4-way tree; 1,224 unique leaf references exactly cover descriptors 114–1337 and all referenced geometry fits its cell bounds | 2 |
 | `.MTL` / `MODELS.MTL` | 1 | 5,952 | ordered resource/material declarations | **CONFIRMED binding; properties UNKNOWN** | BIN descriptor high-u16 selects 39 meaningful records; 55 total records and 41 direct resource-stem joins | 3 |
 | `.HMP` | 1 | 166,400 | land height/terrain field | **LIKELY** | `WORLD/LAND`, repeated float-like grid, low entropy | 4 |
@@ -14,11 +14,11 @@ Priorities reflect reconstruction dependencies exposed by LEVEL00, not format co
 Container segmentation is complete. Remaining P0 geometry work is now:
 
 1. **P0a — topology control: COMPLETE for LEVEL00.** W `0x8000` suppresses the current triangle without resetting strip history; source-vertex parity continues.
-2. **P0b — minimum attribute semantics: COMPLETE for first geometry export.** V2-16 is signed normalized Q4.12 (`raw / 4096`) with zero global bias. Out-of-range values must be preserved for sampler-driven tiling. V4-8 remains unknown but is nonessential to positions/topology/material groups/UV export. Readiness is **GEOMETRY READY**.
+2. **P0b — minimum attribute semantics: COMPLETE and visually validated.** V2-16 is signed normalized Q4.12 (`raw / 4096`) with zero global bias and source V orientation. Out-of-range values must be preserved for sampler-driven tiling. V4-8 remains unknown but is nonessential to positions/topology/material groups/UV export. Readiness is **VISUALLY VALIDATED**.
 3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The first bounded, read-only MODELS glTF exporter is **COMPLETE for LEVEL00**. Descriptor-118 visual testing now confirms source `(X,Y,Z)` for glTF and source winding, and a strict decoder reproduces `002.TM2` pixel-for-pixel against Noesis. Native image attachment and periodic sampling work. Readiness remains **GEOMETRY READY**, not VISUALLY VALIDATED: `002` is directionally ambiguous, so source versus flipped V and native repeat versus mirror cannot be distinguished. The next bounded P0 gate is a directional-texture descriptor validation using only existing LEVEL00 data.
+The first bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for LEVEL00 geometry**. Descriptor 118 confirms source coordinates/source winding and periodic sampling; descriptor 5 confirms source V using an upright lower-banner lambda. `002.TM2` and `L0_FLAGS.TM2` decode pixel-identically to Noesis. Exact MTL repeat-versus-mirror semantics remain unknown but are explicit and do not affect descriptor 5's within-range validation. The next bounded P0 asset-pipeline gate is deterministic support for the remaining geometry-used TIM2 image/CLUT variants.
 
 ## P1 — required for characters and functional gameplay
 

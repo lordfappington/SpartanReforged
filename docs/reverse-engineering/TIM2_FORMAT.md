@@ -1,6 +1,6 @@
 # TIM2 Format — Verified LEVEL00 PSMT4 Subset
 
-This note documents only the subset established from the canonical LEVEL00 `002.TM2`. The source remained read-only. `tools/conversion/tim2_decode.py` emits only native-resolution derived PNGs beneath ignored `temp` directories and rejects every unimplemented TIM2 variant.
+This note documents only the subset established from canonical LEVEL00 `002.TM2` and `L0_FLAGS.TM2`. The sources remained read-only. `tools/conversion/tim2_decode.py` emits only native-resolution derived PNGs beneath ignored `temp` directories and rejects every unimplemented TIM2 variant.
 
 ## Canonical sample
 
@@ -37,12 +37,13 @@ The decoder preserves the stored row order, produces RGBA8, writes PNG scanlines
 
 Noesis 4.474 independently decoded the same source. Its PNG container bytes differ, but its 262,144 RGBA bytes match the project decoder exactly. Both routes report 256×256 pixels, 16 colors, and alpha 255 throughout. This proves the implemented pixel, palette, row, and alpha interpretation for `002.TM2`; producing a PNG alone was not treated as proof.
 
+The directional `L0_FLAGS.TM2` provides a second independent sample: 32,864 bytes, 256×256, one mip, PSMT4, 16-entry RGB5A1, and fully opaque alpha. Source SHA-256 is `1dc53a5566f1b0beb27d3717bf7fbad22d95a1e2c60adc0222918257e694b0a3`; deterministic PNG SHA-256 is `04626a87f45478eddaebeb63319d3d3ccbfd6e0aa5387d19d5cfb4168b24fac6`; decoded RGBA SHA-256 is `3acfec0e6c9987afc578c8522bfc24f77e59cea46a9eb0a9919f271ccbd4689a`. All 262,144 RGBA bytes again match Noesis 4.474 exactly. This extends confirmation across both one-mip and four-mip headers.
+
 The standard format identifiers align with ps2dev gsKit's `GS_PSM_T4` classification and 16-color CLUT handling: [gsKit GS definitions](https://github.com/ps2dev/gsKit/blob/master/ee/gs/include/gsInit.h), [gsKit texture upload](https://github.com/ps2dev/gsKit/blob/master/ee/gs/src/gsTexture.c). These references support terminology; the byte-identical independent decode is the sample-specific validation.
 
 ## Limits
 
-- **CONFIRMED:** the exact v4/format-0, one-picture PSMT4 + RGB5A1 subset above.
-- **LIKELY:** other LEVEL00 type-4 samples with the same structural fields can use the same path, but they have not been accepted without validation.
+- **CONFIRMED:** the exact v4/format-0, one-picture PSMT4 + RGB5A1 subset above, with one- and four-mip samples independently validated.
+- **LIKELY:** other LEVEL00 type-4 samples with the same structural fields can use the same path, but they have not all been independently validated.
 - **UNKNOWN / unsupported:** TIM2 image types 3 and 5, 256-entry CLUTs, CSM variants, swizzled payloads, multiple pictures, other versions, and faithful export of the stored mip chain.
 - The decoder intentionally fails on those variants and does not claim a general TIM2 implementation.
-
