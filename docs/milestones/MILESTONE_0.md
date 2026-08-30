@@ -11,6 +11,7 @@
 - [x] Extracted file extensions catalogued
 - [x] Texture formats identified
 - [x] Model formats investigated
+- [x] First LEVEL00 world geometry reconstruction exported and validated
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

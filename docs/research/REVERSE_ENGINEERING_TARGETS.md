@@ -27,14 +27,14 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## MODELS
 
-- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED container/VIF/topology/UV; GEOMETRY READY:** 1,338 blocks contain 2,128 batches and 88,314 matching position/V2-16/V4-8 entries. W `0x8000` suppresses the current strip primitive while retaining history; zero emits exactly 46,336 triangles. V2-16 is signed normalized Q4.12 (`int16 / 4096`) with zero global bias and intentional out-of-range tiling coordinates. V4-8 remains unknown but does not block a first geometry export.
+- `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED and operationally exported:** strict parsing reconstructs 1,338 descriptor meshes from 2,128 batches, retains all 88,314 position/Q4.12 UV records and 39 material groups, and emits exactly 46,336 triangles to validated glTF. Exact byte-level accessor round-trip and Blender import pass. V4-8 remains unknown and material/render fidelity is not claimed.
 - `LEVEL00/.../WORLD/MODELS.AAB` — **P0 CONFIRMED structure/reference/bounds:** complete seven-level 4-way spatial tree; leaf lists enumerate static BIN descriptors 114–1337 exactly once, and every referenced descriptor's vertices fit its associated cell bounds.
 - `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join:** BIN descriptor high-u16 values select ordered resource records; 39 record indices are used.
 - `LEVEL00/.../WORLD/MODELS.STL` — **CONFIRMED lookup structure:** 32 slots, eight of which select MTL particle records 40–47.
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions, ADC strip topology, source winding, material assignment, and V2-16 UV mapping are established. Target-specific handedness/front-face and V orientation require an explicit exporter convention; V4-8 meaning, exact MTL sampler properties, and character vertex/index/weight schemas remain unknown.
+- World positions, ADC strip topology, source winding, material assignment, and V2-16 UV mapping are established and reconstructed outside the PS2 runtime. The exporter exposes source/Z-reflection coordinates, source/reverse winding, and source/flipped V explicitly. Target-specific visual convention validation, V4-8 meaning, exact MTL sampler properties, and character vertex/index/weight schemas remain open.
 
 ## ANIMATIONS
 

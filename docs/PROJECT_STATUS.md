@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - World Geometry UV Reverse Engineering
+Milestone 0 - First Native Geometry Reconstruction
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 `MODELS.BIN` is segmented into 1,338 descriptor-indexed PS2 VIF blocks containing 2,128 batches and 88,314 vertex instances. Its implicit ADC-controlled strip topology is established: W `0x8000` suppresses without resetting history, and 46,336 zero-W vertices emit exactly 46,336 triangles. Numeric MTL binding and the AAB quadtree's exact 1,224-descriptor static-world mapping are established, including 1,224/1,224 descriptor bounds containment. V2-16 is confirmed as signed normalized Q4.12 UV (`int16 / 4096`) with zero global bias; intentional out-of-range coordinates support tiled materials. Readiness is **GEOMETRY READY** for a first read-only export. V4-8, MTL sampler properties, and target-specific coordinate/V conventions remain unresolved but do not block exporting positions, topology, material groups, and source UVs. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. LEVEL00 `MODELS.BIN` is segmented into 1,338 descriptor-indexed PS2 VIF blocks containing 2,128 batches and 88,314 vertex instances. Its ADC topology, numeric MTL binding, AAB static mapping, and signed Q4.12 UVs are established. A strict read-only pipeline now reconstructs the complete world outside the PS2 runtime as 1,338 traceable glTF meshes, 39 placeholder material groups, and exactly 46,336 triangles. Structural validation, exact source/accessor consistency, and Blender import pass. This is **FIRST NATIVE GEOMETRY RECONSTRUCTION**, not native game rendering: V4-8, MTL sampler/render properties, texture display, and target coordinate/front-face/V conventions remain unresolved. No audio payload is embedded in LEVEL00; symbolic voice/music references resolve externally.
 
 ## Executable Analysis
 
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Implement one bounded, read-only first MODELS geometry exporter using the confirmed positions, ADC topology, descriptor/MTL groups, and signed Q4.12 UVs. Preserve source data, make coordinate/front-face/V conversion explicit, perform no rendering, and leave V4-8 and unknown material properties optional/uninterpreted.
+Perform one bounded visual-convention validation on the existing derived LEVEL00 geometry: compare explicit source versus Z-reflected coordinates, source versus reversed winding, and source versus flipped V using a small known-texture descriptor. Keep source assets unchanged, use only local derived texture copies if safe, and do not begin remastering or broad material reverse engineering.

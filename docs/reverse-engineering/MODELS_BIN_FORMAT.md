@@ -157,6 +157,8 @@ The global header, descriptor table, block boundaries, VIF command grammar, attr
 
 Readiness is **GEOMETRY READY** for a first read-only export that preserves source coordinates, winding, material groups, and signed normalized UV values. This does not mean the format is complete: V4-8 semantics, exact MTL sampler/property states, target-renderer V orientation/front-face conversion, and the literal VU-to-GS dataflow remain unresolved. V4-8 is not required to export positions, topology, material assignment, and usable UVs.
 
+The first strict parser and glTF reconstruction now validate this readiness operationally. All 1,338 descriptors parse through independent bounds checks and export as traceable descriptor meshes containing 88,314 source records and exactly 46,336 triangles. See [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md). This is a geometry reconstruction milestone, not proof of native material or rendering fidelity.
+
 ## Outstanding questions
 
 - What do global-header values 15, 48, and 30 represent?

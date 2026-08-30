@@ -149,3 +149,17 @@
 - Added deterministic read-only `models_uv_probe.py` and local aggregate reports. Syntax passed and repeated output hashes were identical; no raw vertex/UV table or game asset was committed.
 - Advanced readiness to **GEOMETRY READY** and the phase to `Milestone 0 - World Geometry UV Reverse Engineering`. V4-8 does not block a first position/topology/material/UV export; exact MTL sampler semantics and target coordinate/V conventions remain later validation work.
 - No PAK was opened, no game data was modified, and no geometry was exported or rendered. No Ghidra, PS2Recomp, Blender, Noesis, installation, or push occurred.
+
+## 2026-08-30 - First LEVEL00 world geometry reconstruction exported
+
+- Reverified canonical MODELS.BIN, MODELS.AAB, and MODELS.MTL hashes and all 58 LEVEL00 TIM2 hashes against the existing inventory. No archive was opened and every game input remained read-only.
+- Added target-neutral `spartan_models.py` with strict header/table/extent/material/VIF/cardinality/topology/AAB validation. The independent parser reproduces 1,338 descriptors, 2,128 batches, 88,314 streamed positions, 46,336 triangles, 55 MTL records, and 1,224 AAB references.
+- Added `export_models_gltf.py` with descriptor/static/special/material selection; explicit source/Z-reflection coordinate, source/reverse winding, and source/flipped-V modes; traceable descriptor/MTL/batch extras; placeholder materials; and no normals or texture conversion.
+- Passed the small gate with static descriptor 118: MTL 5 `002`, one batch, 12 streamed vertices, eight triangles, no geometric/UV collapse, and UV range U `-2.5..-0.5`, V `-0.500244..1.499756`.
+- Exported the complete local ignored LEVEL00 scene in source coordinate/winding/V modes: 1,338 meshes/nodes, 2,128 batches, 88,314 POSITION/TEXCOORD records, 139,008 indices, 46,336 triangles, and 39 placeholder materials.
+- Structural glTF validation passed both before and after serialization: valid JSON/2.0 asset, 2,044,830-byte external buffer, 4,014 buffer views/accessors, finite values, valid ranges/material references, matching position/UV counts, and in-range triangle indices.
+- Exact round-trip validation reread the glTF buffer and matched every descriptor/material membership, position, Q4.12 UV, and reconstructed index. Three geometric degenerates and 1,463 collapsed-UV triangles remain intentionally retained.
+- Blender 5.2.1 LTS imported the full glTF without rendering or saving: 1,338 mesh objects, 87,682 imported vertices, 46,336 polygons, and 39 materials. The 632-vertex difference exactly equals source-stream vertices unreferenced by emitted triangles; they remain in glTF accessors but Blender omits them.
+- Added nine synthetic tests covering ADC topology/parity, winding reversal, Q4.12 and V flip, coordinate conversion, material grouping, selection, accessor construction/range validation, and malformed descriptor bounds. All pass without copyrighted fixtures.
+- Advanced the phase to `Milestone 0 - First Native Geometry Reconstruction`. LEVEL00 world geometry is reconstructable outside the PS2 runtime, but native rendering, material fidelity, original V4-8 semantics, and final coordinate/front-face/V conventions are not claimed.
+- Generated glTF/binary/report/manifest files remain local and ignored beneath `temp/exports/level00_validation`. No game asset, derived geometry, converted texture, or manifest is tracked. No Ghidra, PS2Recomp, remastering, installation, or push occurred.

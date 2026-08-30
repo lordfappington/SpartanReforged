@@ -8,6 +8,8 @@ This analysis was completed on 2026-08-30 against the already-extracted canonica
 
 This establishes connectivity and relative winding. A later bounded analysis confirmed V2-16 as signed Q4.12 normalized UV and advanced the aggregate format to **GEOMETRY READY**; see [MODELS_UV_FORMAT.md](MODELS_UV_FORMAT.md). V4-8 semantics and MTL property semantics remain partial, and the VU program that routes the fields to the GS was not present in these batches. The absolute front-face convention is also not observable from GS behavior because the GS has no conventional back-face culling state; reversing every triangle remains a target/export convention choice.
 
+The confirmed algorithm has now been implemented in the strict conversion parser and reproduced all 46,336 triangles in glTF. The exporter exposes source/reverse winding explicitly and never joins batches. Exact accessor round-trip and Blender polygon counts independently retain the topology; see [MODELS_EXPORT_PIPELINE.md](MODELS_EXPORT_PIPELINE.md).
+
 ## Canonical inputs
 
 | File | Size | SHA-256 |
