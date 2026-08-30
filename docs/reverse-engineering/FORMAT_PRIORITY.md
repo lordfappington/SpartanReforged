@@ -6,19 +6,19 @@ Priorities reflect reconstruction dependencies exposed by LEVEL00, not format co
 
 | Extension / target | Files | Bytes | Suspected purpose | Confidence | Dependencies and evidence | Recommended order |
 |---|---:|---:|---|---|---|---:|
-| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF; topology LIKELY** | 1,338 contiguous descriptors, 2,128 valid VIF batches, 88,314 streamed vertices, exact AAB/MTL joins | 1 |
-| `.AAB` | 1 | 448,048 | world spatial quadtree and BIN descriptor lookup | **CONFIRMED structure; traversal semantics partial** | Full seven-level 4-way tree; 1,224 unique leaf references exactly cover BIN descriptors 114–1337 | 2 |
+| `.BIN` / `MODELS.BIN` | 1 | 2,293,536 | descriptor-indexed PS2 VIF geometry/render streams | **CONFIRMED container/VIF/topology** | 1,338 descriptors, 2,128 batches, 88,314 vertices, 46,336 ADC-controlled triangles, exact AAB/MTL joins | 1 |
+| `.AAB` | 1 | 448,048 | world spatial quadtree and BIN descriptor lookup | **CONFIRMED tree/reference/bounds relationship; trailing fields partial** | Seven-level 4-way tree; 1,224 unique leaf references exactly cover descriptors 114–1337 and all referenced geometry fits its cell bounds | 2 |
 | `.MTL` / `MODELS.MTL` | 1 | 5,952 | ordered resource/material declarations | **CONFIRMED binding; properties UNKNOWN** | BIN descriptor high-u16 selects 39 meaningful records; 55 total records and 41 direct resource-stem joins | 3 |
 | `.HMP` | 1 | 166,400 | land height/terrain field | **LIKELY** | `WORLD/LAND`, repeated float-like grid, low entropy | 4 |
 
 Container segmentation is complete. Remaining P0 geometry work is now:
 
-1. **P0a — topology control:** prove the position-W `0x8000` ADC/restart/winding rule. This is the next task.
-2. **P0b — attribute semantics:** determine V2-16 UV scale/bias and the unsigned V4-8 attribute role.
+1. **P0a — topology control: COMPLETE for LEVEL00.** W `0x8000` suppresses the current triangle without resetting strip history; source-vertex parity continues. Readiness is **TOPOLOGY READY**.
+2. **P0b — attribute semantics:** determine V2-16 UV scale/bias/wrapping and the unsigned V4-8 attribute role. This is the next task.
 3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
-4. **P0d — spatial placement:** resolve AAB leaf trailing fields and how cell bounds/culling select the referenced BIN blocks.
+4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-A converter or renderer must wait until P0a and the minimum P0b attribute rules are demonstrated.
+A textured converter or renderer must wait until the minimum P0b attribute rules are demonstrated. This task intentionally created neither.
 
 ## P1 — required for characters and functional gameplay
 

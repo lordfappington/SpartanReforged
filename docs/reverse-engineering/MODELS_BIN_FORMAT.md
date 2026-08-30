@@ -92,7 +92,13 @@ The remainder parses end-to-end as 2,128 repeated PS2 VIF batches. No recovery s
 
 Every batch uses the same N for positions, V2-16 values, and V4-8 values. The 2,128 block-preamble counts all agree with the subsequent position UNPACK count.
 
-## Candidate geometry and topology
+### Position/control W field
+
+Within each 16-byte V4-32 streamed position record, XYZ occupy relative offsets `+0x00`, `+0x04`, and `+0x08`; the u32 control word is at `+0x0c` (**CONFIRMED layout**). Across 88,314 records it has only two values: zero 46,336 times and `0x00008000` 41,978 times (**CONFIRMED values/frequency**). Every batch's first two records are `0x8000`. Of 37,722 later flags, 37,588 occur in 18,794 two-record runs and 134 occur singly.
+
+Pinned PCSX2 GS source defines packed XYZ ADC through the `0x8000` bit and shows that it suppresses the primitive ending at the current vertex while retaining and advancing triangle-strip history. Spartan's field produces precisely the control patterns and coherent connectivity expected from that behavior. The literal routing from this VU input record to GIF XYZ ADC is **LIKELY with strong evidence**, because the responsible VU microprogram is not embedded here. Its topology effect in LEVEL00 is **CONFIRMED operationally**: `0x8000` suppresses only the current triangle, does not restart, and still advances source parity/history; zero emits.
+
+## Geometry and topology control
 
 - Total streamed vertex instances: **88,314** across 2,128 batches.
 - Batch size: **3–74** vertices.
@@ -103,7 +109,9 @@ Every batch uses the same N for positions, V2-16 values, and V4-8 values. The 2,
 - Signed V2-16 ranges are U `-32763..32734` and V `-32758..32757`; scaling/wrapping is unknown.
 - V4-8's fourth component is `0x80` for all 88,314 vertices; the first three components remain semantically unresolved.
 
-The first-two-vertices pattern, internal restart-like values, sequential vertex streams, and absence of a separate index buffer strongly support implicit PS2 triangle strips with an ADC-like control bit. If zero means “emit triangle” under the expected ADC convention, **46,336** is the candidate emitted-triangle count. This remains **LIKELY**, not confirmed, until winding, restart, and degeneracy behavior are validated.
+Complete control-pattern and geometric analysis now establishes implicit triangle strips. `0x8000` suppresses the primitive ending at that vertex while the vertex remains in the rolling three-vertex history; zero emits. It does not reset the strip. Parity follows every submitted source vertex, including suppressed vertices. This yields exactly **46,336** triangles, equal to the zero-W count, with no bad index references, three exact zero-area triangles, and eight doubled-area values at or below `1e-6`.
+
+Internal control structure is decisive: 37,588 of the 37,722 internal flags occur in 18,794 two-vertex runs. These suppress two bridge triangles while seeding the next face with a new two-vertex history. Only 134 internal flags are isolated. Full evidence, candidate-model comparisons, winding convention, and pseudocode are in [MODELS_TOPOLOGY.md](MODELS_TOPOLOGY.md).
 
 No independent u16/u32 index-buffer segment exists: the entire post-table payload is consumed by valid VIF streams. Any topology is therefore implicit in stream order/control or produced by the VU program.
 
@@ -145,9 +153,9 @@ Examples include index 5 → `002`, 7 → `BASEWALL`, 12 → `TEMPLE_FLAGS`, 33 
 
 ## Tentative schema status
 
-The global header, descriptor table, block boundaries, VIF command grammar, attribute stream widths, numeric MTL binding, and AAB static-descriptor partition are established strongly enough for a validated **container/VIF probe**. They are not yet sufficient for a production geometry parser.
+The global header, descriptor table, block boundaries, VIF command grammar, attribute stream widths, numeric MTL binding, AAB static-descriptor partition, and triangle topology are established strongly enough for a bounds-checked **container/topology parser**.
 
-The exact blocking fact is the topology-control rule: the position W `0x8000` values must be proven to implement the expected ADC/restart/winding behavior, including internal breaks and degenerates. UV scaling and the V4-8 attribute meaning are also required before textured output could be considered faithful.
+Readiness is **TOPOLOGY READY**, not geometry-ready. UV scaling/wrapping and the V4-8 attribute meaning are still required before textured output could be considered faithful. The absent VU microprogram also leaves literal W-to-GIF ADC routing as a strongly supported inference rather than a directly observed dataflow.
 
 ## Outstanding questions
 
@@ -155,7 +163,7 @@ The exact blocking fact is the topology-control rule: the position W `0x8000` va
 - What is the descriptor low-u16 secondary ID, and why is it populated for only 65 special descriptors?
 - What does descriptor field `+0x0c` (11/0) control?
 - Are the two block constants `0x45` VU layout/program identifiers, and where is the actual VU microprogram supplied?
-- Is position W exactly an ADC flag, and how are winding/restarts interpreted?
+- Where is the VU microprogram that routes the strongly ADC-like position W field to the GS?
 - What scale/bias converts the V2-16 pair to UV coordinates?
 - Is V4-8 normal, color/lighting, or another packed attribute?
 - How do the unindexed special blocks obtain transforms/instances at runtime?

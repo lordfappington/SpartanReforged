@@ -123,3 +123,15 @@
 - Added deterministic standard-library `tools/analysis/models_family_probe.py`; syntax checks pass and repeated reports are byte-identical. Generated output remains local under `logs/analysis`.
 - Advanced the phase to `Milestone 0 - World Geometry Format Reverse Engineering`. MODELS container/VIF/AAB/MTL relationships are established, but the format is not marked understood and no production parser, converter, renderer, or geometry export was created.
 - No PAK was opened, no extracted game file was changed, and no Ghidra, PS2Recomp, mutation, installation, or push occurred.
+
+## 2026-08-30 - LEVEL00 MODELS triangle topology established
+
+- Reverified the ignored canonical inputs: MODELS.BIN 2,293,536 bytes (`8d091d4104fa556ccff90d78d3feb9ea1b656356f2fabc667a8457c1382e4cf3`), MODELS.AAB 448,048 bytes (`ce46a8c58509d74ceeabedf22d1832dcd365c87d2f8bc583120f1f37797e99d7`), and MODELS.MTL 5,952 bytes (`57283516fc3cc8589eec4817cf8c25dc3ff0cc2185e4ff99e262fa6f3a4a54b2`).
+- Checked generic ADC behavior against pinned PCSX2 GS source: ADC suppresses the primitive ending at the current vertex, but the vertex remains in triangle-strip history and advances the rolling window. It is not a restart; parity follows source submissions.
+- Classified all 2,128 batches and 88,314 controls. There are 46,336 zeros and 41,978 `0x8000` flags. After the mandatory first pair, 37,588 of 37,722 internal flags occur as 18,794 exact pairs; only 134 occur singly.
+- Compared five candidate models. The GS/ADC model emits exactly 46,336 triangles, equal to the zero-control count, with zero bad references, zero repeated-index triangles, three exact zero-area triangles, and eight near-zero cases. A no-suppression model emits 84,058 and 5,050 exact degenerates; a restart model emits only 12,907.
+- Established the reconstruction rule: each batch is independent; every source vertex advances strip history/parity; W `0x8000` suppresses only the current primitive; even/odd source index determines alternating consistent winding. Absolute global front-face remains a consumer convention.
+- V4-8 signed and 128-biased candidates neither cluster tightly at unit magnitude nor correlate with face normals, so the field remains unknown and was not used to overstate winding. V2-16 remains likely UV with exact one-to-one cardinality, but scale/wrapping remains unresolved.
+- Validated AAB placement independently of topology: all vertices for all 1,224 static descriptors lie inside their associated decoded cell bounds. Each descriptor continues to select exactly one ordered MTL record, and no triangle crosses batch, descriptor, or material boundaries.
+- Added deterministic read-only `models_topology_probe.py`, local per-batch/report outputs, `MODELS_TOPOLOGY.md`, and updated format/target/priority/status documentation. Readiness advanced to **TOPOLOGY READY** and the phase to `Milestone 0 - World Geometry Topology Reverse Engineering`.
+- No PAK was opened, no extracted game data was modified, and no geometry was exported/rendered. No Ghidra, PS2Recomp, Blender, Noesis, installation, or push occurred.
