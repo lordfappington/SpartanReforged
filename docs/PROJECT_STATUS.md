@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - Visually Validated Native Geometry
+Milestone 0 - LEVEL00 Texture Decode Complete
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Descriptor 118 confirms source coordinates/winding and periodic texture use. Descriptor 5 binds native `L0_FLAGS.TM2` to an 84-triangle hanging banner: source V renders its lambda upright at the bottom, while flipped V inverts it at the top. Geometry-height correlation independently agrees. The MODELS pipeline is now **VISUALLY VALIDATED**, not native game rendering: exact MTL repeat-versus-mirror/render semantics, V4-8, and non-PSMT4 TIM2 variants remain unresolved.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Descriptor 118 confirms source coordinates/winding and periodic texture use; descriptor 5 confirms source V. The MODELS pipeline remains **VISUALLY VALIDATED**, not native game rendering. All 30 unique strongly bound geometry TIM2 textures now decode faithfully across PSMT4/PSMT8 and RGB5A1/RGBA8888: every base-level RGBA buffer matches Noesis exactly. Exact MTL repeat-versus-mirror/render semantics, seven unresolved material bindings, V4-8, and unrelated TIM2 variants remain unresolved.
 
 ## Executable Analysis
 
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Extend the deterministic TIM2 decoder only for the remaining image/CLUT variants used by LEVEL00 geometry, with bounds checks and independent pixel comparison. Do not texture the full level until that coverage is verified.
+Produce one full textured LEVEL00 validation export from the 30 verified native TIM2 decodes, preserving unresolved materials as explicit placeholders and retaining configurable sampler behavior.

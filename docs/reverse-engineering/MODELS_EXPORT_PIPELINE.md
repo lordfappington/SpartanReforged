@@ -12,7 +12,7 @@ The first LEVEL00 world-geometry reconstruction was completed on 2026-08-30 usin
 
 - `tools/conversion/spartan_models.py` is target-neutral. It parses MODELS.BIN/MTL/AAB, validates boundaries and cross-references, reconstructs ADC topology, decodes Q4.12 UVs, exposes selection, and implements explicit coordinate transforms.
 - `tools/conversion/export_models_gltf.py` builds glTF 2.0 buffers/accessors, creates traceable descriptor meshes/materials, optionally attaches explicit native decoded PNGs with an unlit selectable sampler, validates serialized glTF, and performs an exact source-to-accessor consistency check.
-- `tools/conversion/tim2_decode.py` strictly decodes only the verified PSMT4/RGB5A1 TIM2 subset to deterministic native-resolution PNG.
+- `tools/conversion/tim2_decode.py` strictly decodes the geometry-required PSMT4/PSMT8 and RGB5A1/RGBA8888 TIM2 combinations to deterministic native-resolution PNG.
 - `tests/formats/test_spartan_models.py` and `test_tim2_decode.py` use synthetic, non-copyrighted inputs only.
 
 The parser and exporter are separate so the confirmed source representation is not coupled to glTF policy.
@@ -71,6 +71,8 @@ One placeholder glTF material is created for every selected, geometry-used MTL r
 Strongly resolved TIM2 references are recorded in material extras with source-relative paths and SHA-256 values. An explicit `--texture-image` PNG beside the output glTF may be attached by matching basename. Attached validation materials use `KHR_materials_unlit`, a neutral base color, and explicit `--sampler repeat|mirrored-repeat`; this avoids interpreting unknown MTL lighting/render properties. `REPEAT` remains the conservative default while MTL sampler fields are unknown. Source TIM2 files are never modified. The strict decoder performs no scale, filter, enhancement, or color correction.
 
 For descriptor 118, `002.TM2` decoded to native 256×256 RGBA8 and matched Noesis pixel-for-pixel. Periodic sampling is required by its two-period UV span; exact native repeat-versus-mirror semantics remain unresolved.
+
+Across all geometry materials, 32 of 39 used MTL records resolve strongly to 30 unique TIM2 files. The decoder now covers all six image/CLUT/mip combinations in that set. Every native base-level RGBA buffer matches Noesis 4.474 byte-for-byte. PSMT4 is linear low-nibble-first; PSMT8 is linear byte-indexed with the standard CSM1 palette permutation; no image unswizzle is required. Type-3 CLUT alpha uses saturated PS2 doubling. The full textured LEVEL00 export is deliberately deferred to the next task.
 
 ## Selection
 
@@ -134,11 +136,11 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 - 632 unreferenced streamed vertices are preserved in glTF accessors; importers may omit them.
 - V4-8 semantics are unknown and absent from glTF.
 - Exact MTL sampler/render properties are unknown; materials are placeholders.
-- Textures are referenced by provenance only and are not displayed.
+- The existing full geometry export references textures by provenance only and does not display them; complete strongly bound texture decode is now available for a later full textured export.
 - Source coordinates and source winding are now confirmed for determinant-positive glTF export using descriptor 118.
 - Source V is confirmed by descriptor 5's upright lower-banner lambda.
 - Exact repeat-versus-mirror semantics remain unresolved; both modes are explicit.
-- The MODELS geometry/UV/image pipeline is VISUALLY VALIDATED, while full material fidelity still requires broader MTL semantics and additional TIM2 format support.
+- The MODELS geometry/UV/image pipeline is VISUALLY VALIDATED and all strongly bound geometry TIM2 variants decode faithfully. Full material fidelity still requires broader MTL and sampler semantics.
 
 ## Descriptor-118 visual convention gate
 

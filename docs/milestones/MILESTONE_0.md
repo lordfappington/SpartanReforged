@@ -16,6 +16,7 @@
 - [x] First deterministic native TIM2 subset decoded and independently pixel-verified
 - [x] LEVEL00 target V orientation visually validated
 - [x] LEVEL00 MODELS geometry pipeline classified VISUALLY VALIDATED
+- [x] All strongly bound LEVEL00 MODELS TIM2 variants decoded and independently pixel-verified
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

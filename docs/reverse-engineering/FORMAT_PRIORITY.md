@@ -18,7 +18,7 @@ Container segmentation is complete. Remaining P0 geometry work is now:
 3. **P0c — material semantics:** retain the confirmed numeric MTL index join while decoding only properties needed by used world records.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The first bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for LEVEL00 geometry**. Descriptor 118 confirms source coordinates/source winding and periodic sampling; descriptor 5 confirms source V using an upright lower-banner lambda. `002.TM2` and `L0_FLAGS.TM2` decode pixel-identically to Noesis. Exact MTL repeat-versus-mirror semantics remain unknown but are explicit and do not affect descriptor 5's within-range validation. The next bounded P0 asset-pipeline gate is deterministic support for the remaining geometry-used TIM2 image/CLUT variants.
+The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for LEVEL00 geometry**. Descriptor 118 confirms source coordinates/source winding and periodic sampling; descriptor 5 confirms source V using an upright lower-banner lambda. All 30 unique strongly bound geometry TIM2 textures now decode pixel-identically to Noesis across the required PSMT4/PSMT8 and RGB5A1/RGBA8888 combinations. Exact MTL repeat-versus-mirror semantics remain unknown but explicit. The next bounded P0 asset-pipeline gate is a complete textured LEVEL00 validation export using these verified native decodes.
 
 ## P1 — required for characters and functional gameplay
 
@@ -58,7 +58,7 @@ Particle TXT definitions are already human-readable and should be used to valida
 | localization/name `.TXT` | 30 | 812,747 | UI/dialogue/objective/name tables | readable legacy text; parser useful but not blocking geometry |
 | particle/config `.TXT` | 17 | 3,213 | effect dimensions/definitions and gameplay flags | readable; no proprietary decoding required |
 
-TIM2 is standard and strategically important, but it is not a proprietary reverse-engineering target. LEVEL00 confirms additional image types, CLUT modes, and mipmapped environment textures that a later asset pipeline must support.
+TIM2 is standard and strategically important, but it is not a proprietary reverse-engineering target. The geometry-required LEVEL00 subset is operational and independently pixel-verified; unrelated image-type-3 and other TIM2 combinations remain outside scope.
 
 ## Investigation gates
 

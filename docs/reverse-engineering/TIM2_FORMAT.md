@@ -1,28 +1,55 @@
-# TIM2 Format — Verified LEVEL00 PSMT4 Subset
+# TIM2 Format — LEVEL00 Geometry Subset
 
-This note documents only the subset established from canonical LEVEL00 `002.TM2` and `L0_FLAGS.TM2`. The sources remained read-only. `tools/conversion/tim2_decode.py` emits only native-resolution derived PNGs beneath ignored `temp` directories and rejects every unimplemented TIM2 variant.
+This note documents only the TIM2 combinations required by strongly resolved LEVEL00 `MODELS.MTL` geometry materials. The source files remain ignored and read-only. `tools/conversion/tim2_decode.py` writes deterministic native-resolution PNGs only beneath ignored `temp` directories; it does not scale, filter, enhance, or silently fall back to Noesis.
 
-## Canonical sample
+## Geometry-used coverage
 
-| Property | Value | Confidence |
-|---|---|---|
-| Source | `DATA/ENV/LEVEL00/WORLD/002.TM2` | **CONFIRMED** |
-| SHA-256 | `84f2b7c0b9592d5d6af8e5eaaec13b9ba02fb1065e770b52a289151d5d411dac` | **CONFIRMED** |
-| File size | 43,648 bytes | **CONFIRMED** |
-| Container | `TIM2`, version 4, format 0, one picture | **CONFIRMED** |
-| Dimensions | 256×256 | **CONFIRMED** |
-| Image type | 4, IDTEX4 / GS PSMT4, 4-bit indexed | **CONFIRMED** |
-| CLUT | type 1, 16 RGB5A1 entries, 32 bytes | **CONFIRMED** |
-| Mips | 4: 32,768 + 8,192 + 2,048 + 512 bytes | **CONFIRMED** |
-| Alpha | RGB5A1 high bit; every sample entry is opaque | **CONFIRMED for 002** |
-| Base-image storage | row-major packed indices, low nibble first | **CONFIRMED for 002** |
-| GS swizzle step | none required for this payload | **CONFIRMED for 002** |
+The 1,338 MODELS descriptors use 39 MTL records. Thirty-two records resolve strongly to 30 unique TIM2 files; seven material names have no unique same-stem/alias texture binding and remain `UNRESOLVED_BINDING`. All 58 LEVEL00 TIM2 hashes were reverified against the local extraction inventory before this subset was decoded.
 
-The picture begins at file offset `0x10`. Its declared total size is `0xaa70`, header size `0x50`, image payload size `0xaa00`, and CLUT size `0x20`. The image payload begins at `0x60`; the CLUT begins at `0xaa60` and ends at EOF.
+| Image / CLUT / mips | Unique textures | Decoder status | Independent result |
+|---|---:|---|---|
+| image 4 / PSMT4 + type 1 RGB5A1 / 1 mip | 3 | **SUPPORTED** | RGBA exact to Noesis |
+| image 4 / PSMT4 + type 1 RGB5A1 / 4 mips | 16 | **SUPPORTED** | RGBA exact to Noesis |
+| image 4 / PSMT4 + type 3 RGBA8888 / 1 mip | 3 | **SUPPORTED** | RGBA exact to Noesis |
+| image 4 / PSMT4 + type 3 RGBA8888 / 4 mips | 2 | **SUPPORTED** | RGBA exact to Noesis |
+| image 5 / PSMT8 + type 1 RGB5A1 / 1 mip | 3 | **SUPPORTED** | RGBA exact to Noesis |
+| image 5 / PSMT8 + type 3 RGBA8888 / 1 mip | 3 | **SUPPORTED** | RGBA exact to Noesis |
 
-## Decode algorithm
+No directly colored image is strongly bound to MODELS geometry. The decoder does not claim support for LEVEL00's unrelated image-type-3 resources or a general TIM2 implementation.
 
-For each packed base-level byte, the even pixel uses bits 0–3 and the odd pixel bits 4–7. Each index selects one 16-bit little-endian CLUT entry:
+## Container and payload validation
+
+**CONFIRMED:** the supported files are TIM2 version 4, format 0, with one picture. The picture begins at `0x10`. The decoder bounds-checks the picture header, declared total/image/CLUT sizes, image and CLUT alignment, palette count, supported type combination, dimensions, mip table, every declared mip size, zero alignment padding, and decoded cardinality. It rejects unsupported or inconsistent inputs rather than guessing.
+
+**CONFIRMED:** four-level files store explicit sizes for base, half, quarter, and eighth dimensions. Their palette follows the complete mip payload and is shared. The current tool validates every level but intentionally decodes only the stored base level; it never generates mips.
+
+## Indexed-image rules
+
+### PSMT4 / image type 4
+
+**CONFIRMED:** the base image is linear row-major packed indices. The even pixel uses the low nibble and the odd pixel uses the high nibble. No image unswizzle is required. A 16-entry CLUT is used without permutation.
+
+### PSMT8 / image type 5
+
+**CONFIRMED:** the base image is linear row-major, one byte per palette index. No image unswizzle is required.
+
+**GENERIC PS2 RULE:** GS CSM1 256-color palettes exchange the 8-entry blocks at logical positions 8–15 and 16–23 inside each 32-entry group. Equivalently, logical palette index bits 3 and 4 are exchanged:
+
+```text
+stored_index = (logical & ~0x18)
+             | ((logical & 0x08) << 1)
+             | ((logical & 0x10) >> 1)
+```
+
+The operation is self-inverse. ps2dev's [gsKit CSM example](https://github.com/ps2dev/gsKit/blob/master/examples/clutcsm/clutcsm.c) explicitly performs this block exchange for CSM1; [gsKit texture code](https://github.com/ps2dev/gsKit/blob/master/ee/gs/src/gsTexture.c) independently establishes byte-per-pixel PSMT8 and half-byte-per-pixel PSMT4 storage.
+
+**SPARTAN-SPECIFIC OBSERVATION:** applying that CSM1 permutation to the stored 256-entry LEVEL00 palettes makes all six geometry-bound PSMT8 textures match Noesis exactly. `CIRCLE` and `FLARE` and all three RGB5A1 samples require the exchange. This is palette reordering, not image-data unswizzling.
+
+## CLUT and alpha rules
+
+### Type 1: RGB5A1
+
+Each little-endian 16-bit entry decodes as:
 
 ```text
 r8 = (entry & 0x1f) << 3
@@ -31,19 +58,33 @@ b8 = ((entry >> 10) & 0x1f) << 3
 a8 = 255 if entry bit 15 is set, otherwise 0
 ```
 
-The decoder preserves the stored row order, produces RGBA8, writes PNG scanlines without scaling or filtering, and uses deterministic zlib settings. The native PNG is 256×256; PNG SHA-256 is `99df51498b261e7d671b6ab6045fce6ea2137f7ca41ee9a32cce0e942ccee1b5`, and decoded RGBA SHA-256 is `dbd0582147aff1624e80d4f050990c847d5ba858f57d2666c1883d66cf1a116f`.
+**CONFIRMED:** this reproduces Noesis exactly. Five-bit channels retain their stored high-bit expansion (`0..248`); no speculative bit replication is applied.
 
-## Independent validation
+### Type 3: RGBA8888
 
-Noesis 4.474 independently decoded the same source. Its PNG container bytes differ, but its 262,144 RGBA bytes match the project decoder exactly. Both routes report 256×256 pixels, 16 colors, and alpha 255 throughout. This proves the implemented pixel, palette, row, and alpha interpretation for `002.TM2`; producing a PNG alone was not treated as proof.
+Entries are stored in byte order `R, G, B, A_PS2`:
 
-The directional `L0_FLAGS.TM2` provides a second independent sample: 32,864 bytes, 256×256, one mip, PSMT4, 16-entry RGB5A1, and fully opaque alpha. Source SHA-256 is `1dc53a5566f1b0beb27d3717bf7fbad22d95a1e2c60adc0222918257e694b0a3`; deterministic PNG SHA-256 is `04626a87f45478eddaebeb63319d3d3ccbfd6e0aa5387d19d5cfb4168b24fac6`; decoded RGBA SHA-256 is `3acfec0e6c9987afc578c8522bfc24f77e59cea46a9eb0a9919f271ccbd4689a`. All 262,144 RGBA bytes again match Noesis 4.474 exactly. This extends confirmation across both one-mip and four-mip headers.
+```text
+r8, g8, b8 = stored bytes
+a8 = min(255, A_PS2 * 2)
+```
 
-The standard format identifiers align with ps2dev gsKit's `GS_PSM_T4` classification and 16-color CLUT handling: [gsKit GS definitions](https://github.com/ps2dev/gsKit/blob/master/ee/gs/include/gsInit.h), [gsKit texture upload](https://github.com/ps2dev/gsKit/blob/master/ee/gs/src/gsTexture.c). These references support terminology; the byte-identical independent decode is the sample-specific validation.
+**CONFIRMED:** the PS2 `0..128` alpha convention and saturated doubling reproduce every geometry-bound type-3 CLUT byte-for-byte against Noesis.
 
-## Limits
+## Independent pixel validation
 
-- **CONFIRMED:** the exact v4/format-0, one-picture PSMT4 + RGB5A1 subset above, with one- and four-mip samples independently validated.
-- **LIKELY:** other LEVEL00 type-4 samples with the same structural fields can use the same path, but they have not all been independently validated.
-- **UNKNOWN / unsupported:** TIM2 image types 3 and 5, 256-entry CLUTs, CSM variants, swizzled payloads, multiple pictures, other versions, and faithful export of the stored mip chain.
-- The decoder intentionally fails on those variants and does not claim a general TIM2 implementation.
+All 30 unique strongly bound textures were decoded through both the project decoder and Noesis 4.474. Dimensions and all RGBA bytes, including alpha, are identical for all 30. The ignored local manifest records source TIM2, decoded RGBA, and deterministic PNG SHA-256 values per texture.
+
+The previously validated outputs remain unchanged:
+
+| Texture | Mips | Deterministic PNG SHA-256 | Decoded RGBA SHA-256 |
+|---|---:|---|---|
+| `002.TM2` | 4 | `99df51498b261e7d671b6ab6045fce6ea2137f7ca41ee9a32cce0e942ccee1b5` | `dbd0582147aff1624e80d4f050990c847d5ba858f57d2666c1883d66cf1a116f` |
+| `L0_FLAGS.TM2` | 1 | `04626a87f45478eddaebeb63319d3d3ccbfd6e0aa5387d19d5cfb4168b24fac6` | `3acfec0e6c9987afc578c8522bfc24f77e59cea46a9eb0a9919f271ccbd4689a` |
+
+## Confidence and limits
+
+- **CONFIRMED:** the six format/mip combinations in the geometry-used matrix, native base-level decode, palette rules, alpha rules, and absence of an image unswizzle for these files.
+- **CONFIRMED:** all strongly bound LEVEL00 MODELS textures are faithfully base-level decodable.
+- **UNKNOWN / unsupported:** image type 3, CLUT types 0/2 or compound flag variants, direct color, multi-picture containers, other versions/container formats, and TIM2 combinations outside this geometry-required set.
+- **UNRESOLVED BINDING:** seven geometry-used MTL records do not uniquely resolve to a LEVEL00 TIM2. This is a material/resource-reference question, not a failure of any encountered strongly bound texture format.

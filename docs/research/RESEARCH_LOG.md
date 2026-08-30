@@ -1,5 +1,14 @@
 # Research Log
 
+## 2026-08-30 - LEVEL00 geometry TIM2 decode completed
+
+- Reverified canonical MODELS hashes and all 58 extracted LEVEL00 TIM2 hashes against the local inventory. The 39 geometry-used MTL records produce 32 strong bindings to 30 unique TIM2 textures; seven material/resource names remain unresolved.
+- Reduced the required decoder matrix to PSMT4 or PSMT8 images with RGB5A1 or RGBA8888 CLUTs. It comprises 19 PSMT4/RGB5A1, five PSMT4/RGBA8888, three PSMT8/RGB5A1, and three PSMT8/RGBA8888 unique textures; 18 of the PSMT4 files have four mips and the rest have one.
+- Extended the strict native decoder with bounds-checked PSMT8 byte indices, 256-entry GS CSM1 palette ordering, RGBA8888 palettes, saturated PS2 alpha doubling, and exact mip-size validation. No geometry-used image requires image-data unswizzling or direct-color support.
+- Independently decoded all 30 unique textures with Noesis 4.474. Dimensions and every RGBA byte, including alpha, match exactly for all 30. Existing `002` and `L0_FLAGS` deterministic hashes remain unchanged.
+- Expanded synthetic, non-copyrighted coverage to 23 passing tests across the full MODELS/TIM2 suite. Derived PNGs, Noesis references, and the per-texture hash manifest remain ignored and uncommitted.
+- Advanced the phase to `Milestone 0 - LEVEL00 Texture Decode Complete`. A full textured validation export is now justified but was intentionally not performed in this task.
+
 ## 2026-08-30 - Directional V orientation validated
 
 - Ranked geometry-used directional candidates from the existing LEVEL00 extraction. Selected descriptor 5 / MTL 1 `L0_FLAGS`; alternatives included GRKTREE, MEDUSA_TOWER, and ARROW.

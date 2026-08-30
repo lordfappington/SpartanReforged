@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Strict native-resolution decoder for the verified LEVEL00 TIM2 subset.
+"""Strict native-resolution decoder for geometry-required LEVEL00 TIM2.
 
 Supported intentionally narrowly: one-picture TIM2 v4 containers containing
-4-bit indexed pixels (PSMT4/IDTEX4) and a 16-entry RGB5A1 CLUT. Unsupported
-variants fail explicitly.  Source files are read-only and output is permitted
+PSMT4 or PSMT8 indexed pixels with RGB5A1 or RGBA8888 CLUTs. Unsupported
+variants fail explicitly. Source files are read-only and output is permitted
 only beneath a directory named ``temp``.
 """
 
@@ -63,6 +63,40 @@ def _expand_rgb5(value: int) -> int:
     return value << 3
 
 
+def _mip_size(width: int, height: int, image_type: int) -> int:
+    pixels = width * height
+    if image_type == 4:
+        if width % 2:
+            raise Tim2FormatError(f"PSMT4 mip width must be even, got {width}")
+        return pixels // 2
+    if image_type == 5:
+        return pixels
+    raise Tim2FormatError(f"unsupported image type {image_type}")
+
+
+def _decode_rgb5a1(value: int) -> tuple[int, int, int, int]:
+    return (
+        _expand_rgb5(value & 0x1F),
+        _expand_rgb5((value >> 5) & 0x1F),
+        _expand_rgb5((value >> 10) & 0x1F),
+        255 if value & 0x8000 else 0,
+    )
+
+
+def _decode_rgba8888(value: bytes) -> tuple[int, int, int, int]:
+    if len(value) != 4:
+        raise Tim2FormatError("truncated RGBA8888 palette entry")
+    r, g, b, alpha_ps2 = value
+    # GS alpha uses 0x80 as 1.0. Noesis independently confirms doubling with
+    # saturation for every geometry-used 32-bit CLUT in LEVEL00.
+    return r, g, b, min(255, alpha_ps2 * 2)
+
+
+def _csm1_palette_index(index: int) -> int:
+    """Map a logical PSMT8 index to the stored CSM1 palette position."""
+    return (index & ~0x18) | ((index & 0x08) << 1) | ((index & 0x10) >> 1)
+
+
 def decode_tim2(data: bytes) -> Tim2Image:
     if len(data) < 0x40:
         raise Tim2FormatError("file is too small for TIM2 and picture headers")
@@ -90,14 +124,19 @@ def decode_tim2(data: bytes) -> Tim2Image:
 
     if picture_format != 0:
         raise Tim2FormatError(f"unsupported picture format {picture_format}")
-    if image_type != 4:
-        raise Tim2FormatError(f"unsupported image type {image_type}; only IDTEX4/PSMT4 is implemented")
-    if (clut_type & 0x3F) != 1 or clut_colors != 16 or clut_size != 32:
+    if image_type not in (4, 5):
+        raise Tim2FormatError(f"unsupported image type {image_type}; only IDTEX4/PSMT4 and IDTEX8/PSMT8 are implemented")
+    if clut_type not in (1, 3):
+        raise Tim2FormatError(f"unsupported CLUT type {clut_type}; only RGB5A1 and RGBA8888 are implemented")
+    expected_colors = 16 if image_type == 4 else 256
+    bytes_per_color = 2 if clut_type == 1 else 4
+    if clut_colors != expected_colors or clut_size != expected_colors * bytes_per_color:
         raise Tim2FormatError(
-            f"unsupported CLUT: type={clut_type}, colors={clut_colors}, bytes={clut_size}"
+            f"invalid CLUT for image type {image_type}: type={clut_type}, "
+            f"colors={clut_colors}, bytes={clut_size}"
         )
-    if not width or not height or (width * height) % 2:
-        raise Tim2FormatError(f"invalid PSMT4 dimensions {width}x{height}")
+    if not width or not height or (image_type == 4 and width % 2):
+        raise Tim2FormatError(f"invalid indexed dimensions {width}x{height} for image type {image_type}")
     if not mip_count or mip_count > 7:
         raise Tim2FormatError(f"invalid/unsupported mip count {mip_count}")
     if header_size < 0x30 + max(0, mip_count - 1) * 4:
@@ -119,11 +158,12 @@ def decode_tim2(data: bytes) -> Tim2Image:
         mip_sizes = tuple(_u32(data, mip_table + index * 4) for index in range(mip_count))
     if any(size <= 0 for size in mip_sizes) or sum(mip_sizes) != image_size:
         raise Tim2FormatError("mip sizes do not form the declared image payload")
-    base_required = width * height // 2
-    if mip_sizes[0] != base_required:
-        raise Tim2FormatError(
-            f"base image size mismatch: declared {mip_sizes[0]}, expected {base_required}"
-        )
+    expected_mip_sizes = tuple(
+        _mip_size(max(1, width >> level), max(1, height >> level), image_type)
+        for level in range(mip_count)
+    )
+    if mip_sizes != expected_mip_sizes:
+        raise Tim2FormatError(f"mip sizes mismatch: declared {mip_sizes}, expected {expected_mip_sizes}")
 
     image_start = _align(picture + header_size, 16)
     image_end = image_start + image_size
@@ -134,28 +174,35 @@ def decode_tim2(data: bytes) -> Tim2Image:
     if any(data[image_end:clut_start]) or any(data[clut_end:picture_end]):
         raise Tim2FormatError("non-zero bytes found in TIM2 alignment padding")
 
-    palette: list[tuple[int, int, int, int]] = []
-    for index in range(16):
-        value = _u16(data, clut_start + index * 2)
-        palette.append((
-            _expand_rgb5(value & 0x1F),
-            _expand_rgb5((value >> 5) & 0x1F),
-            _expand_rgb5((value >> 10) & 0x1F),
-            255 if value & 0x8000 else 0,
-        ))
+    stored_palette: list[tuple[int, int, int, int]] = []
+    for index in range(clut_colors):
+        if clut_type == 1:
+            stored_palette.append(_decode_rgb5a1(_u16(data, clut_start + index * 2)))
+        else:
+            entry_start = clut_start + index * 4
+            stored_palette.append(_decode_rgba8888(data[entry_start:entry_start + 4]))
+    # Spartan's PSMT8 TIM2 palettes are stored in GS CSM1 order. PSMT4 has
+    # only 16 colors and requires no 8/16 block exchange.
+    palette = (
+        tuple(stored_palette[_csm1_palette_index(index)] for index in range(256))
+        if image_type == 5 else tuple(stored_palette)
+    )
 
     packed = data[image_start:image_start + mip_sizes[0]]
-    indices = bytearray(width * height)
-    for source_index, value in enumerate(packed):
-        indices[source_index * 2] = value & 0x0F
-        indices[source_index * 2 + 1] = value >> 4
+    if image_type == 4:
+        indices = bytearray(width * height)
+        for source_index, value in enumerate(packed):
+            indices[source_index * 2] = value & 0x0F
+            indices[source_index * 2 + 1] = value >> 4
+    else:
+        indices = bytearray(packed)
     if len(indices) != width * height or (indices and max(indices) >= len(palette)):
-        raise Tim2FormatError("decoded PSMT4 index stream is invalid")
+        raise Tim2FormatError("decoded indexed image stream is invalid")
     rgba = bytes(channel for index in indices for channel in palette[index])
     if len(rgba) != width * height * 4:
         raise Tim2FormatError("decoded RGBA stream has the wrong size")
     return Tim2Image(
-        width, height, mip_count, mip_sizes, tuple(palette), bytes(indices), rgba,
+        width, height, mip_count, mip_sizes, palette, bytes(indices), rgba,
         image_type, clut_type,
     )
 
@@ -186,8 +233,14 @@ def decode_file(source: pathlib.Path) -> tuple[Tim2Image, bytes, dict[str, objec
         "height": image.height,
         "pixelCount": image.width * image.height,
         "imageType": image.image_type,
-        "pixelFormat": "PSMT4 / IDTEX4 (4-bit indexed)",
-        "paletteFormat": "RGB5A1 / 16-entry CLUT",
+        "pixelFormat": (
+            "PSMT4 / IDTEX4 (4-bit indexed)" if image.image_type == 4
+            else "PSMT8 / IDTEX8 (8-bit indexed)"
+        ),
+        "paletteFormat": (
+            f"RGB5A1 / {len(image.palette)}-entry CLUT" if image.clut_type == 1
+            else f"RGBA8888 (PS2 alpha doubled) / {len(image.palette)}-entry CLUT"
+        ),
         "paletteCount": len(image.palette),
         "palette": [list(color) for color in image.palette],
         "mipCount": image.mip_count,
@@ -197,7 +250,15 @@ def decode_file(source: pathlib.Path) -> tuple[Tim2Image, bytes, dict[str, objec
         "rgbaSha256": sha256(image.rgba),
         "pngSha256": sha256(png),
         "pngBytes": len(png),
-        "swizzle": "none; row-major packed indices, low nibble first",
+        "imageLayout": (
+            "row-major packed indices, low nibble first; no image unswizzle"
+            if image.image_type == 4 else
+            "row-major one-byte indices; no image unswizzle"
+        ),
+        "clutPermutation": (
+            "none" if image.image_type == 4 else
+            "PSMT8 CSM1: exchange palette index bit 3 with bit 4"
+        ),
     }
     return image, png, report
 

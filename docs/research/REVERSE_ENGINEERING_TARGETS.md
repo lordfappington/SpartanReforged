@@ -22,7 +22,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `DATA/FE_LANG.PAK` — **CONFIRMED:** 12 single-picture, 256-color TIM2 textures from 16×16 through 256×256; includes eight font atlases.
 - `DATA/FE_TV.PAK` — **CONFIRMED:** 35 single-picture, 8-bit indexed TIM2 textures from 16×16 through 512×512; includes 32 font atlases.
 - `DATA/FE_MAIN.PAK` — **CONFIRMED:** 68 single-picture, one-mip, 8-bit indexed TIM2 textures from 16×16 through 512×512; 32 font atlases plus UI cards, maps, icons, logos, and effect pages.
-- `DATA/LEVEL00.PAK` — **CONFIRMED:** 58 one-picture TIM2 resources using image types 3/4/5, CLUT types 0/1/3, 16/256 colors, and one/four mip levels. Strict type-4/RGB5A1 decoding is independently verified on `002` and directional `L0_FLAGS`; other variants remain unsupported.
+- `DATA/LEVEL00.PAK` — **CONFIRMED:** 58 one-picture TIM2 resources using image types 3/4/5, CLUT types 0/1/3, 16/256 colors, and one/four mip levels. All 30 unique strongly bound MODELS textures are faithfully decoded across PSMT4/PSMT8 and RGB5A1/RGBA8888; every RGBA buffer matches Noesis exactly. Unrelated image-type-3/CLUT-0 variants remain unsupported.
 - Other `DATA/FE_*.PAK`, `DATA/LEVEL*.PAK`, and `DATA/ARENA*.PAK` files — **UNKNOWN candidates:** not opened.
 
 ## MODELS
@@ -34,7 +34,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions, ADC topology, material assignment, and V2-16 UV mapping are reconstructed outside the PS2 runtime. Descriptor 118 confirms coordinates/winding and periodic texture use; descriptor 5 confirms source V using an upright lower-banner lambda. Exact repeat-versus-mirror/MTL properties, V4-8 meaning, other TIM2 variants, and character schemas remain open.
+- World positions, ADC topology, material assignment, V2-16 UV mapping, and all strongly bound native geometry textures are reconstructable outside the PS2 runtime. Descriptor 118 confirms coordinates/winding and periodic texture use; descriptor 5 confirms source V. Exact repeat-versus-mirror/MTL properties, seven unresolved material bindings, V4-8 meaning, unrelated TIM2 variants, and character schemas remain open.
 
 ## ANIMATIONS
 
