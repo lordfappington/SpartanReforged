@@ -43,9 +43,7 @@ Therefore V4-to-GS-RGBAQ, bytes 0–2 to RGB, and byte 3 to A are all **CONFIRME
 
 ## CLOUD consequence
 
-CLOUD uses ABE 1 and context 2 like the rest of this MODELS route. Its texture alpha is fully opaque, its vertex alpha is full `0x80`, and its CPU material state selects `(Cs-Cd)*As+Cd`. Therefore the equation evaluates to `Cs`: the recovered native state does not create translucency from the known inputs.
-
-No source-derived Blender/glTF approximation was added. The next bounded question is effective texture-function/alpha state (`TEX0.TCC/TFX`, and `TEXA` if relevant), not more PRIM or V4 analysis.
+CLOUD uses ABE 1 and context 2 like the rest of this MODELS route. The downstream texture trace confirms TCC=RGBA and TFX=MODULATE. Its PSMCT32 CLUT alpha and vertex alpha are both full `0x80`, producing full fragment alpha `0x80`; the alpha test passes and `(Cs-Cd)*As+Cd` evaluates to `Cs`. CLOUD is therefore an opaque V4-coloured dome, not a missing translucent blend. See [GS_TEXTURE_ALPHA_PATH.md](GS_TEXTURE_ALPHA_PATH.md).
 
 ## Confidence
 
@@ -58,8 +56,10 @@ No source-derived Blender/glTF approximation was added. The next bounded questio
 | PRIM source, ABE, CTXT, primitive type | CONFIRMED |
 | V4 to RGBAQ and alpha routing | CONFIRMED |
 | effective CLOUD vertex alpha | CONFIRMED full scale |
-| CLOUD transparency explanation | UNKNOWN; known inputs reduce to opaque source colour |
-| TEX0 TCC/TFX, TEXA, PABE, FBA | UNKNOWN in this bounded path |
+| CLOUD rendering explanation | CONFIRMED opaque V4-coloured dome |
+| TEX0 TCC/TFX | CONFIRMED RGBA/MODULATE by downstream loader trace |
+| TEXA | CONFIRMED irrelevant to CLOUD's PSMCT32 CLUT alpha |
+| PABE, FBA | not required for the recovered CLOUD result |
 
 ## Reproducibility and provenance
 

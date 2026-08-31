@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - VU1 World Render Recovery
+Milestone 0 - LEVEL00 World Preservation Baseline
 
 ## Milestone 0 - Discovery
 
@@ -18,7 +18,7 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 
 ## Asset Formats
 
-Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Its confirmed texture assembly uses 32 textured materials, seven placeholders, and 30 native images. The pipeline is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**, not native game rendering. Native MTL TEST/ZBUF/ALPHA and CPU ordering are recovered. Resident VU1 analysis confirms triangle-strip `PRIM=0x25c`, ABE enabled, context 2, and V4-to-RGBAQ. CLOUD remains opaque mathematically because both known alpha sources are full.
+Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Its confirmed texture assembly uses 32 textured materials, seven placeholders, and 30 native images. The world asset baseline is classified **LEVEL00 WORLD RECONSTRUCTION COMPLETE**, not native game rendering. Native MTL TEST/ZBUF/ALPHA and CPU ordering are recovered; resident VU1 confirms `PRIM=0x25c` and V4-to-RGBAQ; the texture-loader path confirms CLOUD's RGBA/MODULATE PSMCT32-alpha state. CLOUD is an opaque V4-coloured dome, so the texture-only white shell is explained rather than hidden.
 
 ## Executable Analysis
 
@@ -42,7 +42,7 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - What do the numeric MTL child properties mean, and how are symbolic resource names resolved to PAK entries?
 - What are DIM's exact character mapping and `0x2000` sentinel, and which legacy code pages does each UI language use?
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
-- Which effective `TEX0.TCC/TFX`/`TEXA` state reaches CLOUD, and does it provide an alpha source not present in its opaque TIM2 and full V4 alpha?
+- How should non-core GS alpha-test failure/blend behavior be represented in future native or modern renderers without weakening the frozen preservation baseline?
 - What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
 - What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
 - What is the proprietary memory-card `.ICO` schema?
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Trace only CLOUD's effective context-2 TEX0 texture-function/alpha state far enough to explain—or rule out—a non-full fragment alpha source.
+Create and validate a locked preservation export profile that includes source V4 colour, records native GS state, and views CLOUD from an in-world camera before any remaster edits.

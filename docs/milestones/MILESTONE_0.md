@@ -26,7 +26,9 @@
 - [x] Validated R5900 language support and recovered MTL child-to-GS TEST/ZBUF/ALPHA data flow
 - [x] LEVEL00 CPU material queues, three submission ranges, and CLOUD relative order recovered
 - [x] Resident VU1 MODELS GIFtag/PRIM and V4-to-RGBAQ route recovered
-- [ ] LEVEL00 world reconstruction visually complete (blocked by CLOUD effective texture-function/alpha state)
+- [x] CLOUD context-2 TEX0/TCC/TFX, CLUT alpha, alpha-test, blend, and depth path recovered
+- [x] LEVEL00 world reconstruction complete for the asset-preservation milestone
+- [x] Original LEVEL00 geometry, texture, material, and source-derived GS-state baseline frozen for future Reforged work
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

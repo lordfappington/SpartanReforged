@@ -74,7 +74,7 @@ Triangle-strip PRIM corroborates the existing ADC reconstruction. The VU output 
 
 VIF command `0x6e` unpacks unsigned V4-8 into four unsigned 32-bit VU lanes. The MODELS route loads this qword and emits it unchanged as the packed `RGBAQ` register item. Therefore V4-to-RGBAQ and byte-3-to-GS-alpha routing are **CONFIRMED**. All 88,314 LEVEL00 MODELS tuples carry byte 3 `0x80`, so the effective vertex alpha is the PS2 full-scale value `0x80`.
 
-The route does not emit `TEX0`, `TEXA`, `PABE`, or `FBA`; those states remain outside this bounded result. `TEX0.TCC/TFX` therefore remain unknown here.
+The VU route does not emit `TEX0`, `TEXA`, `PABE`, or `FBA`. A separate bounded CPU texture-loader trace now proves that `FUN_00258690` supplies `TEX0_2`; for CLOUD it is RGBA/MODULATE with direct PSMCT32 CLUT alpha. TEXA is irrelevant to that alpha path. See [GS_TEXTURE_ALPHA_PATH.md](GS_TEXTURE_ALPHA_PATH.md).
 
 ## CLOUD result
 
@@ -87,13 +87,15 @@ The route does not emit `TEX0`, `TEXA`, `PABE`, or `FBA`; those states remain ou
 | `PRIM.ABE` | 1 | CONFIRMED |
 | `PRIM.CTXT` | 1, context 2 | CONFIRMED |
 | vertex alpha | V4 byte 3 reaches RGBAQ unchanged as `0x80` | CONFIRMED |
-| texture alpha | fully opaque decoded source | CONFIRMED |
+| texture state | PSMT8H + PSMCT32 CLUT, RGBA/MODULATE | CONFIRMED |
+| texture alpha | constant PS2 full-scale `0x80` | CONFIRMED |
 | sorting | stable material order; no recovered depth sort | CONFIRMED |
-| `TEX0.TCC/TFX`, `TEXA`, `PABE`, `FBA` | not recovered on this VU route | UNKNOWN |
+| `TEXA` | irrelevant to PSMCT32 CLUT alpha | CONFIRMED |
+| `PABE`, `FBA` | not required for recovered result | not investigated |
 
-With full effective source alpha, `(Cs-Cd)*As+Cd` reduces to `Cs`. Thus ABE is genuinely enabled, but the recovered texture/V4 inputs and equation still do **not** mathematically make CLOUD translucent. The former additive diagnostic is not source-derived. The remaining bounded blocker is the effective texture-alpha/function state (especially `TEX0.TCC/TFX` or `TEXA`) or a mistaken assumption about CLOUD's intended use/visibility; draw ordering and V4 routing no longer explain the discrepancy.
+With full effective source alpha, `(Cs-Cd)*As+Cd` reduces to `Cs`. This is the native result: CLOUD is an opaque, depth-writing V4-coloured dome submitted after ordinary world materials. The former additive diagnostic was not source-derived, and a camera outside the intended playable volume can legitimately be occluded by this enclosure.
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE**.
+Readiness is **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for the world asset-preservation milestone.
 
 ## Reproducibility
 

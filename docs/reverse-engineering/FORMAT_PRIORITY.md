@@ -15,10 +15,10 @@ Container segmentation is complete. Remaining P0 geometry work is now:
 
 1. **P0a — topology control: COMPLETE for LEVEL00.** W `0x8000` suppresses the current triangle without resetting strip history; source-vertex parity continues.
 2. **P0b — minimum attribute semantics: COMPLETE and visually validated.** V2-16 is signed Q4.12 (`raw / 4096`) with source V orientation. V4-8 is confirmed routed to GS RGBAQ; bytes 0–2 are RGB inputs and byte 3 is globally full-scale alpha `0x80`.
-3. **P0c — material semantics:** type 2 constructs alpha/depth-test state, type 16 constructs the blend equation, and the MODELS VU route supplies ABE-on/context-2 triangle-strip PRIM. CLOUD's known inputs still reduce to opaque `Cs`; effective TEX0 texture-function/alpha state is the bounded blocker.
+3. **P0c — material semantics (world baseline complete):** type 2 constructs alpha/depth-test state, type 16 constructs the blend equation, the MODELS VU route supplies ABE-on/context-2 triangle-strip PRIM, and the texture loader supplies RGBA/MODULATE TEX0. CLOUD is confirmed as an opaque V4-coloured dome; exact non-core effect mappings remain follow-up work.
 4. **P0d — spatial placement:** retain the confirmed cell-bounds/reference containment and resolve only the remaining AAB leaf/trailing/culling fields.
 
-The bounded, read-only MODELS glTF exporter is **VISUALLY VALIDATED for geometry and TEXTURED ASSEMBLY VALIDATED**. All 30 unique strongly bound geometry TIM2 textures attach correctly, and Blender preserves all 46,336 polygons. The opt-in render-semantic experiment emits all 39 materials double-sided and maps nine nonopaque type-2 materials to standard glTF `BLEND`; this removes the culling holes and dark foliage regions without changing 46,336-triangle geometry. `CLOUD` has fully opaque decoded alpha and remains an occluding shell, proving that exact native type-2 blend/attribute semantics are still the bounded P0 gate. Repeat versus mirrored repeat remains secondary and explicit.
+The bounded, read-only MODELS pipeline is **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for the asset-preservation milestone. All 30 unique strongly bound geometry TIM2 textures attach correctly, Blender preserves all 46,336 polygons, and source-derived V4/TEX0/TEST/ZBUF/ALPHA state explains CLOUD as an opaque coloured dome. Standard glTF still cannot express every PS2 alpha-test failure or blend equation exactly; seven unresolved special bindings and repeat-versus-mirror remain explicit secondary limitations.
 
 ## P1 — required for characters and functional gameplay
 

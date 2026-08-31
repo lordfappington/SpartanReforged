@@ -1,5 +1,17 @@
 # Research Log
 
+## 2026-08-31 - CLOUD texture-alpha path recovered and world baseline frozen
+
+- Reverified canonical `SLES_533.93` SHA-256 `55424814871ed9174cab99a545f384864ace490fa6af2b816130dc2d5482722d` and `CLOUD.TM2` SHA-256 `694a16e09560cc0bbb3eb2469050541fdd092575333f6cb1ca0566459855b58e`.
+- Traced MTL resource selection through `FUN_0025eed0`, `FUN_0025fd10`, and `FUN_00258690` to the `TEX0_2` payload emitted by `FUN_00258970`. CLOUD's effective runtime state is PSMT8H with a PSMCT32 CSM1 CLUT, TCC=RGBA, TFX=MODULATE, and CLD=1; TBP0/CBP are dynamic allocator fields.
+- Established the actual alpha scale: every CLOUD texel selects the uniform `(255,255,255,0x80)` PS2 CLUT entry. V4 alpha `0x80` modulated by texture alpha `0x80` produces fragment alpha `0x80`, the PS2 full-scale value. TEXA is irrelevant because the CLUT supplies full PSMCT32 alpha directly.
+- Confirmed every CLOUD fragment passes GEQUAL/AREF `0x80`; AFAIL RGB_ONLY is not exercised. The standard-alpha equation therefore reduces to source colour and depth writes remain enabled.
+- Rejected the prior translucency assumption. CLOUD is a source-derived opaque V4-coloured sky/cloud dome. The white validation shell was caused by omitting V4 RGB modulation, and outside-dome diagnostic cameras can be occluded legitimately.
+- Compared GREENERY and GRKTREE narrowly: both use RGBA/MODULATE, but their varying texture alpha and distinct TEST/AFAIL families produce soft RGB-only foliage and cutout foliage respectively.
+- Added a hash-locked aggregate GS texture-state probe and five synthetic tests; all 44 format tests pass. No game asset, executable, pixel data, Ghidra database, or generated report is tracked.
+- Reran the unchanged R5900 validation project: 15,481 LQ, 15,192 SQ, 501 MMI, and 3,080 COP2/VU macro instructions remain decoded.
+- Promoted the world asset baseline to **LEVEL00 WORLD RECONSTRUCTION COMPLETE** and froze the preservation interpretation. This does not claim a native runtime, complete MTL/effect semantics, characters, or resolution of seven special/template texture bindings.
+
 ## 2026-08-31 - MODELS resident VU1 GIF/PRIM and RGBAQ route recovered
 
 - Reverified canonical `SLES_533.93` SHA-256 and the unchanged Ghidra `r5900:LE:32:default` baseline.

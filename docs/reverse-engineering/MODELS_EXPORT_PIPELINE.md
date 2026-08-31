@@ -151,7 +151,7 @@ Blender 5.2.1 LTS imported the full glTF in background mode without rendering or
 
 `LEVEL00_TEXTURED.gltf` was generated locally with 1,338 meshes, 39 materials, 30 images, and the canonical 46,336 triangles. Blender 5.2.1 LTS reports 1,338 mesh objects, 87,682 referenced vertices, 46,336 polygons, 39 materials, 30 images, and one UV layer on every mesh. All links and dimensions match.
 
-This establishes **TEXTURED ASSEMBLY VALIDATED**, not complete visual reconstruction. See [LEVEL00_TEXTURED_RECONSTRUCTION.md](../milestones/LEVEL00_TEXTURED_RECONSTRUCTION.md).
+The original export established **TEXTURED ASSEMBLY VALIDATED**. Subsequent R5900/VU1/TEX0 work now establishes **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for the asset-preservation milestone: a faithful preservation profile must include source V4 colour and retain the recovered native GS metadata, especially CLOUD's opaque RGBA/MODULATE path. This does not make standard glTF a complete GS emulator. See [LEVEL00_TEXTURED_RECONSTRUCTION.md](../milestones/LEVEL00_TEXTURED_RECONSTRUCTION.md) and [GS_TEXTURE_ALPHA_PATH.md](GS_TEXTURE_ALPHA_PATH.md).
 
 ## Experimental MTL render-semantics gate
 

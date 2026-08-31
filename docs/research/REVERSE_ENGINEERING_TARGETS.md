@@ -34,7 +34,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
 - `LEVEL00/.../WORLD/BRAZIER_DARK.BIG` — **P2 LIKELY:** compiled interactive prop/model correlated with ENT and MVR source identity.
-- World positions, ADC topology, material assignment, V2-16 UV mapping, and all strongly bound native geometry textures assemble into a validated complete glTF outside the PS2 runtime. Blender retains all 46,336 polygons and all expected links. VU1 confirms ABE/context and V4/RGBAQ routing; CLOUD's known full alpha still leaves its occlusion unexplained. Native pre-GS culling, effective TEX0 texture-alpha function, repeat-versus-mirror, seven unresolved bindings, unrelated TIM2 variants, and character schemas remain open.
+- World positions, ADC topology, material assignment, V2-16 UV mapping, and all strongly bound native geometry textures assemble into a validated complete glTF outside the PS2 runtime. Blender retains all 46,336 polygons and all expected links. VU1 confirms ABE/context and V4/RGBAQ; TEX0 confirms RGBA/MODULATE and explains CLOUD as an opaque V4-coloured dome. The LEVEL00 world preservation baseline is frozen. Exact non-core GS effects, repeat-versus-mirror, seven unresolved bindings, unrelated TIM2 variants, and character schemas remain open.
 
 ## ANIMATIONS
 
@@ -91,5 +91,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
-- CLOUD effective TEX0 texture-function/alpha state; per-material sampler states; remaining AAB leaf fields; HMP layout; character PSQ/PSW/MPH/BNS; ANM/SAM tracks; ENT records; and OLFS COL/PT2/IND data. LEVEL00 coordinates, front-face order, source V, V4-to-RGBAQ, GIFtag/PRIM, and MTL TEST/ZBUF/ALPHA/order controls are confirmed; native repeat-versus-mirror remains open.
+- Per-material sampler states; exact non-core GS effect mappings; remaining AAB leaf fields; HMP layout; character PSQ/PSW/MPH/BNS; ANM/SAM tracks; ENT records; and OLFS COL/PT2/IND data. LEVEL00 coordinates, front-face order, source V, V4-to-RGBAQ, GIFtag/PRIM, MTL TEST/ZBUF/ALPHA/order controls, and CLOUD TEX0/fragment-alpha behavior are confirmed; native repeat-versus-mirror remains open.
 - Runtime roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.

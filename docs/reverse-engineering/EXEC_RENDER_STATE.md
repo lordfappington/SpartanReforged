@@ -18,7 +18,7 @@ MTL numeric child type 16
   -> material ALPHA_2 packet payload
 ```
 
-The CPU trace is **CONFIRMED**. Child type 2 is an alpha/depth-test family selector, not the blend-equation selector. Child type 16 selects the recovered `ALPHA_2` construction. A bounded VU1 follow-up now confirms the effective MODELS `PRIM`, including `ABE=1` and context 2, and confirms V4-to-RGBAQ routing. Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE** because CLOUD's known full source alpha still reduces its native equation to opaque source colour.
+The CPU trace is **CONFIRMED**. Child type 2 is an alpha/depth-test family selector, not the blend-equation selector. Child type 16 selects the recovered `ALPHA_2` construction. Bounded VU1 and texture-loader follow-ups confirm `ABE=1`, context 2, V4-to-RGBAQ, and CLOUD's RGBA/MODULATE texture path. CLOUD is source-derived as an opaque V4-coloured dome, so the LEVEL00 world preservation baseline is now **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for this asset milestone.
 
 ## Executable identity
 
@@ -149,7 +149,7 @@ CLOUD (MTL index 31) takes the type-2=5/type-16-default path:
 - `TEXA`, `PABE`, `FBA`: not recovered on this bounded path;
 - draw bucket/order: third range `[21,total)`, after ordinary records 4–20; stable index order, no recovered depth sort.
 
-The material packet does **not** select additive blending for CLOUD. VU1 confirms ABE is enabled and vertex alpha reaches RGBAQ as full `0x80`. With fully opaque texture alpha, `(Cs-Cd)*As+Cd` reduces to `Cs`, so the shell remains unexplained. The next bounded target is effective `TEX0.TCC/TFX`/texture-alpha state or a mistaken assumption about CLOUD's intended use; no speculative glTF mapping or Blender validation was added.
+The material packet does **not** select additive blending for CLOUD. `FUN_00258690` copies a loaded texture's TEX0 into material `+0x40`; `FUN_00258970` emits it as `TEX0_2`. The CLOUD loader path sets TCC=RGBA and TFX=MODULATE with a PSMT8H image and PSMCT32 CLUT. Raw texture alpha and V4 alpha are both full PS2 `0x80`, so fragment alpha remains `0x80`, the GEQUAL/AREF `0x80` test passes, and `(Cs-Cd)*As+Cd` reduces to `Cs`. This confirms an opaque vertex-coloured dome; omission of V4 RGB caused the white diagnostic shell. See [GS_TEXTURE_ALPHA_PATH.md](GS_TEXTURE_ALPHA_PATH.md).
 
 ## PRIM / submission / draw ordering
 
@@ -178,4 +178,4 @@ The bounded VU trace establishes V4 routing into GS `RGBAQ`: unsigned V4-8 expan
 | CLOUD draw ordering | **CONFIRMED third material range, after records 4–20; stable material-index order, no recovered depth sort** |
 | alpha-test thresholds | **CONFIRMED per recovered TEST family** |
 
-Readiness stays **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified because ABE, ordering, and V4 alpha are now source-derived but mathematically still produce opaque CLOUD output with the known texture alpha. The next single target is CLOUD's effective TEX0 texture-function/alpha state.
+Readiness is **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for the world asset-preservation milestone. The source-derived opaque CLOUD behavior is no longer treated as a renderer defect. This does not claim a native runtime or complete MTL/effect semantics; the frozen preservation profile must include V4 colour and retain the recovered GS state.

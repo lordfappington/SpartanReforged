@@ -107,6 +107,6 @@ Under opaque imported material behavior the black upper CLOUD still depth-occlud
 | GS ALPHA operands, ABE, depth write, and ordering | **CONFIRMED; known full alpha still yields opaque source colour** |
 | type-2 value 5 denotes one exact render equation | **UNKNOWN** |
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED**. The V4 contribution and native blend enable are explained, but the opaque-shell discrepancy is not; all recovered alpha inputs remain full scale.
+Readiness is now **LEVEL00 WORLD RECONSTRUCTION COMPLETE** for the world asset-preservation milestone. Downstream TEX0 analysis confirms that full-scale alpha is intentional: CLOUD is an opaque V4-coloured dome, and the texture-only white shell resulted from omitting the confirmed V4 RGB modulation. See [GS_TEXTURE_ALPHA_PATH.md](GS_TEXTURE_ALPHA_PATH.md).
 
 Validated R5900 and bounded resident-VU1 analysis recover the complete relevant route through GS `RGBAQ`. See [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md) and [VU1_MODELS_RENDER.md](VU1_MODELS_RENDER.md).
