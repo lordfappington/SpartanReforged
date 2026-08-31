@@ -23,7 +23,8 @@
 - [x] Experimental GS-derived two-sided and type-2/nonopaque glTF mapping validated without changing geometry
 - [x] All 88,314 MODELS V4-8 attributes surveyed and CLOUD color/intensity gradient isolated
 - [x] Optional glTF-safe `/128`-then-clamp V4 `COLOR_0` diagnostic export and Blender import validated
-- [ ] LEVEL00 world reconstruction visually complete (blocked by exact type-2 GS blend/depth/order semantics)
+- [x] Validated R5900 language support and recovered MTL child-to-GS TEST/ZBUF/ALPHA data flow
+- [ ] LEVEL00 world reconstruction visually complete (blocked by PRIM.ABE and CLOUD draw-order/submission semantics)
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated
@@ -32,5 +33,5 @@
 - [x] Bounded function discovery/export investigated for the LEVEL00 material/GS path
 - [ ] PS2Recomp compatibility investigated
 - [ ] First recompilation experiment performed
-- [x] Critical stock-Ghidra R5900/COP2 analysis limitations documented
+- [x] Critical stock-Ghidra R5900/COP2 limitations superseded by validated Emotion Engine language support
 - [ ] Decision made on recompilation vs reimplementation direction

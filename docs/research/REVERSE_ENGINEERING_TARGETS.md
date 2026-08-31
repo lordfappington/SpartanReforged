@@ -4,7 +4,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 ## EXECUTABLE / CODE
 
-- `SLES_533.93` — **CONFIRMED / BOUNDED GHIDRA TARGET:** canonical little-endian MIPS ELF32 imported with stock MIPS64/o32 as the closest R5900 approximation. The LEVEL00 MTL load path (`0x002c3400` -> `0x002605d0` -> `0x0026d2d0`) and paired GS `TEST`/`ALPHA`/`ZBUF` packet builder (`0x002490c0`) are anchored. Missing R5900 `LQ`/`SQ`, multimedia, and COP2 semantics block the material-to-GS data-flow join.
+- `SLES_533.93` — **CONFIRMED / VALIDATED R5900 TARGET:** canonical little-endian ELF32 imported with `r5900:LE:32:default`. LQ/SQ/MMI/COP2 decoding is validated. The LEVEL00 MTL load path (`0x002c3400` -> `0x002605d0` -> `0x0026d2d0`) joins parsed children to `FUN_00257cb0` and the context-2 material GS packet.
 - `IOP/*.IRX` — **CONFIRMED:** ten ELF-based IOP modules. Candidate subsystem boundaries include disc streaming, memory-card access, controller/SIO2, and sound, inferred from conventional module names.
 
 ## ARCHIVES
@@ -29,7 +29,7 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 
 - `LEVEL00/.../WORLD/MODELS.BIN` — **P0 CONFIRMED and operationally exported:** strict parsing reconstructs 1,338 descriptor meshes from 2,128 batches, retains all 88,314 position/Q4.12 UV/V4 records and 39 material groups, and emits exactly 46,336 triangles to validated glTF. V4 bytes 0–2 are likely color/light modulation and byte 3 is globally full-scale `0x80`; exact VU routing and material/render fidelity remain open.
 - `LEVEL00/.../WORLD/MODELS.AAB` — **P0 CONFIRMED structure/reference/bounds:** complete seven-level 4-way spatial tree; leaf lists enumerate static BIN descriptors 114–1337 exactly once, and every referenced descriptor's vertices fit its associated cell bounds.
-- `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric join / P0 render-state target:** all 55 ordered records and every child/property are matrixed; 39 are geometry-used. Child type 2 is a strong asset-side render-family discriminator. Executable analysis confirms the file load/deserializer and a separate GS state builder, but does not yet identify the runtime type-2 field or any family preset; exact values, threshold, GS equations, depth state, and ordering remain unknown.
+- `LEVEL00/.../WORLD/MODELS.MTL` — **CONFIRMED numeric and native-state join / P0 render target:** all 55 ordered records are matrixed; 39 are geometry-used. Child type 2 maps to TEST/ZBUF, child type 16 to ALPHA, and child type 17 refines one type-3 branch. PRIM.ABE, draw ordering, and unrelated properties remain open.
 - `LEVEL00/.../WORLD/MODELS.STL` — **CONFIRMED lookup structure:** 32 slots, eight of which select MTL particle records 40–47.
 - `LEVEL00/.../WORLD/MODELS.FLP` / `MODELS.MVR` — **CONFIRMED fixed structures / LIKELY relationship:** fourteen 80-byte FLP transform records and six 264-byte MVR source/variant records share exact record data.
 - LEVEL00 character `.PSQ` / `.PSW` / `.MPH` families — **P1 LIKELY:** render/LOD geometry, weighted geometry, and facial mesh/morph candidates respectively.
@@ -91,5 +91,5 @@ Candidate targets are based only on disc filenames, standard headers, and safe l
 - Relationships between `LEVEL07.PAK` and `LEVEL07D.PAK`.
 - Meaning of arena suffixes `B`, `G`, `P`, `R`, `U`, and `X`.
 - Meaning of FE_MAIN's `MAP_512.TGA` script reference when the packaged texture is `MAP_512.TM2`.
-- Validated R5900 instruction support and exact VU routing for likely V4 color/light data; MTL type-2 GS blend/depth/order state; per-material sampler states; remaining AAB leaf fields; HMP layout; character PSQ/PSW/MPH/BNS; ANM/SAM tracks; ENT records; and OLFS COL/PT2/IND data. LEVEL00 coordinates, front-face order, source V, and V4 storage/cardinality are confirmed; native repeat-versus-mirror remains open.
+- Exact V4-to-RGBAQ/VU routing; PRIM.ABE and transparent/effect draw ordering; per-material sampler states; remaining AAB leaf fields; HMP layout; character PSQ/PSW/MPH/BNS; ANM/SAM tracks; ENT records; and OLFS COL/PT2/IND data. LEVEL00 coordinates, front-face order, source V, V4 storage/cardinality, and MTL TEST/ZBUF/ALPHA controls are confirmed; native repeat-versus-mirror remains open.
 - Runtime roles of LEVEL00 MODELS.FLP/MVR/INS/STL companions and whether `.CAS` is source-only or has a runtime counterpart.

@@ -1,5 +1,17 @@
 # Research Log
 
+## 2026-08-31 - Validated R5900 material-to-GS trace
+
+- Reverified canonical `SLES_533.93` SHA-256 `55424814871ed9174cab99a545f384864ace490fa6af2b816130dc2d5482722d`, ELF32 little-endian identity, and entry `0x00200008`.
+- Cloned unmodified `chaoticgd/ghidra-emotionengine-reloaded` `main` at `ae013ee1475dc970db4fdeba3ec88def6b933d43`, built it successfully for Ghidra 12.1.3 with cached Gradle 8.14.3/JDK 21, and installed it through Ghidra's supported extension directory.
+- Fresh `r5900:LE:32:default` analysis found 7,749 functions and validated 15,481 LQ, 15,192 SQ, 501 MMI, and 3,080 COP2/VU macro instructions. Former stock-MIPS truncations at the MTL parser and GS builder now decode coherently.
+- Recovered the required native join: MTL child type 2 is read into parsed-material `+0x04`, switched by `FUN_00257cb0`, and written as material `TEST_2`/`ZBUF_2`; child type 16 at `+0x12` independently constructs `ALPHA_2`.
+- Confirmed type-2 TEST families 0–5 and their AREF/AFAIL/ZTST values. Types 3/4 disable depth writes; type 4 also uses depth-test ALWAYS. Child type 16 default/0 builds `(Cs-Cd)*As+Cd`; value 1 builds `Cs*As+Cd`. Both carry unused FIX `0x80`.
+- CLOUD (MTL 31, type 2=5, type 16 default) uses TEST `0x5380b`, standard-alpha ALPHA `0x0000008000000044`, GEQUAL depth testing, and enabled depth writes. Its earlier additive diagnostic is not the native material equation.
+- `PRIM.ABE`, CLOUD draw ordering/submission, and V4-to-RGBAQ remain unproven. No exporter mapping, Blender render, VU microprogram analysis, general executable analysis, other PAK access, or PS2Recomp work occurred.
+- Added deterministic analysis-configuration and R5900 opcode-validation scripts. Ghidra projects, extension source/build products, and reports remain ignored.
+- Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE**. The next bounded target is runtime material packet -> PRIM.ABE/draw ordering.
+
 ## 2026-08-31 - Bounded native render-state executable investigation
 
 - Reverified the canonical 3,656,280-byte `SLES_533.93` SHA-256, little-endian MIPS ELF32 identity, and entry point `0x00200008`; also reverified the 5,952-byte MODELS.MTL and its 55 records / 173 numeric children.

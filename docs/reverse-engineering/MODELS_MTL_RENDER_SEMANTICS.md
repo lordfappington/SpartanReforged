@@ -9,10 +9,10 @@ The canonical file is 5,952 bytes with SHA-256 `57283516FC3CC8589EEC4817CF8C25DC
 Conclusions:
 
 - **CULL/TWO-SIDED — LIKELY platform mapping, no MTL selector identified.** The PS2 GS `PRIM` state has no face-culling field. An opt-in all-`doubleSided` glTF experiment removes the systemic holes while preserving all geometry. Spartan could still cull before GS submission, so this is not a confirmed per-material native rule.
-- **ALPHA-CAPABLE/RENDER FAMILY — STRONG correlation for child type 2.** Type 2 occurs on all nine bound materials whose decoded image has binary or partial alpha (9 true positives, 0 false negatives), but also on three opaque-image materials (`CLOUD`, `GIBS`, and `MEDUSA_TOWER`). Its values 1–5 therefore appear to select render families, not merely “has alpha.” Exact native enum names remain unknown.
-- **ALPHA MASK — LIKELY for type-2 value 1 / `MISCALPHA`, not confirmed.** Its bound image has strictly binary alpha, but one sample cannot establish the native alpha-test operator or threshold.
-- **ALPHA BLEND — LIKELY as a broad family, exact equations UNKNOWN.** Type-2 values 2–5 occur on foliage/effect materials, but standard glTF source-alpha blending cannot represent arbitrary GS equations.
-- **ALPHA THRESHOLD — UNKNOWN.** No correlated field contains a defensible threshold. No `alphaCutoff` is emitted.
+- **ALPHA/DEPTH-TEST FAMILY — CONFIRMED for child type 2.** Executable data flow maps the parsed type-2 byte to material `TEST_2` and `ZBUF_2` payloads.
+- **BLEND EQUATION FAMILY — CONFIRMED for child type 16.** Value 0/default constructs standard source-alpha and value 1 constructs source-alpha additive `ALPHA_2`; type 2 does not choose the equation.
+- **ALPHA TEST — CONFIRMED per type-2 family.** Values 1, 2, and 5 use distinct operators/references; values 3 and 4 use `AFAIL=RGB_ONLY` and suppress depth writes.
+- **CULL/TWO-SIDED — still LIKELY/UNKNOWN.** No material cull selector or pre-GS cull path was recovered.
 
 ## Record/property matrix
 
@@ -70,7 +70,7 @@ Type-2 presence versus decoded nonopaque alpha produces:
 | False negative | 0 |
 | True negative | 27 |
 
-The false positives are meaningful, not noise: `CLOUD`, `GIBS`, and `MEDUSA_TOWER` all use type-2 value 5 while their decoded texture alpha is fully opaque. Type 2 therefore likely selects a broader native render path whose semantics can include non-source-alpha blending.
+The false positives are meaningful, not noise: `CLOUD`, `GIBS`, and `MEDUSA_TOWER` all use type-2 value 5 while their decoded texture alpha is fully opaque. Executable analysis now explains the correlation: type 2 selects alpha/depth testing, while child type 16 independently selects `ALPHA_2`.
 
 ### Type-2 anchors
 
@@ -88,7 +88,7 @@ The false positives are meaningful, not noise: `CLOUD`, `GIBS`, and `MEDUSA_TOWE
 
 `CLOUD` is MTL index 31, used by one descriptor (48), 1,957 streamed vertices, and 1,728 triangles. Its properties are type 21 value 1, type 2 value 5, resource `CLOUD`, and type 19 value 0. Its native 256×256 decode has alpha 255 at every pixel. The previous statement that it was a “partial-alpha texture” was incorrect and is superseded here.
 
-The V4-8 survey resolves part of this question. CLOUD has six structured V4 tuples forming a dark upper dome and brighter warm lower ring, but byte 3 is `0x80` for all 1,957 vertices. In the common PS2 `/128` convention that is full vertex alpha. Texture alpha and vertex alpha are therefore both full: ordinary source-alpha blending cannot make the shell transparent. Bytes 0–2 are **LIKELY** RGB/color modulation; transparency itself is **LIKELY** supplied by a type-2-selected GS blend/fixed-factor and depth/order family. Exact state remains unknown. See [MODELS_V4_ATTRIBUTES.md](MODELS_V4_ATTRIBUTES.md).
+The V4-8 survey resolves part of this question. CLOUD has six structured V4 tuples forming a dark upper dome and brighter warm lower ring, but byte 3 is `0x80` for all 1,957 vertices. In the common PS2 `/128` convention that is full vertex alpha. Texture alpha and likely vertex alpha are therefore both full. Executable analysis recovers standard source-alpha `ALPHA_2`, ATE `GEQUAL`/AREF `0x80`, normal `GEQUAL` depth testing, and depth writes enabled. This state still cannot explain the shell; `PRIM.ABE`, ordering/submission context, or another external state remains required. See [MODELS_V4_ATTRIBUTES.md](MODELS_V4_ATTRIBUTES.md) and [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
 
 ### Vegetation
 
@@ -119,7 +119,7 @@ The experiment removes the systemic culling holes and exposes coherent architect
 
 Every geometry record has a paired V4-8 tuple. Byte 3 is globally `0x80`; bytes 0–2 vary coherently by material and space. Type-2 values 3 (`APP_BLOOD_02`, `APP_FIRE_BASE`, `RING_GLOW`) and 4 (`FLARE_NOZREAD`) use the neutral tuple `(127,127,127,128)`, while type-2 value 5 spans both neutral and highly modulated resources. `GRKTREE` (value 2) and `GREENERY` (value 5) retain partial source texture alpha and full vertex alpha, so their transparency is texture-alpha driven even though V4 supplies likely tint/lighting.
 
-The generic GS blend equation is `(A - B) * C + D`, commonly described for color as `(Cs - Cd) * alpha + Cd`. With CLOUD source and vertex alpha both full, that standard equation reduces to opaque source color. Plausible families that can expose the destination instead include additive source color (`Cs + Cd`) or fixed-factor additive color (`Cs * FIX + Cd`). Multiply/subtractive interpretations are weaker against the observed bright cloud-ring intent. This ranking is structural and diagnostic only: no MTL property has been mapped directly to GS `ALPHA` operands or `FIX`.
+The generic GS blend equation is `(A - B) * C + D`. Executable analysis confirms that child type 16 value 0/default builds `(Cs-Cd)*As+Cd`, while value 1 builds `Cs*As+Cd`; both payloads carry FIX `0x80`, but neither selects FIX as C. CLOUD has no child 16 and therefore uses the standard source-alpha payload, disproving the earlier fixed-factor/additive material hypothesis.
 
 A local Blender diagnostic exported V4 as glTF-safe `COLOR_0 = min(byte / 128, 1)`. CLOUD values require no clamp. Opaque texture-times-color retained the shell; transparent-plus-emission additive approximations exposed the complete scene while retaining the spatial ring. Geometry stayed at 46,336 polygons. The result explains the failure mode but is not a native mapping and is not a default exporter semantic.
 
@@ -129,18 +129,17 @@ A local Blender diagnostic exported V4 as glTF-safe `COLOR_0 = min(byte / 128, 1
 |---|---|---|
 | submitted triangles should be double-sided in a GS-faithful validation | **LIKELY** | GS has no cull bit; scene diagnostic succeeds; pre-GS Spartan culling remains unknown |
 | a specific MTL cull/two-sided field | **UNKNOWN** | no numeric field separates candidates |
-| type 2 selects an alpha/render family | **STRONG** | 9/9 nonopaque positives, no false negatives, structured values 1–5 |
-| native alpha mask for value 1 | **LIKELY** | binary-alpha `MISCALPHA` anchor only |
-| exact mask threshold/operator | **UNKNOWN** | no correlated threshold field |
+| type 2 selects alpha/depth-test state | **CONFIRMED** | child byte reaches `FUN_00257cb0`, which constructs TEST_2/ZBUF_2 |
+| native alpha test for value 1 | **CONFIRMED** | EQUAL, AREF `0x80`, AFAIL KEEP |
+| alpha-test operators/references | **CONFIRMED** | recovered for values 0–5; type-3 alternate depends on child 17 |
 | V4 bytes 0–2 are color/light modulation | **LIKELY** | material and spatial gradients; normal models fail; opt-in COLOR_0 diagnostic is coherent |
 | V4 byte 3 is full vertex alpha | **LIKELY Spartan routing; CONFIRMED generic PS2 scale** | globally `0x80`; ps2sdk/gsKit use 128 as 1.0 |
-| native alpha blend families for values 2–5 | **LIKELY family, UNKNOWN equations** | repeated foliage/effect anchors; opaque false positives prove broader semantics |
-| exact depth-write/additive/multiplicative behavior | **UNKNOWN** | glTF cannot encode arbitrary GS state and the record mapping is incomplete |
+| child type 16 blend families | **CONFIRMED for values 0/default and 1** | standard-alpha and source-alpha-additive ALPHA_2 payloads recovered |
+| depth-write behavior | **CONFIRMED for type 2 values 0–5** | values 3/4 set ZMSK; others clear it |
+| PRIM.ABE and draw ordering | **UNKNOWN** | not recovered on the bounded material-packet path |
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation, and CLOUD's exact GS blend operands/fixed alpha/depth-write/order state remain unknown. The next single task should recover only the native render-state mapping for MTL type-2 values 2–5 from the executable/VU path; that bounded step now requires Ghidra rather than further asset-only correlation.
+Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation, and CLOUD's recovered material packet still leaves `PRIM.ABE` and draw ordering/submission context unknown.
 
 ## Bounded executable follow-up
 
-The canonical executable has now been imported into Ghidra and investigated along only this render-state path. The LEVEL00 `MODELS.MTL` loader/deserializer is anchored at `0x002c3400` -> `0x002605d0` -> `0x0026d2d0`; a low-level paired-context GS packet builder at `0x002490c0` installs destinations for `TEST_1/2`, `ALPHA_1/2`, and `ZBUF_1/2`. Stock Ghidra lacks R5900 `LQ`/`SQ`, multimedia, and COP2 semantics at both critical regions, so no defensible child-type-2 -> runtime field -> GS payload trace was recovered.
-
-Accordingly all type-2 family states, CLOUD `ALPHA` operands/FIX, alpha threshold, ZMSK, and draw bucket remain **UNKNOWN**. No exporter mapping changed. Full address evidence and processor limitations are documented in [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
+Validated R5900 analysis supersedes the stock-Ghidra blocker. The path `0x002c3400` -> `0x002605d0` -> `0x0026d2d0` -> `0x00257cb0` proves child type 2 controls TEST/ZBUF and child type 16 controls ALPHA. CLOUD uses raw ALPHA `0x0000008000000044`, TEST `0x5380b`, and ZMSK 0. No exporter mapping changed because standard glTF cannot express the full recovered GS test/failure state and the still-unknown ABE/order controls matter. Full address and state evidence is documented in [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).

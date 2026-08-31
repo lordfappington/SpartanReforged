@@ -1,6 +1,6 @@
 # Tool Registry
 
-Verified locally on 2026-08-28. External source repositories and downloaded binaries are intentionally not vendored in the parent Git history unless noted.
+Verified locally through 2026-08-31. External source repositories and downloaded binaries are intentionally not vendored in the parent Git history unless noted.
 
 | Tool | Purpose | Version | Source | Installed | Notes |
 |---|---|---|---|---|---|
@@ -14,6 +14,8 @@ Verified locally on 2026-08-28. External source repositories and downloaded bina
 | Python | Analysis scripting | 3.13.7 | https://www.python.org/ | Yes | pip 25.2 verified |
 | CMake | Build configuration | 4.4.3 | https://cmake.org/ | Yes | Standalone install; command verified |
 | Ghidra | Reverse engineering | 12.1.3 | https://github.com/NationalSecurityAgency/ghidra/releases/tag/Ghidra_12.1.3_build | Yes | Official release at `%USERPROFILE%\AppData\Local\Programs\Ghidra\ghidra_12.1.3_PUBLIC`; headless startup verified |
+| Emotion Engine Reloaded | Ghidra R5900/PS2 language | Commit `ae013ee1475dc970db4fdeba3ec88def6b933d43`; language 1.4.0 | https://github.com/chaoticgd/ghidra-emotionengine-reloaded | Yes | Unmodified `main` checkout; built 2026-08-31 for Ghidra 12.1.3 with cached Gradle 8.14.3; `r5900:LE:32:default` headless import and LQ/SQ/MMI/COP2 decoding verified |
+| Gradle | Ghidra extension build | 8.14.3 | https://gradle.org/ | Cached | Existing wrapper distribution used; no additional system installation required |
 | Java/JDK | Ghidra runtime | Eclipse Temurin 21.0.12.1+1 LTS | https://adoptium.net/ | Yes | 64-bit JDK; system `JAVA_HOME` configured |
 | Noesis | Asset inspection/conversion | 4.474 | https://www.richwhitehouse.com/index.php?content=inc_projects.php&showproject=91 | Yes | Official portable release at `%USERPROFILE%\AppData\Local\Programs\Noesis`; GUI startup verified |
 | HxD | Hex editor | 2.5.0.0 | https://mh-nexus.de/en/hxd/ | Yes | Installed at `C:\Program Files\HxD` |

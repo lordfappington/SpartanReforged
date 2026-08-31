@@ -41,5 +41,5 @@ build/
 # Locally downloaded third-party binaries (keep provenance docs/scripts)
 tools/external/spartan-pak-tools/quickbms.zip
 tools/external/spartan-pak-tools/quickbms/
+tools/external/ghidra-emotionengine-reloaded/
 recomp/ps2recomp/
-

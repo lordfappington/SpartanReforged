@@ -109,4 +109,4 @@ Under opaque imported material behavior the black upper CLOUD still depth-occlud
 
 Readiness remains **TEXTURED ASSEMBLY VALIDATED**. The opaque-shell failure is explained, but it is not yet reproduced from an exact source-derived GS state.
 
-A subsequent bounded executable investigation found the LEVEL00 MTL load path and a GS `TEST`/`ALPHA`/`ZBUF` packet builder, but stock Ghidra's missing R5900/COP2 semantics prevented a data-flow trace through the VU submission path. V4 -> GS `RGBAQ` therefore remains **LIKELY**, not executable-confirmed. See [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
+Validated R5900 analysis has since recovered the MTL child-to-GS `TEST`/`ZBUF`/`ALPHA` path, but the bounded trace did not naturally establish V4 routing through VU submission to GS `RGBAQ`. V4 -> GS `RGBAQ` therefore remains **LIKELY**, not executable-confirmed. See [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
