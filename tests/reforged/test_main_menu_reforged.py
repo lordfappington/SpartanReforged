@@ -81,9 +81,9 @@ class MainMenuReforgedTests(unittest.TestCase):
             UI.render_wireframe(320, 180, original, TOKENS, UI.load_json(UI.DEFAULT_LOCALE)["strings"])
 
     def test_missing_asset_uses_named_fallback(self) -> None:
-        self.assertEqual(UI.missing_asset_fallback("logo", TOKENS), "placeholder:logo")
-        configured = {**TOKENS, "assets": {**TOKENS["assets"], "logo": "logo.webp"}}
-        self.assertEqual(UI.missing_asset_fallback("logo", configured), "logo.webp")
+        self.assertEqual(UI.missing_asset_fallback("foregroundEnvironment", TOKENS), "placeholder:foregroundEnvironment")
+        configured = {**TOKENS, "assets": {**TOKENS["assets"], "foregroundEnvironment": "foreground.webp"}}
+        self.assertEqual(UI.missing_asset_fallback("foregroundEnvironment", configured), "foreground.webp")
 
     def test_render_layers_and_effect_budgets_are_explicit(self) -> None:
         self.assertEqual([layer.value for layer in UI.RenderLayer], list(range(11)))

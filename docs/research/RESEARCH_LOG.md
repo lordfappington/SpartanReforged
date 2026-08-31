@@ -1,5 +1,14 @@
 # Research Log
 
+## 2026-08-31 - First Reforged high-resolution logo candidates produced
+
+- Reverified the frozen `SPARTAN_LOGO.TM2` and design-kit reference hashes, decoded the 192×64 base and 192×16 flare crops in memory, measured alpha/line/TM geometry, and confirmed both sources remained unchanged.
+- Separated the flare from the base before tracing. Measured base bounds are visible `(2,1)-(184,64)`, SPARTAN `(2,1)-(170,36)`, TOTAL WARRIOR `(2,41)-(171,64)`, and TM `(169,2)-(184,12)`, with face baselines 33/61 and a nine-pixel face gap.
+- Avoided an unjustified font substitution. Built custom SVG paths from a subpixel alpha iso-contour and used the same 2520×840 geometry for restrained-gold A, aged-bronze B, and brighter-cinematic C.
+- Added separate base mask, restrained glow, travelling-glint mask, and representative flare assets. Runtime PNGs are straight-alpha sRGB; the menu token now selects A as a technical preference pending human review.
+- Generated an ignored review package with original comparison, variant sheet, three 1080p integrations, preferred 1440p/4K/21:9 integrations, transparency checks, and 100/75/50% readability checks.
+- Added deterministic tooling and structural/hash/layout tests. No online generation, external logo download, final font choice, new installation, other menu remaster, preservation modification, or push occurred.
+
 ## 2026-08-31 - Reforged main-menu technical foundation established
 
 - Kept the frozen preservation baseline immutable and added a separate Reforged `main_start` implementation that does not import FE_MAIN, preservation rendering, or decoded original imagery.

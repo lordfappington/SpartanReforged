@@ -246,6 +246,16 @@ def missing_asset_fallback(asset_id: str, tokens: dict[str, Any]) -> str:
     return str(value) if value else f"placeholder:{asset_id}"
 
 
+def resolve_asset_path(asset_id: str, tokens: dict[str, Any]) -> pathlib.Path | None:
+    value = tokens.get("assets", {}).get(asset_id)
+    if not value:
+        return None
+    path = pathlib.Path(str(value))
+    if not path.is_absolute():
+        path = ROOT / "assets/reforged/frontend/main-menu" / path
+    return path if path.is_file() else None
+
+
 def _colour(tokens: dict[str, Any], name: str) -> str:
     return tokens["colours"][name]
 
@@ -269,6 +279,7 @@ def render_wireframe(
     tokens: dict[str, Any],
     strings: dict[str, str],
     profile: str = "playstation",
+    logo_image: Image.Image | None = None,
 ) -> Image.Image:
     if state.presentation is not PresentationMode.REFORGED:
         raise ValueError("wireframe renderer accepts only Reforged presentation state")
@@ -297,14 +308,25 @@ def render_wireframe(
         for x in range(box[0], box[2], step):
             draw.line((x, box[1], min(box[2], x + step // 2), box[3]), fill=(195, 172, 112, 140), width=2)
 
-    # Replaceable logo component, no source or final artwork.
+    # Replaceable logo component. A missing asset remains a labelled fallback.
     lx, ly = tokens["logo"]["position"]
     lw, lh = tokens["logo"]["maxWidth"], tokens["logo"]["height"]
     logo_box = _scaled_box(layout, (lx, ly, lx + lw, ly + lh))
-    draw.rounded_rectangle(logo_box, radius=round(12 * layout.scale), outline=_colour(tokens, "selectedGold"), width=max(2, round(3 * layout.scale)))
-    logo_font = _font(round(46 * layout.scale))
-    draw.text(layout.point(lx + 24, ly + 54), "SPARTAN / TOTAL WARRIOR", font=logo_font, fill=_colour(tokens, "selectedGold"))
-    draw.text(layout.point(lx + 24, ly + 124), "REPLACEABLE LOGO + GLINT LAYERS", font=_font(round(18 * layout.scale)), fill=_colour(tokens, "textSecondary"))
+    if logo_image is None:
+        logo_path = resolve_asset_path("logo", tokens)
+        if logo_path:
+            logo_image = Image.open(logo_path).convert("RGBA")
+    if logo_image is not None:
+        target_w, target_h = logo_box[2] - logo_box[0], logo_box[3] - logo_box[1]
+        ratio = min(target_w / logo_image.width, target_h / logo_image.height)
+        size = (max(1, round(logo_image.width * ratio)), max(1, round(logo_image.height * ratio)))
+        rendered_logo = logo_image.resize(size, Image.Resampling.LANCZOS)
+        image.paste(rendered_logo, (logo_box[0], logo_box[1]), rendered_logo)
+    else:
+        draw.rounded_rectangle(logo_box, radius=round(12 * layout.scale), outline=_colour(tokens, "selectedGold"), width=max(2, round(3 * layout.scale)))
+        logo_font = _font(round(46 * layout.scale))
+        draw.text(layout.point(lx + 24, ly + 54), "SPARTAN / TOTAL WARRIOR", font=logo_font, fill=_colour(tokens, "selectedGold"))
+        draw.text(layout.point(lx + 24, ly + 124), "REPLACEABLE LOGO + GLINT LAYERS", font=_font(round(18 * layout.scale)), fill=_colour(tokens, "textSecondary"))
 
     mx, my = tokens["menu"]["position"]
     spacing = tokens["menu"]["itemSpacing"]

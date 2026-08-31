@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "referencePath": "assets/reforged/frontend/design-kit/main-menu/logo-reference.png",
+    "referenceSha256": "351e7f5b222011a081201fc64b347acff61009be18015284da11b26946887dae",
+    "tm2Path": "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/SPARTAN_LOGO.TM2",
+    "tm2Sha256": "755e4dd82ec2d29c1dbc45136f9cbf92a25628a4e6859888ad7c7971b6a3e84c",
+    "displayedDimensions": [
+      192,
+      64
+    ],
+    "baseRgbaSha256": "6bba446d4dc72ace622c80b7fc3c78dbe9bf29dabef292d3cd37b4d3e1ceaeb0",
+    "flareRgbaSha256": "0e58e72601db4147aa79ffb04f72b417d47cb835fa621b46ae96854645dd02da",
+    "baseCropOnDecodedPage": [
+      0,
+      176,
+      192,
+      240
+    ],
+    "flareCropOnDecodedPage": [
+      0,
+      240,
+      192,
+      256
+    ]
+  },
+  "geometry": {
+    "source_size": [
+      192,
+      64
+    ],
+    "visible_alpha_bounds": [
+      2,
+      1,
+      184,
+      64
+    ],
+    "spartan_bounds": [
+      2,
+      1,
+      170,
+      36
+    ],
+    "subtitle_bounds": [
+      2,
+      41,
+      171,
+      64
+    ],
+    "trademark_bounds": [
+      169,
+      2,
+      184,
+      12
+    ],
+    "spartan_baseline": 33,
+    "subtitle_baseline": 61,
+    "line_gap": 9,
+    "spartan_width": 168,
+    "subtitle_width": 169
+  },
+  "normalizedGeometry": {
+    "visibleAlphaBounds": [
+      0.010416666666666666,
+      0.015625,
+      0.9583333333333334,
+      1.0
+    ],
+    "spartanBounds": [
+      0.010416666666666666,
+      0.015625,
+      0.8854166666666666,
+      0.5625
+    ],
+    "subtitleBounds": [
+      0.010416666666666666,
+      0.640625,
+      0.890625,
+      1.0
+    ],
+    "trademarkBounds": [
+      0.8802083333333334,
+      0.03125,
+      0.9583333333333334,
+      0.1875
+    ]
+  },
+  "master": {
+    "dimensions": [
+      2520,
+      840
+    ],
+    "canvasAspectRatio": 3.0,
+    "format": "SVG custom outlines plus deterministic RGBA PNG derivatives",
+    "traceThreshold": 192,
+    "visibleAlphaBounds": [
+      120,
+      66,
+      2295,
+      814
+    ],
+    "colourSpace": "sRGB",
+    "alpha": "straight alpha; masks encode linear coverage"
+  },
+  "runtime": {
+    "format": "PNG RGBA",
+    "dimensions": [
+      2520,
+      840
+    ],
+    "anchor": "top-left within central 16:9 safe composition",
+    "nominalDisplay1080p": [
+      630,
+      210
+    ],
+    "nominalDisplay1440p": [
+      840,
+      280
+    ],
+    "nominalDisplay4k": [
+      1260,
+      420
+    ],
+    "filter": "Lanczos downscale"
+  },
+  "layers": {
+    "baseMask": "../logo_masks/logo-base-mask.png",
+    "glow": "../logo_masks/logo-glow.png",
+    "glintMask": "../logo_masks/logo-glint-mask.png",
+    "flare": "../logo_masks/logo-flare.png"
+  },
+  "variants": {
+    "A": {
+      "description": "Faithful restrained aged gold with moderate edge relief and minimal wear.",
+      "top": [
+        239,
+        202,
+        121
+      ],
+      "middle": [
+        171,
+        125,
+        57
+      ],
+      "bottom": [
+        92,
+        58,
+        25
+      ],
+      "highlight": 0.45,
+      "wear": 0.1,
+      "shadow": 0.3,
+      "path": "../logo_runtime/logo-A.png",
+      "sha256": "cbf0db1aed872e43ec214cfe63414c2dcf35ee37fa9a9efdc60fc67410884bed"
+    },
+    "B": {
+      "description": "Aged bronze with darker recesses, stronger tonal irregularity, and visible surface wear.",
+      "top": [
+        207,
+        169,
+        91
+      ],
+      "middle": [
+        139,
+        91,
+        40
+      ],
+      "bottom": [
+        64,
+        40,
+        24
+      ],
+      "highlight": 0.32,
+      "wear": 0.24,
+      "shadow": 0.4,
+      "path": "../logo_runtime/logo-B.png",
+      "sha256": "c3b4e67fb0541565df91eab9ae1bfdda950b216ac810e3d3b6950a215af71f7f"
+    },
+    "C": {
+      "description": "Cinematic warm gold with stronger upper-edge illumination and restrained wear.",
+      "top": [
+        255,
+        224,
+        145
+      ],
+      "middle": [
+        188,
+        135,
+        57
+      ],
+      "bottom": [
+        87,
+        52,
+        20
+      ],
+      "highlight": 0.72,
+      "wear": 0.13,
+      "shadow": 0.34,
+      "path": "../logo_runtime/logo-C.png",
+      "sha256": "c3288656e1c9ba8620491d1d303213a1ccf7b0bd8ed2f609f6c8ee8b0a48ee17"
+    }
+  },
+  "preferredVariant": "A",
+  "preferenceStatus": "TECHNICAL PREFERENCE ONLY \u2014 PENDING HUMAN ART REVIEW",
+  "paletteReference": {
+    "darkVisibleMetalP10": [
+      63,
+      63,
+      67
+    ],
+    "dominantGoldMedian": [
+      170,
+      140,
+      89
+    ],
+    "brightHighlightP99": [
+      255,
+      254,
+      187
+    ],
+    "originalFlareReference": [
+      255,
+      210,
+      137
+    ]
+  },
+  "typography": {
+    "method": "custom vector silhouette reconstruction from measured original; no font used",
+    "font": null,
+    "fontLicense": null,
+    "uncertainty": "The 192x64 source limits subpixel serif detail; no exact typeface attribution is claimed."
+  }
+}

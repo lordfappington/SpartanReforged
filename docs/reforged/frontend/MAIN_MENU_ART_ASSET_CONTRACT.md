@@ -23,6 +23,10 @@ Critical UI content must remain separate from background/foreground environment 
 | `smoke` | Back/front atmospheric smoke | grayscale/colour flipbook or reviewed procedural texture | 1024×1024 per unique source frame | straight | ≥32 px soft edge | environment space; text exclusion mask | animated; no tiling unless seamless | omitted/soft geometric haze |
 | `embers` | Sparse warm particles | sprite atlas or reviewed procedural primitive | 512×512 atlas | straight/additive intent documented | ≥16 px per sprite | environment space | animated, sparse | omitted |
 
+## Current logo implementation
+
+The first contract implementation now exists under `assets/reforged/frontend/main-menu/logo`: a custom-path SVG, three 2520×840 straight-alpha sRGB material candidates, separate base/glow/glint/flare layers, and machine-readable metadata. Variant A is wired as a technical default pending human review; this is not approval of final art.
+
 ## Logo-specific acceptance criteria
 
 - Preserve the original two-line identity and proportions; do not redesign it into an unrelated wordmark.

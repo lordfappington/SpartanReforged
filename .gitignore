@@ -14,6 +14,7 @@ temp/*
 recomp/generated/*
 assets/reforged/frontend/design-kit/main-menu/*.png
 temp/reforged/main-menu-wireframes/
+assets/reforged/frontend/review/logo/
 *.log
 __pycache__/
 *.py[cod]

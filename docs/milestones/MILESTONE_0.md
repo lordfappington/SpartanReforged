@@ -32,6 +32,8 @@
 - [x] Original FE_MAIN `main_start` semantic/layout reference design kit prepared
 - [x] Additive 1920×1080 Reforged `main_start` semantic, input, layout, token, fallback, and wireframe foundation established
 - [x] Reforged main-menu art direction and replacement-asset contract documented without producing final artwork
+- [x] First Reforged production-art candidates created: custom-vector high-resolution main-menu logo with separate glow/glint/flare layers
+- [ ] Reforged main-menu logo human review and approval
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

@@ -73,12 +73,13 @@
     "reducedMotionFallback": "instant-state-change"
   },
   "assets": {
-    "logo": null,
-    "logoFlare": null,
+    "logo": "logo/logo_runtime/logo-preferred.png",
+    "logoFlare": "logo/logo_masks/logo-flare.png",
     "background": null,
     "foregroundEnvironment": null,
     "topFrieze": null,
     "bottomFrieze": null,
+    "logoGlintMask": "logo/logo_masks/logo-glint-mask.png",
     "selectionMarker": null,
     "padlock": null,
     "glyphCross": null,
