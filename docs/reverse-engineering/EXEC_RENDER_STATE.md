@@ -18,7 +18,7 @@ MTL numeric child type 16
   -> material ALPHA_2 packet payload
 ```
 
-The trace is **CONFIRMED**. Child type 2 is an alpha/depth-test family selector, not the blend-equation selector. Child type 16 selects the recovered `ALPHA_2` construction. A follow-on submission trace now confirms CLOUD's CPU draw range and relative ordering. Effective `PRIM.ABE` remains beyond a bounded VU1 entry-0 dependency, so readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE**.
+The CPU trace is **CONFIRMED**. Child type 2 is an alpha/depth-test family selector, not the blend-equation selector. Child type 16 selects the recovered `ALPHA_2` construction. A bounded VU1 follow-up now confirms the effective MODELS `PRIM`, including `ABE=1` and context 2, and confirms V4-to-RGBAQ routing. Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE** because CLOUD's known full source alpha still reduces its native equation to opaque source colour.
 
 ## Executable identity
 
@@ -145,11 +145,11 @@ CLOUD (MTL index 31) takes the type-2=5/type-16-default path:
 - `ALPHA_2`: A=`Cs`, B=`Cd`, C=`As`, D=`Cd`, FIX=`0x80` (FIX unused);
 - `TEST_2`: ATE on, ATST `GEQUAL`, AREF `0x80`, AFAIL `RGB_ONLY`, ZTE on, ZTST `GEQUAL`;
 - `ZBUF_2`: depth writes enabled (`ZMSK=0`);
-- `PRIM.ABE`: UNKNOWN;
+- `PRIM.ABE`: 1, from VU1 GIFtag `PRIM=0x25c`;
 - `TEXA`, `PABE`, `FBA`: not recovered on this bounded path;
-- draw bucket/order: UNKNOWN.
+- draw bucket/order: third range `[21,total)`, after ordinary records 4–20; stable index order, no recovered depth sort.
 
-The material packet does **not** select additive blending for CLOUD. Its source texture and likely vertex alpha are both full, so this state alone does not explain the opaque shell. The remaining explanation must be sought in `PRIM.ABE`, ordering/submission context, camera/effect usage, or another state outside the recovered material payload. No speculative glTF mapping or Blender validation was added.
+The material packet does **not** select additive blending for CLOUD. VU1 confirms ABE is enabled and vertex alpha reaches RGBAQ as full `0x80`. With fully opaque texture alpha, `(Cs-Cd)*As+Cd` reduces to `Cs`, so the shell remains unexplained. The next bounded target is effective `TEX0.TCC/TFX`/texture-alpha state or a mistaken assumption about CLOUD's intended use; no speculative glTF mapping or Blender validation was added.
 
 ## PRIM / submission / draw ordering
 
@@ -157,29 +157,25 @@ The material packet does **not** select additive blending for CLOUD. Its source 
 
 The normal path `FUN_002e0760` selects `FUN_0026ea70`. Its confirmed ranges are `[0,4)`, `[4,21)`, and `[21,total)`, with transition packets between them and ascending material-index order inside each range. The second boundary is data-derived: MTL child type 15 is stored at parsed-material `+0x14`; value 0 in record 21 `AMBIENT_FOLIAGE` sets manager boundary `+0x115fe`. CLOUD index 31 is therefore in the third/special range, after ordinary world records 4–20. It precedes GRKTREE index 33 and GREENERY index 35. No distance sorting appears in the recovered loops.
 
-The packet writes `PRMODECONT` with `AC=1`, but no `PRIM` register. Thus effective primitive attributes come from `PRIM`, not the packet's `PRMODE`. Geometry batches end in `MSCALF 0`, and the chain is passed unchanged to VIF1. Effective ABE/CTXT is therefore delegated to the resident VU1 geometry program entered at micro-address 0. `PRIM.ABE` is **UNKNOWN** and `PRIM.CTXT=2` is only **LIKELY**, despite the confirmed context-2 material registers.
-
-This is the bounded VU stop condition requested for the investigation. The exact next target is VU1 entry 0, limited to GIFtag/PRIM construction and V4-to-RGBAQ routing. See [WORLD_RENDER_SUBMISSION.md](WORLD_RENDER_SUBMISSION.md) for the full compact chain.
+The packet writes `PRMODECONT` with `AC=1`, but no `PRIM` register. MODELS batches end in `MSCALF 0`; resident VU1 entry 0 constructs a PACKED GIFtag with `PRE=1`, register list ST/RGBAQ/XYZF2, and embedded `PRIM=0x25c`. This confirms triangle strip, ABE enabled, and context 2 for the route. See [WORLD_RENDER_SUBMISSION.md](WORLD_RENDER_SUBMISSION.md) and [VU1_MODELS_RENDER.md](VU1_MODELS_RENDER.md).
 
 ## V4 and VU boundary
 
-The trace did not establish V4 routing into GS `RGBAQ`; V4 remains **LIKELY** vertex colour/light modulation. R5900 COP2/VU macro decoding is validated, but no VU microprogram analysis was started. The submission trace now establishes an unavoidable, narrow dependency: resident VU1 geometry program entry 0 is invoked by each MODELS batch and is the smallest remaining target for PRIM/RGBAQ recovery.
+The bounded VU trace establishes V4 routing into GS `RGBAQ`: unsigned V4-8 expands to four VU lanes, is loaded at micro `0x12c`, and emitted unchanged at `0x141` under the ST/RGBAQ/XYZF2 descriptor. Byte 3 reaches GS alpha as full-scale `0x80`. Bytes 0–2 are confirmed GS RGB inputs; their authored colour/light role remains the best-supported interpretation.
 
 ## Confidence and readiness
 
 | Question | Classification |
 |---|---|
 | MTL type-2 data flow | **CONFIRMED** |
-| V4 -> GS RGBAQ | **LIKELY** |
-| type-2 = 2 state | **CONFIRMED TEST/ZMSK; ABE/order UNKNOWN** |
+| V4 -> GS RGBAQ | **CONFIRMED** |
+| type-2 = 2 state | **CONFIRMED TEST/ZMSK; common MODELS ABE ON** |
 | type-2 = 3 state | **CONFIRMED TEST/ZMSK; ALPHA depends on type 16** |
 | type-2 = 4 state | **CONFIRMED TEST/ZMSK; ALPHA depends on type 16** |
 | type-2 = 5 state | **CONFIRMED TEST/ZMSK; not a unique blend family** |
-| CLOUD native blend payload | **CONFIRMED standard-alpha ALPHA payload; ABE UNKNOWN behind VU1 entry 0** |
+| CLOUD native blend payload | **CONFIRMED standard-alpha ALPHA payload and ABE ON** |
 | CLOUD depth behavior | **CONFIRMED depth test GEQUAL and depth writes enabled** |
 | CLOUD draw ordering | **CONFIRMED third material range, after records 4–20; stable material-index order, no recovered depth sort** |
 | alpha-test thresholds | **CONFIRMED per recovered TEST family** |
 
-Readiness stays **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified because source-derived ordering is now known but effective ABE/source-alpha routing still does not explain CLOUD's opaque shell.
-
-The single next task should analyze only resident VU1 program entry 0 far enough to recover GIFtag/`PRIM` ABE/CTXT and V4-to-RGBAQ routing for one MODELS batch.
+Readiness stays **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified because ABE, ordering, and V4 alpha are now source-derived but mathematically still produce opaque CLOUD output with the known texture alpha. The next single target is CLOUD's effective TEX0 texture-function/alpha state.

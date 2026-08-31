@@ -1,5 +1,16 @@
 # Research Log
 
+## 2026-08-31 - MODELS resident VU1 GIF/PRIM and RGBAQ route recovered
+
+- Reverified canonical `SLES_533.93` SHA-256 and the unchanged Ghidra `r5900:LE:32:default` baseline.
+- Identified renderer-initialization upload `FUN_002595b0`: seven VIF1 MPG blocks at executable `0x0050488c` install one contiguous 1,603-instruction resident VU1 program at micro-addresses `0x000..0x642`; MODELS batches dispatch it with `MSCALF 0`.
+- Bounded the MODELS-compatible route to micro `0x110..0x183`. It selects VU qword-8 tag data at executable `0x00507b60`, inserts dynamic NLOOP/EOP, and emits a PACKED ST/RGBAQ/XYZF2 stream.
+- Recovered embedded `PRIM=0x25c`: triangle strip, Gouraud, textured, ABE enabled, ST coordinates, GS context 2. The same MODELS template is used across material type-2 families.
+- Confirmed unsigned V4-8 expands to four VU lanes and is emitted unchanged as RGBAQ. Byte 3 therefore reaches GS alpha as full-scale `0x80` for all 88,314 records.
+- Combined with CLOUD's opaque TIM2 and `(Cs-Cd)*As+Cd` ALPHA state, the effective known `As` is full and the equation reduces to `Cs`. PRIM and V4 routing are no longer blockers, but CLOUD translucency is still not mathematically explained.
+- Added bounded Ghidra surveys, a hash-locked aggregate VU/GIF/PRIM probe, four synthetic decoder tests, and focused documentation. Raw executable/microcode/disassembly, external PCSX2 source, Ghidra databases, and generated reports remain ignored.
+- Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE**. The next single target is CLOUD's effective TEX0 texture-function/alpha state.
+
 ## 2026-08-31 - LEVEL00 world submission traced to bounded VU1 entry 0
 
 - Reverified canonical executable SHA-256 and the unchanged `r5900:LE:32:default` Ghidra baseline.

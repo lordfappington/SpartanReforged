@@ -83,7 +83,7 @@ This evidence describes PS2 conventions, not proven Spartan routing:
 - gsKit initializes alpha with the explicit convention that `0x80` is 1.0: [gsKit `gsInit.c`](https://github.com/ps2dev/gsKit/blob/master/ee/gs/src/gsInit.c).
 - PS2 texture function `MODULATE` and the GS `ALPHA` selectors are defined independently: [PCSX2 `GSRegs.h`](https://github.com/PCSX2/pcsx2/blob/master/pcsx2/GS/GSRegs.h) and [ps2sdk `libgs.h`](https://github.com/ps2dev/ps2sdk/blob/master/ee/libgs/include/libgs.h).
 
-V4-8 cannot itself be a complete `RGBAQ` packet because Q is a separate 32-bit floating value in the GS vertex interface. A plausible pipeline is that VU code expands these bytes to RGBA while supplying Q elsewhere. That routing is **UNKNOWN** without executable/VU analysis.
+Bounded VU analysis now confirms the route: unsigned V4-8 expands to four 32-bit VU lanes and is emitted unchanged as the packed `RGBAQ` item under the ST/RGBAQ/XYZF2 GIF register list. In PACKED RGBAQ form, the low byte of each lane carries R, G, B, and A respectively; the source tuple is not a literal 64-bit GS register image.
 
 ## Controlled diagnostic
 
@@ -99,14 +99,14 @@ Under opaque imported material behavior the black upper CLOUD still depth-occlud
 | byte 3 is globally `0x80` | **CONFIRMED** |
 | generic PS2 meaning of `0x80` as full-scale alpha | **CONFIRMED** |
 | bytes 0–2 are vertex RGB/color-light modulation in Spartan | **LIKELY** |
-| byte 3 is routed as vertex alpha in Spartan | **LIKELY**, not directly observed |
+| byte 3 is routed as vertex alpha in Spartan | **CONFIRMED by VU1 data flow** |
 | signed or biased unit normal | **REJECTED by distribution evidence** |
 | CLOUD V4 carries a spatial color/intensity gradient | **CONFIRMED** |
 | CLOUD transparency comes from varying V4 alpha | **REJECTED** |
-| CLOUD transparency comes from a type-2-selected native blend/depth family | **LIKELY** |
-| exact GS ALPHA operands, FIX, depth write, and ordering | **UNKNOWN** |
+| CLOUD transparency comes from a type-2-selected native blend/depth family | **REJECTED as a complete explanation** |
+| GS ALPHA operands, ABE, depth write, and ordering | **CONFIRMED; known full alpha still yields opaque source colour** |
 | type-2 value 5 denotes one exact render equation | **UNKNOWN** |
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED**. The opaque-shell failure is explained, but it is not yet reproduced from an exact source-derived GS state.
+Readiness remains **TEXTURED ASSEMBLY VALIDATED**. The V4 contribution and native blend enable are explained, but the opaque-shell discrepancy is not; all recovered alpha inputs remain full scale.
 
-Validated R5900 analysis has since recovered the MTL child-to-GS `TEST`/`ZBUF`/`ALPHA` path, but the bounded trace did not naturally establish V4 routing through VU submission to GS `RGBAQ`. V4 -> GS `RGBAQ` therefore remains **LIKELY**, not executable-confirmed. See [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
+Validated R5900 and bounded resident-VU1 analysis recover the complete relevant route through GS `RGBAQ`. See [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md) and [VU1_MODELS_RENDER.md](VU1_MODELS_RENDER.md).

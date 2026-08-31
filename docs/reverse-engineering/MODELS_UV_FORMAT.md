@@ -91,7 +91,7 @@ Within the 42,686 strongly texture-bound triangles, only 339 have zero/near-zero
 
 Generic GS UV is not the representation stored here. Pinned PCSX2 source masks packed GS UV components to 14 bits, consistent with the GS's unsigned fixed-point UV register: [PCSX2 GS UV handler](https://github.com/PCSX2/pcsx2/blob/c10a5c9ad951c517dc48b722b5b84eb9bf7fdb42/pcsx2/GS/GSState.cpp#L1422-L1427). Pinned gsKit source converts texel coordinates to GS UV by multiplying by 16 and clamps against `texture width × 16` / `height × 16`: [gsKit textured-sprite setup](https://github.com/ps2dev/gsKit/blob/43122eb96289167975b56caa45beb71eb8684fa2/ee/gs/include/gsInline.h#L104-L131).
 
-Spartan instead supplies signed V2-16 values to a VU program and stores the same approximately `-8..8` representable range regardless of texture size. The stored stream is therefore a VU-side custom normalized Q4.12 representation (**CONFIRMED from LEVEL00 data**), not direct GS UV. A downstream operation equivalent to `q12 × texture_dimension × 16` is **LIKELY** before fixed GS UV use, but the exact VU instructions, rounding, and clamp-state setup are **UNKNOWN** because no VU microprogram or direct GIF register stream is embedded in this file.
+Spartan supplies signed V2-16 values to a VU program and stores the same approximately `-8..8` representable range regardless of texture size. The stored stream is a VU-side custom Q4.12 representation (**CONFIRMED from LEVEL00 data**), not direct GS UV. Bounded VU analysis confirms the output register route uses ST (`FST=0`), but the exact coordinate arithmetic, Q production, rounding, and clamp-state setup remain outside that trace.
 
 ## V-axis orientation
 

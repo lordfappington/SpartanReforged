@@ -25,7 +25,8 @@
 - [x] Optional glTF-safe `/128`-then-clamp V4 `COLOR_0` diagnostic export and Blender import validated
 - [x] Validated R5900 language support and recovered MTL child-to-GS TEST/ZBUF/ALPHA data flow
 - [x] LEVEL00 CPU material queues, three submission ranges, and CLOUD relative order recovered
-- [ ] LEVEL00 world reconstruction visually complete (blocked by VU1-generated PRIM.ABE/source-alpha routing)
+- [x] Resident VU1 MODELS GIFtag/PRIM and V4-to-RGBAQ route recovered
+- [ ] LEVEL00 world reconstruction visually complete (blocked by CLOUD effective texture-function/alpha state)
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated
