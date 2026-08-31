@@ -88,7 +88,7 @@ The false positives are meaningful, not noise: `CLOUD`, `GIBS`, and `MEDUSA_TOWE
 
 `CLOUD` is MTL index 31, used by one descriptor (48), 1,957 streamed vertices, and 1,728 triangles. Its properties are type 21 value 1, type 2 value 5, resource `CLOUD`, and type 19 value 0. Its native 256×256 decode has alpha 255 at every pixel. The previous statement that it was a “partial-alpha texture” was incorrect and is superseded here.
 
-The V4-8 survey resolves part of this question. CLOUD has six structured V4 tuples forming a dark upper dome and brighter warm lower ring, but byte 3 is `0x80` for all 1,957 vertices. In the common PS2 `/128` convention that is full vertex alpha. Texture alpha and likely vertex alpha are therefore both full. Executable analysis recovers standard source-alpha `ALPHA_2`, ATE `GEQUAL`/AREF `0x80`, normal `GEQUAL` depth testing, and depth writes enabled. This state still cannot explain the shell; `PRIM.ABE`, ordering/submission context, or another external state remains required. See [MODELS_V4_ATTRIBUTES.md](MODELS_V4_ATTRIBUTES.md) and [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).
+The V4-8 survey resolves part of this question. CLOUD has six structured V4 tuples forming a dark upper dome and brighter warm lower ring, but byte 3 is `0x80` for all 1,957 vertices. In the common PS2 `/128` convention that is full vertex alpha. Texture alpha and likely vertex alpha are therefore both full. Executable analysis recovers standard source-alpha `ALPHA_2`, ATE `GEQUAL`/AREF `0x80`, normal `GEQUAL` depth testing, and depth writes enabled. The submission trace additionally places CLOUD in the third material range `[21,total)`, after ordinary world records 4–20, with stable material-index ordering and no recovered depth sort. Effective `PRIM.ABE` is generated beyond the CPU material packet at VU1 entry 0, so the shell remains unexplained. See [MODELS_V4_ATTRIBUTES.md](MODELS_V4_ATTRIBUTES.md), [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md), and [WORLD_RENDER_SUBMISSION.md](WORLD_RENDER_SUBMISSION.md).
 
 ### Vegetation
 
@@ -136,9 +136,11 @@ A local Blender diagnostic exported V4 as glTF-safe `COLOR_0 = min(byte / 128, 1
 | V4 byte 3 is full vertex alpha | **LIKELY Spartan routing; CONFIRMED generic PS2 scale** | globally `0x80`; ps2sdk/gsKit use 128 as 1.0 |
 | child type 16 blend families | **CONFIRMED for values 0/default and 1** | standard-alpha and source-alpha-additive ALPHA_2 payloads recovered |
 | depth-write behavior | **CONFIRMED for type 2 values 0–5** | values 3/4 set ZMSK; others clear it |
+| material submission order | **CONFIRMED** | three material-index ranges; CLOUD is in `[21,total)` after ordinary world records |
+| type 2 directly controls ABE | **NOT ESTABLISHED** | material packet has no PRIM; effective ABE is behind VU1 entry 0 |
 | PRIM.ABE and draw ordering | **UNKNOWN** | not recovered on the bounded material-packet path |
 
-Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation, and CLOUD's recovered material packet still leaves `PRIM.ABE` and draw ordering/submission context unknown.
+Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: CLOUD ordering is source-derived, but effective `PRIM.ABE` and source-alpha routing remain bounded by VU1 entry 0.
 
 ## Bounded executable follow-up
 

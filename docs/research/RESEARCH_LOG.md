@@ -1,5 +1,14 @@
 # Research Log
 
+## 2026-08-31 - LEVEL00 world submission traced to bounded VU1 entry 0
+
+- Reverified canonical executable SHA-256 and the unchanged `r5900:LE:32:default` Ghidra baseline.
+- Established that `FUN_0026fe70` queues geometry by material index, `FUN_0026e700` emits one resident material packet before each non-empty material's geometry entries, and `FUN_0026ea70` builds the normal split submission chain.
+- Recovered three stable ascending-index ranges: `[0,4)`, `[4,21)`, and `[21,total)`. Child type 15 value 0 in record 21 sets the second boundary. CLOUD index 31 is therefore in the final/special range, after ordinary world records 4–20; no distance sort appears in the recovered loops.
+- Confirmed the material packet writes `PRMODECONT.AC=1` but no `PRIM`. MODELS batches dispatch resident VU1 program entry 0 through `MSCALF 0`, making that program the bounded dependency for effective `PRIM.ABE`, `CTXT`, and V4-to-RGBAQ routing.
+- Stopped before VU microprogram analysis. CLOUD ABE remains UNKNOWN, context 2 remains LIKELY, and the opaque shell remains unexplained; readiness stays **TEXTURED ASSEMBLY VALIDATED**.
+- Added a bounded material/submission constant-reference report script and compact source-derived submission documentation. No game asset, executable, Ghidra database, exporter output, or render is tracked.
+
 ## 2026-08-31 - Validated R5900 material-to-GS trace
 
 - Reverified canonical `SLES_533.93` SHA-256 `55424814871ed9174cab99a545f384864ace490fa6af2b816130dc2d5482722d`, ELF32 little-endian identity, and entry `0x00200008`.
