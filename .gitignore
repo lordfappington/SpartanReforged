@@ -12,6 +12,7 @@ backups/*
 # Generated and temporary output
 temp/*
 recomp/generated/*
+assets/reforged/frontend/design-kit/main-menu/*.png
 *.log
 __pycache__/
 *.py[cod]

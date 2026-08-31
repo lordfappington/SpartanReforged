@@ -1,5 +1,15 @@
 # Research Log
 
+## 2026-08-31 - Original FE_MAIN main-menu design kit prepared
+
+- Kept the frozen preservation baseline immutable and used only the already-extracted FE_MAIN section. Identified script `MENU main_start` as the first primary navigation screen after the title/memory-card transition.
+- Recovered a 512×448 logical safe area displayed as 4:3 with 7:6 pixel aspect, including all target positions, source-normalized texture crops, expanded draw order, and 1080p/1440p/4K mappings.
+- Identified 11 contributing texture pages: static/tinted GRAB_05 background, procedural SMOKE and GLOWS, BANDS frame, two-layer SPARTAN_LOGO, ICONS controller glyphs, MISSION_BUILDER padlock, BLACKBOX overscan bars, and FONT14/FONT18/FONT18G.
+- Established that options are localized font text: FONT18 normal and identical-metrics FONT18G selected/glow. Selection swaps one label and performs a temporary 16-logical-pixel shake; no backing plate or selection band is present.
+- Reconstructed the static target state deterministically at 512×448, 2× nearest-neighbour, and centred 1920×1080, plus transparent layers, logo/lock crops, and glyph/state contact sheets. Procedural emitter instances remain metadata-only rather than fabricated.
+- Added separated Reforged reference tooling, source-hash validation, normalized-crop/font/layout/composition tests, and a technical design handoff. Generated PNGs are ignored; original FE data and preservation tooling are unchanged.
+- No existing local main-menu capture was found, so runtime visual comparison remains pending. No replacement art, AI generation, asset enhancement, other PAK access, executable work, or remastering occurred.
+
 ## 2026-08-31 - CLOUD texture-alpha path recovered and world baseline frozen
 
 - Reverified canonical `SLES_533.93` SHA-256 `55424814871ed9174cab99a545f384864ace490fa6af2b816130dc2d5482722d` and `CLOUD.TM2` SHA-256 `694a16e09560cc0bbb3eb2469050541fdd092575333f6cb1ca0566459855b58e`.

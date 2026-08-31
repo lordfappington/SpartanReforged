@@ -1,0 +1,111 @@
+{
+  "contributingTexturePages": 11,
+  "directSpriteDeclarations": 12,
+  "generator": "tools/reforged/frontend/main_menu_design_kit.py",
+  "inventoryRecords": 14,
+  "outputs": [
+    {
+      "bytes": 181665,
+      "file": "original-reference.png",
+      "height": 448,
+      "sha256": "6ba3113b4984707e311eb76f96ce90e98871bd43a7cbeb2dea812b00d8fd9d8c",
+      "width": 512
+    },
+    {
+      "bytes": 224112,
+      "file": "original-reference-nearest.png",
+      "height": 896,
+      "sha256": "5ab14128f6ffadc796d309c7ad5ccff25a48a5e6ee3c5acc69c4499445f8d5b6",
+      "width": 1024
+    },
+    {
+      "bytes": 282655,
+      "file": "original-reference-1080p.png",
+      "height": 1080,
+      "sha256": "d54d7a7d245fbcaa5f6e1cd3844eb58df499bba2d1e39f984f2a33c5d1352444",
+      "width": 1920
+    },
+    {
+      "bytes": 38224,
+      "file": "glyph-contact-sheet.png",
+      "height": 504,
+      "sha256": "feb91b3366a22e811195a3c1fa8d6f5f4462d1f08e65c034d9a9876fc108a80f",
+      "width": 640
+    },
+    {
+      "bytes": 239136,
+      "file": "menu-state-contact-sheet.png",
+      "height": 476,
+      "sha256": "595d13c1bc372097093702da21670f3fceaa650cdda036fea9689dc4eb056651",
+      "width": 1536
+    },
+    {
+      "bytes": 115992,
+      "file": "layer-background.png",
+      "height": 448,
+      "sha256": "eb6f5811f5200f5dc51ad19c53428e6e89ce6e7ff5bcb101b31ab1dde90e7d0e",
+      "width": 512
+    },
+    {
+      "bytes": 42845,
+      "file": "layer-chrome.png",
+      "height": 448,
+      "sha256": "af4715aea8fb96cad35e9bff29b90a28c09cf491c7f916cfad1a3a48a1fa247b",
+      "width": 512
+    },
+    {
+      "bytes": 13636,
+      "file": "layer-text.png",
+      "height": 448,
+      "sha256": "e9d78e6771b6de491df328cc9fa3c2a797974296737f87348890a401d8dccc4f",
+      "width": 512
+    },
+    {
+      "bytes": 1814,
+      "file": "layer-lock.png",
+      "height": 448,
+      "sha256": "2ed561400fa4d048ef8fff5aa65d2c9a13f0f492bb7f5fcab9dc32d3d05cc38b",
+      "width": 512
+    },
+    {
+      "bytes": 20226,
+      "file": "logo-reference.png",
+      "height": 64,
+      "sha256": "351e7f5b222011a081201fc64b347acff61009be18015284da11b26946887dae",
+      "width": 192
+    },
+    {
+      "bytes": 1339,
+      "file": "padlock-reference.png",
+      "height": 47,
+      "sha256": "4cea17cf6a20d0ba6a5eb17624788cbd736923e5971f4133202807d25f74551d",
+      "width": 46
+    }
+  ],
+  "proceduralEmitters": 4,
+  "referencePolicy": "Original dimensions/alpha/colour; nearest-neighbour only; no replacement art",
+  "runtimeCaptureValidation": "PENDING: no existing local main-menu capture found",
+  "schemaVersion": 1,
+  "sourceHashes": {
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT14.DIM": "9cccf1ec77d5d2b9866570d351c5dd3d64eea1afbdca8b8dd2c8b0c270f848b9",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT14.TM2": "e2ec1f3b775b0ad6f0b9e99804f25a9f4ed5a8c68ebe3fe7d1495b5403f2afa9",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT18.DIM": "318381795dc90d48eebf06d9ea97ae7869df5c8165a6f114d169143dbe0cb49a",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT18.TM2": "801250f9fad9d7e6c921d7a3ccd96de4c2ce362ea40d7d69105581fd9080f538",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT18G.DIM": "318381795dc90d48eebf06d9ea97ae7869df5c8165a6f114d169143dbe0cb49a",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/FONT18G.TM2": "599ada76e59523e4c09a4c53e4fde750c378b6ca3387918723f75dca37a9ef94",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/TEXT/ENGLISH/UI.TXT": "7b4d4b1c7e540efff6912532434a08f199b6733b5e6128575510d62dcf299426",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/BANDS.TM2": "890b882c277ac53d47bd338228f6c358e4522a4078bd45b276896b7a90ed444a",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/BLACKBOX.TM2": "64edfbad9b35079001ee0068118d94c732502c6be10b9513465680a58ce31b77",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/FE_MAIN.TXT": "234c1d8bc7d7dea9a6961533ea68f400d2380a8074f5c398e1cb599f78a74f20",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/GLOWS.TM2": "58842a6f71af0626e0b1dc6285e0294b69f1bd0e20ea5ad453ca6a6d2fff9856",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/GRAB_05.TM2": "d61e57ba0f7333215309e387bc2a2c010aeb062dbc2dc66efcf71bddf0034889",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/ICONS.TM2": "d123876cf25b3a807e7f7008717354e546e9b1f793b45cbfe852c8d7c2eb00d2",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/MISSION_BUILDER.TM2": "e797aa69b4d064fbbac01c94fe66970ee4d56260f665746e519c0aa477315ecc",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/SMOKE.TM2": "c91c8777572b3a58e86631fe5408d580248f820809854c2eed2c22f59529f5a1",
+    "game-extracted/pak/FE_MAIN/DATA/ENV/FE_MAIN/WORLD/SPARTAN_LOGO.TM2": "755e4dd82ec2d29c1dbc45136f9cbf92a25628a4e6859888ad7c7971b6a3e84c"
+  },
+  "sourcePak": "FE_MAIN.PAK",
+  "sourceUnchanged": true,
+  "targetMenu": "main_start",
+  "visibleTextObjectsPerState": 9
+}

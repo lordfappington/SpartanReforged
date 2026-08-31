@@ -1,0 +1,673 @@
+{
+  "drawOrder": [
+    "spr_grab02",
+    "emitter2",
+    "emitter4",
+    "borders",
+    "text_info_text",
+    "item_main_start_text",
+    "spr_spartan_logo_flare",
+    "item_main_start_text_g",
+    "spr_spartan_logo_small",
+    "main_start_particle_01",
+    "main_start_particle_02",
+    "controller_back",
+    "controller_ok",
+    "main_start_padlocks",
+    "pal_bars"
+  ],
+  "drawOrderExpanded": [
+    "spr_grab02",
+    "emitter2",
+    "emitter4",
+    "spr_border_tl",
+    "spr_border_tr",
+    "spr_border_bl",
+    "spr_border_br",
+    "text_info_text",
+    "text_new_game",
+    "text_load_game",
+    "text_options",
+    "text_arena_mode",
+    "text_replay_mission",
+    "text_bonus",
+    "spr_spartan_logo_flare",
+    "text_new_game_g",
+    "text_load_game_g",
+    "text_options_g",
+    "text_arena_mode_g",
+    "text_replay_mission_g",
+    "text_bonus_g",
+    "spr_spartan_logo_small",
+    "main_start_particle_01",
+    "main_start_particle_02",
+    "spr_button_2",
+    "text_back",
+    "spr_button_1",
+    "text_ok",
+    "spr_padlock_freeplay",
+    "spr_pal_top",
+    "spr_pal_bottom"
+  ],
+  "emitters": {
+    "emitter2": {
+      "line": 3808,
+      "name": "emitter2",
+      "texture": "tex_smoke",
+      "values": [
+        -128,
+        300,
+        128,
+        128,
+        88,
+        48,
+        800,
+        50,
+        0,
+        0,
+        360,
+        180,
+        1050,
+        180,
+        120,
+        160,
+        1
+      ]
+    },
+    "emitter4": {
+      "line": 3809,
+      "name": "emitter4",
+      "texture": "tex_smoke",
+      "values": [
+        -128,
+        32,
+        128,
+        128,
+        90,
+        48,
+        700,
+        150,
+        0,
+        0,
+        360,
+        180,
+        1100,
+        300,
+        250,
+        160,
+        1
+      ]
+    },
+    "main_start_particle_01": {
+      "line": 3972,
+      "name": "main_start_particle_01",
+      "texture": "tex_glow_star",
+      "values": [
+        156,
+        54,
+        6,
+        6,
+        90,
+        0,
+        64,
+        16,
+        0,
+        0,
+        360,
+        180,
+        256,
+        128,
+        64,
+        32,
+        1
+      ]
+    },
+    "main_start_particle_02": {
+      "line": 3973,
+      "name": "main_start_particle_02",
+      "texture": "tex_glow_star",
+      "values": [
+        156,
+        54,
+        6,
+        6,
+        270,
+        0,
+        64,
+        16,
+        0,
+        0,
+        360,
+        180,
+        256,
+        128,
+        64,
+        32,
+        1
+      ]
+    }
+  },
+  "limitations": [
+    "Emitter particles are stochastic/procedural and are represented in metadata, not fabricated in the deterministic still.",
+    "Background RGB 148/128 is inherited from the immediately preceding titles state because main_start does not reset it; runtime capture confirmation is pending.",
+    "No runtime capture exists locally, so final pixel-position validation remains pending."
+  ],
+  "mapping": {
+    "1920x1080": {
+      "centralHeight": 1080,
+      "centralWidth": 1440,
+      "offsetX": 240,
+      "offsetY": 0,
+      "outputHeight": 1080,
+      "outputWidth": 1920,
+      "scaleXFromLogical": 2.8125,
+      "scaleYFromLogical": 2.4107142857142856,
+      "sideExtensionEach": 240
+    },
+    "2560x1440": {
+      "centralHeight": 1440,
+      "centralWidth": 1920,
+      "offsetX": 320,
+      "offsetY": 0,
+      "outputHeight": 1440,
+      "outputWidth": 2560,
+      "scaleXFromLogical": 3.75,
+      "scaleYFromLogical": 3.2142857142857144,
+      "sideExtensionEach": 320
+    },
+    "3840x2160": {
+      "centralHeight": 2160,
+      "centralWidth": 2880,
+      "offsetX": 480,
+      "offsetY": 0,
+      "outputHeight": 2160,
+      "outputWidth": 3840,
+      "scaleXFromLogical": 5.625,
+      "scaleYFromLogical": 4.821428571428571,
+      "sideExtensionEach": 480
+    }
+  },
+  "menuDeclarationLine": 3974,
+  "menuOptions": {
+    "arena_mode": {
+      "localizedText": "Arena Challenge Mode",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_arena_mode",
+        "layer": 7,
+        "line": 899,
+        "name": "text_arena_mode",
+        "width": 320,
+        "x": 64,
+        "y": 224
+      },
+      "restPosition": [
+        64,
+        224
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_arena_mode",
+        "layer": 7,
+        "line": 905,
+        "name": "text_arena_mode_g",
+        "width": 320,
+        "x": 64,
+        "y": 224
+      }
+    },
+    "bonus": {
+      "localizedText": "Extras",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_bonus",
+        "layer": 7,
+        "line": 901,
+        "name": "text_bonus",
+        "width": 320,
+        "x": 64,
+        "y": 288
+      },
+      "restPosition": [
+        64,
+        288
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_bonus",
+        "layer": 7,
+        "line": 907,
+        "name": "text_bonus_g",
+        "width": 320,
+        "x": 64,
+        "y": 288
+      }
+    },
+    "load_game": {
+      "localizedText": "Load Game",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_load_game",
+        "layer": 7,
+        "line": 897,
+        "name": "text_load_game",
+        "width": 320,
+        "x": 64,
+        "y": 160
+      },
+      "restPosition": [
+        64,
+        160
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_load_game",
+        "layer": 7,
+        "line": 903,
+        "name": "text_load_game_g",
+        "width": 320,
+        "x": 64,
+        "y": 160
+      }
+    },
+    "new_game": {
+      "localizedText": "New Game",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_new_game",
+        "layer": 7,
+        "line": 895,
+        "name": "text_new_game",
+        "width": 320,
+        "x": 64,
+        "y": 128
+      },
+      "restPosition": [
+        64,
+        128
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_new_game",
+        "layer": 7,
+        "line": 902,
+        "name": "text_new_game_g",
+        "width": 320,
+        "x": 64,
+        "y": 128
+      }
+    },
+    "options": {
+      "localizedText": "Options",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_options",
+        "layer": 7,
+        "line": 898,
+        "name": "text_options",
+        "width": 320,
+        "x": 64,
+        "y": 192
+      },
+      "restPosition": [
+        64,
+        192
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_options",
+        "layer": 7,
+        "line": 904,
+        "name": "text_options_g",
+        "width": 320,
+        "x": 64,
+        "y": 192
+      }
+    },
+    "replay_mission": {
+      "localizedText": "Single Mission Replay",
+      "normal": {
+        "font_index": 1,
+        "height": 32,
+        "label": "la_replay_mission",
+        "layer": 7,
+        "line": 900,
+        "name": "text_replay_mission",
+        "width": 320,
+        "x": 64,
+        "y": 256
+      },
+      "restPosition": [
+        64,
+        256
+      ],
+      "selected": {
+        "font_index": 2,
+        "height": 32,
+        "label": "la_replay_mission",
+        "layer": 7,
+        "line": 906,
+        "name": "text_replay_mission_g",
+        "width": 320,
+        "x": 64,
+        "y": 256
+      }
+    }
+  },
+  "padlock": {
+    "activation": "locked replay confirmation plays sfx_locked and flashes colour white then neutral",
+    "condition": "show when maxlevel == 0; hide when maxlevel > 0",
+    "nativeCrop": [
+      65,
+      0,
+      111,
+      47
+    ],
+    "sprite": {
+      "height": 32,
+      "line": 245,
+      "name": "spr_padlock_freeplay",
+      "rotation": 0,
+      "texture": "tex_padlock",
+      "width": 32,
+      "x": 32,
+      "y": 256
+    }
+  },
+  "prompts": {
+    "back": {
+      "glyph": "spr_button_2",
+      "semanticAction": "BACK",
+      "text": "text_back"
+    },
+    "ok": {
+      "glyph": "spr_button_1",
+      "semanticAction": "CONFIRM",
+      "text": "text_ok"
+    }
+  },
+  "screen": {
+    "displayAspect": "4:3",
+    "logicalHeight": 448,
+    "logicalWidth": 512,
+    "origin": "top-left",
+    "pixelAspect": "7:6",
+    "positiveX": "right",
+    "positiveY": "down",
+    "safeArea": {
+      "height": 448,
+      "width": 512,
+      "x": 0,
+      "y": 0
+    },
+    "storageAspect": "512:448"
+  },
+  "sprites": {
+    "spr_border_bl": {
+      "height": 32,
+      "line": 376,
+      "name": "spr_border_bl",
+      "rotation": 0,
+      "texture": "tex_bands",
+      "width": 512,
+      "x": -256,
+      "y": 384
+    },
+    "spr_border_br": {
+      "height": 32,
+      "line": 377,
+      "name": "spr_border_br",
+      "rotation": 0,
+      "texture": "tex_bands",
+      "width": 512,
+      "x": 256,
+      "y": 384
+    },
+    "spr_border_tl": {
+      "height": 32,
+      "line": 374,
+      "name": "spr_border_tl",
+      "rotation": 0,
+      "texture": "tex_bands",
+      "width": 512,
+      "x": -256,
+      "y": 32
+    },
+    "spr_border_tr": {
+      "height": 32,
+      "line": 375,
+      "name": "spr_border_tr",
+      "rotation": 0,
+      "texture": "tex_bands",
+      "width": 512,
+      "x": 256,
+      "y": 32
+    },
+    "spr_button_1": {
+      "height": 32,
+      "line": 249,
+      "name": "spr_button_1",
+      "rotation": 0,
+      "texture": "tex_icons_button_1",
+      "width": 32,
+      "x": 432,
+      "y": 385
+    },
+    "spr_button_2": {
+      "height": 32,
+      "line": 250,
+      "name": "spr_button_2",
+      "rotation": 0,
+      "texture": "tex_icons_button_2",
+      "width": 32,
+      "x": 336,
+      "y": 385
+    },
+    "spr_button_3": {
+      "height": 32,
+      "line": 251,
+      "name": "spr_button_3",
+      "rotation": 0,
+      "texture": "tex_icons_button_3",
+      "width": 32,
+      "x": 208,
+      "y": 385
+    },
+    "spr_button_4": {
+      "height": 32,
+      "line": 252,
+      "name": "spr_button_4",
+      "rotation": 0,
+      "texture": "tex_icons_button_4",
+      "width": 32,
+      "x": 24,
+      "y": 352
+    },
+    "spr_grab02": {
+      "height": 480,
+      "line": 303,
+      "name": "spr_grab02",
+      "rotation": 0,
+      "texture": "tex_grab02",
+      "width": 640,
+      "x": -64,
+      "y": -16
+    },
+    "spr_padlock_freeplay": {
+      "height": 32,
+      "line": 245,
+      "name": "spr_padlock_freeplay",
+      "rotation": 0,
+      "texture": "tex_padlock",
+      "width": 32,
+      "x": 32,
+      "y": 256
+    },
+    "spr_pal_bottom": {
+      "height": 64,
+      "line": 289,
+      "name": "spr_pal_bottom",
+      "rotation": 0,
+      "texture": "tex_blackbox",
+      "width": 720,
+      "x": -64,
+      "y": 448
+    },
+    "spr_pal_top": {
+      "height": 64,
+      "line": 288,
+      "name": "spr_pal_top",
+      "rotation": 0,
+      "texture": "tex_blackbox",
+      "width": 720,
+      "x": -64,
+      "y": -64
+    },
+    "spr_spartan_logo_flare": {
+      "height": 16,
+      "line": 294,
+      "name": "spr_spartan_logo_flare",
+      "rotation": 0,
+      "texture": "tex_spartan_logo_flare",
+      "width": 192,
+      "x": 64,
+      "y": 48
+    },
+    "spr_spartan_logo_small": {
+      "height": 64,
+      "line": 293,
+      "name": "spr_spartan_logo_small",
+      "rotation": 0,
+      "texture": "tex_spartan_logo_small",
+      "width": 192,
+      "x": 64,
+      "y": 16
+    }
+  },
+  "targetMenu": "main_start",
+  "textMeasurements": {
+    "arena_mode": {
+      "glowAdvance": 212,
+      "normalAdvance": 212,
+      "value": "Arena Challenge Mode"
+    },
+    "bonus": {
+      "glowAdvance": 55,
+      "normalAdvance": 55,
+      "value": "Extras"
+    },
+    "load_game": {
+      "glowAdvance": 104,
+      "normalAdvance": 104,
+      "value": "Load Game"
+    },
+    "new_game": {
+      "glowAdvance": 102,
+      "normalAdvance": 102,
+      "value": "New Game"
+    },
+    "options": {
+      "glowAdvance": 72,
+      "normalAdvance": 72,
+      "value": "Options"
+    },
+    "replay_mission": {
+      "glowAdvance": 204,
+      "normalAdvance": 204,
+      "value": "Single Mission Replay"
+    }
+  },
+  "textures": {
+    "tex_bands": {
+      "height": 16,
+      "line": 203,
+      "name": "tex_bands",
+      "page": "tp_bands",
+      "width": 255,
+      "x": 0,
+      "y": 0
+    },
+    "tex_grab02": {
+      "height": 255,
+      "line": 67,
+      "name": "tex_grab02",
+      "page": "tp_grab02",
+      "width": 255,
+      "x": 0,
+      "y": 0
+    },
+    "tex_icons_button_1": {
+      "height": 128,
+      "line": 49,
+      "name": "tex_icons_button_1",
+      "page": "tp_icons",
+      "width": 128,
+      "x": 128,
+      "y": 0
+    },
+    "tex_icons_button_2": {
+      "height": 128,
+      "line": 50,
+      "name": "tex_icons_button_2",
+      "page": "tp_icons",
+      "width": 128,
+      "x": 0,
+      "y": 128
+    },
+    "tex_icons_button_3": {
+      "height": 128,
+      "line": 51,
+      "name": "tex_icons_button_3",
+      "page": "tp_icons",
+      "width": 128,
+      "x": 0,
+      "y": 0
+    },
+    "tex_icons_button_4": {
+      "height": 128,
+      "line": 52,
+      "name": "tex_icons_button_4",
+      "page": "tp_icons",
+      "width": 128,
+      "x": 128,
+      "y": 128
+    },
+    "tex_padlock": {
+      "height": 47,
+      "line": 43,
+      "name": "tex_padlock",
+      "page": "tp_mission_builder",
+      "width": 46,
+      "x": 65,
+      "y": 0
+    },
+    "tex_spartan_logo_flare": {
+      "height": 8,
+      "line": 59,
+      "name": "tex_spartan_logo_flare",
+      "page": "tp_spartan_logo",
+      "width": 96,
+      "x": 0,
+      "y": 120
+    },
+    "tex_spartan_logo_small": {
+      "height": 32,
+      "line": 58,
+      "name": "tex_spartan_logo_small",
+      "page": "tp_spartan_logo",
+      "width": 96,
+      "x": 0,
+      "y": 88
+    }
+  }
+}

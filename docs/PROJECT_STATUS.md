@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - LEVEL00 World Preservation Baseline
+Reforged UI - Original Main Menu Design Reference
 
 ## Milestone 0 - Discovery
 
@@ -28,6 +28,10 @@ Ghidra 12.1.3 with the pinned Emotion Engine Reloaded extension imports the hash
 
 PS2Recomp upstream commit `14b1e5cb39b4af7e6fc12f9a29fdc751efde49d7` is staged for later compatibility research. No Spartan recompilation has begun.
 
+## Reforged UI Status
+
+The original FE_MAIN `main_start` screen is reconstructed as a deterministic reference-only design kit in a separate Reforged namespace. Its 512×448 logical layout, 4:3/non-square-pixel mapping, 11 contributing texture pages, font/glow selection states, two-layer logo, controller glyphs, conditional padlock, borders, background, and four procedural emitters are inventoried. Generated copyrighted imagery remains ignored. No replacement art, remastering, or final UI renderer has begun; runtime-capture comparison is pending because no local main-menu capture exists.
+
 ## Known Tools
 
 See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
@@ -52,4 +56,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Create and validate a locked preservation export profile that includes source V4 colour, records native GS state, and views CLOUD from an in-world camera before any remaster edits.
+Conduct human design review of the original 192×64 two-layer main-menu logo specification before commissioning any replacement artwork.
