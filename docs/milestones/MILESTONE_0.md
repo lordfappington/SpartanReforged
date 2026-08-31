@@ -29,6 +29,9 @@
 - [x] CLOUD context-2 TEX0/TCC/TFX, CLUT alpha, alpha-test, blend, and depth path recovered
 - [x] LEVEL00 world reconstruction complete for the asset-preservation milestone
 - [x] Original LEVEL00 geometry, texture, material, and source-derived GS-state baseline frozen for future Reforged work
+- [x] Original FE_MAIN `main_start` semantic/layout reference design kit prepared
+- [x] Additive 1920×1080 Reforged `main_start` semantic, input, layout, token, fallback, and wireframe foundation established
+- [x] Reforged main-menu art direction and replacement-asset contract documented without producing final artwork
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

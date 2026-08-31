@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "ui": {
+    "designWidth": 1920,
+    "designHeight": 1080,
+    "referenceAspect": "16:9",
+    "safeArea": { "horizontal": 96, "vertical": 54 },
+    "minimumFallbackAspect": "4:3"
+  },
+  "logo": {
+    "anchor": "top-left",
+    "position": [130, 90],
+    "maxWidth": 650,
+    "height": 210,
+    "safePadding": 32
+  },
+  "menu": {
+    "anchor": "top-left",
+    "position": [172, 350],
+    "maxWidth": 690,
+    "itemSpacing": 64,
+    "markerGap": 30,
+    "markerSize": [48, 18],
+    "selectedScale": 1.025,
+    "transitionDurationMs": 160,
+    "confirmFlareDurationMs": 130
+  },
+  "context": {
+    "anchor": "bottom-left",
+    "position": [130, 805],
+    "maxWidth": 700,
+    "headingBodyGap": 18
+  },
+  "prompt": {
+    "anchor": "bottom-right",
+    "position": [1790, 962],
+    "itemGap": 36,
+    "glyphSize": 38
+  },
+  "ornament": { "height": 34, "endCapWidth": 82, "tileWidth": 96 },
+  "background": {
+    "parallaxStrength": 0.018,
+    "centralCompositionWidth": 1920,
+    "ultrawideExtension": "environment-only"
+  },
+  "typography": {
+    "developmentFont": "DejaVu Sans",
+    "MenuPrimary": 38,
+    "MenuPrimarySelected": 40,
+    "ContextHeading": 26,
+    "ContextBody": 20,
+    "PromptLabel": 18
+  },
+  "colours": {
+    "backgroundDark": "#070C15",
+    "backgroundMid": "#101D2D",
+    "environmentGuide": "#18314A",
+    "foregroundGuide": "#111820",
+    "textPrimary": "#D8D6CF",
+    "textSecondary": "#969CA5",
+    "selectedGold": "#C9A45B",
+    "selectedGlow": "#E5BE6A",
+    "lockedText": "#6E7278",
+    "contextHeading": "#C9A45B",
+    "contextBody": "#AEB4BC",
+    "ornamentNeutral": "#746849",
+    "safeAreaGuide": "#4C94B8",
+    "placeholder": "#9B6577"
+  },
+  "motion": {
+    "selection": ["marker-slide", "marker-fade", "text-colour", "subtle-scale"],
+    "confirm": ["warm-flare", "marker-impulse"],
+    "reducedMotionFallback": "instant-state-change"
+  },
+  "assets": {
+    "logo": null,
+    "logoFlare": null,
+    "background": null,
+    "foregroundEnvironment": null,
+    "topFrieze": null,
+    "bottomFrieze": null,
+    "selectionMarker": null,
+    "padlock": null,
+    "glyphCross": null,
+    "glyphTriangle": null,
+    "glyphCircle": null,
+    "glyphSquare": null,
+    "smoke": null,
+    "embers": null
+  }
+}

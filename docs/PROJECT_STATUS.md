@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Reforged UI - Original Main Menu Design Reference
+Reforged UI - Main Menu Technical Foundation
 
 ## Milestone 0 - Discovery
 
@@ -30,7 +30,7 @@ PS2Recomp upstream commit `14b1e5cb39b4af7e6fc12f9a29fdc751efde49d7` is staged f
 
 ## Reforged UI Status
 
-The original FE_MAIN `main_start` screen is reconstructed as a deterministic reference-only design kit in a separate Reforged namespace. Its 512×448 logical layout, 4:3/non-square-pixel mapping, 11 contributing texture pages, font/glow selection states, two-layer logo, controller glyphs, conditional padlock, borders, background, and four procedural emitters are inventoried. Generated copyrighted imagery remains ignored. No replacement art, remastering, or final UI renderer has begun; runtime-capture comparison is pending because no local main-menu capture exists.
+The original FE_MAIN `main_start` screen remains reconstructed as a deterministic reference-only design kit in a separate Reforged namespace. An additive Reforged foundation now models the same six semantic actions, localized labels/descriptions, conditional replay lock, device-independent prompts, Original/Reforged presentation split, 1920×1080 authoring space, safe anchors, ultrawide environment extensions, tokenized components, and missing-asset fallbacks. Asset-free geometric wireframes validate 1080p, 1440p, 4K, and 21:9 layouts. No replacement art, remastering, production runtime, or final font has begun.
 
 ## Known Tools
 
@@ -56,4 +56,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Conduct human design review of the original 192×64 two-layer main-menu logo specification before commissioning any replacement artwork.
+Produce and validate the high-resolution Reforged SPARTAN / TOTAL WARRIOR logo replacement against the original logo and the approved main-menu art direction.

@@ -1,5 +1,16 @@
 # Research Log
 
+## 2026-08-31 - Reforged main-menu technical foundation established
+
+- Kept the frozen preservation baseline immutable and added a separate Reforged `main_start` implementation that does not import FE_MAIN, preservation rendering, or decoded original imagery.
+- Added a stable six-item semantic model, external localization keys, original `maxlevel == 0` replay lock semantics, explicit Original/Reforged presentation modes, and front-end input abstraction for PlayStation, Xbox, and keyboard prompts.
+- Established a 1920×1080 authoring space with uniform viewport scaling, a 96×54 action-safe inset, safe anchors, 4:3 fit behavior, and environment-only side extension at 21:9/32:9.
+- Added editable design/colour/motion/asset tokens, replaceable component fallbacks, scalable typography roles, a safe-area SVG, and an explicit eleven-layer rendering model. No final commercial font or artwork was selected.
+- Generated ignored deterministic geometric wireframes at 1920×1080, 2560×1440, 3840×2160, and 2560×1080. These validate hierarchy and layout only and contain no original game imagery.
+- Documented the implementation specification, approved art direction, and future art-asset contract. UI remains independent of background art and missing Reforged assets never silently fall back to copyrighted original data.
+- Added ten synthetic Reforged tests covering resolution/aspect behavior, spacing/navigation, locked state, prompt mapping, wrapping, presentation separation, and fallback behavior. Preservation tests remain unchanged.
+- No original asset, preservation tool, executable, archive, decoder, or LEVEL00 file was modified. No final artwork, concept generation, installation, or push occurred.
+
 ## 2026-08-31 - Original FE_MAIN main-menu design kit prepared
 
 - Kept the frozen preservation baseline immutable and used only the already-extracted FE_MAIN section. Identified script `MENU main_start` as the first primary navigation screen after the title/memory-card transition.

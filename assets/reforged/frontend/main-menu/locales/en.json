@@ -1,0 +1,26 @@
+{
+  "locale": "en",
+  "strings": {
+    "menu.new_game.label": "New Game",
+    "menu.new_game.heading": "Begin your Quest!",
+    "menu.new_game.body": "",
+    "menu.load_game.label": "Load Game",
+    "menu.load_game.heading": "Continue previous game",
+    "menu.load_game.body": "",
+    "menu.options.label": "Options",
+    "menu.options.heading": "Game Options",
+    "menu.options.body": "",
+    "menu.arena_challenge.label": "Arena Challenge Mode",
+    "menu.arena_challenge.heading": "Arena Challenge",
+    "menu.arena_challenge.body": "",
+    "menu.single_mission_replay.label": "Single Mission Replay",
+    "menu.single_mission_replay.heading": "Replay a Chapter",
+    "menu.single_mission_replay.body": "",
+    "menu.extras.label": "Extras",
+    "menu.extras.heading": "Bonus Features",
+    "menu.extras.body": "",
+    "prompt.confirm": "Confirm",
+    "prompt.back": "Back",
+    "status.locked": "Locked"
+  }
+}
