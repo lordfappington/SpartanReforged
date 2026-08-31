@@ -1,5 +1,17 @@
 # Research Log
 
+## 2026-08-31 - Bounded native render-state executable investigation
+
+- Reverified the canonical 3,656,280-byte `SLES_533.93` SHA-256, little-endian MIPS ELF32 identity, and entry point `0x00200008`; also reverified the 5,952-byte MODELS.MTL and its 55 records / 173 numeric children.
+- Imported the executable headlessly in Ghidra 12.1.3 using `MIPS:LE:64:64-32addr` / `o32`, the closest stock R5900 approximation. Auto-analysis found 6,963 functions across `0x00200000..0x0057c77f`.
+- Anchored the LEVEL00 MTL load path at `0x002c3400` / `0x002c345c`, deserialization entry `0x002605d0`, and large stream parser `0x0026d2d0`.
+- Identified `FUN_002490c0` as a paired-context GS packet builder: instructions `0x00249124..0x00249138` install `TEST_1`, `ALPHA_1`, `ZBUF_1`, `TEST_2`, `ALPHA_2`, and `ZBUF_2` destinations. Its caller chain leads through graphics-context initialization, not a proven material branch.
+- Stock Ghidra does not model the R5900 `LQ`/`SQ`, multimedia, or COP2/VU instructions crossing both critical regions. The required type-2-child -> runtime-field -> render-preset -> GS-payload trace could not be established safely.
+- Kept type-2 values 2–5, CLOUD A/B/C/D/FIX, TEST/AREF, depth write/test, draw order, and V4 -> RGBAQ **UNKNOWN/LIKELY exactly as evidence permits**. No exporter/native-state mapping or Blender approximation was added.
+- Added bounded reusable Ghidra survey, seeding, targeted decompile, and instruction-window scripts. All Ghidra projects and generated reports remain ignored under `temp`; no executable or game asset changed.
+- All four Ghidra scripts compiled and executed headlessly. The unchanged relevant synthetic Python suite also passes 35/35 tests; no speculative native-state tests were added because no material-state mapping was recovered.
+- Readiness remains **TEXTURED ASSEMBLY VALIDATED; WORLD RECONSTRUCTION NOT COMPLETE**. The next single task is validated R5900 language support followed by the same narrow data-flow trace.
+
 ## 2026-08-30 - LEVEL00 MODELS V4 effect attributes analyzed
 
 - Reverified canonical MODELS.BIN (`8d091d4104fa556ccff90d78d3feb9ea1b656356f2fabc667a8457c1382e4cf3`) and MODELS.MTL (`57283516fc3cc8589eec4817cf8c25dc3ff0cc2185e4ff99e262fa6f3a4a54b2`) and confirmed CLOUD remains descriptor 48 / MTL 31 / type-2 value 5 with 1,957 records and 1,728 triangles.

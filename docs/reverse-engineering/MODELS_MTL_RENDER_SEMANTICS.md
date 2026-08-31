@@ -138,3 +138,9 @@ A local Blender diagnostic exported V4 as glTF-safe `COLOR_0 = min(byte / 128, 1
 | exact depth-write/additive/multiplicative behavior | **UNKNOWN** | glTF cannot encode arbitrary GS state and the record mapping is incomplete |
 
 Readiness remains **TEXTURED ASSEMBLY VALIDATED**. `LEVEL00 WORLD RECONSTRUCTION COMPLETE` is not justified: culling is presently a platform-derived opt-in approximation, and CLOUD's exact GS blend operands/fixed alpha/depth-write/order state remain unknown. The next single task should recover only the native render-state mapping for MTL type-2 values 2–5 from the executable/VU path; that bounded step now requires Ghidra rather than further asset-only correlation.
+
+## Bounded executable follow-up
+
+The canonical executable has now been imported into Ghidra and investigated along only this render-state path. The LEVEL00 `MODELS.MTL` loader/deserializer is anchored at `0x002c3400` -> `0x002605d0` -> `0x0026d2d0`; a low-level paired-context GS packet builder at `0x002490c0` installs destinations for `TEST_1/2`, `ALPHA_1/2`, and `ZBUF_1/2`. Stock Ghidra lacks R5900 `LQ`/`SQ`, multimedia, and COP2 semantics at both critical regions, so no defensible child-type-2 -> runtime field -> GS payload trace was recovered.
+
+Accordingly all type-2 family states, CLOUD `ALPHA` operands/FIX, alpha threshold, ZMSK, and draw bucket remain **UNKNOWN**. No exporter mapping changed. Full address evidence and processor limitations are documented in [EXEC_RENDER_STATE.md](EXEC_RENDER_STATE.md).

@@ -28,9 +28,9 @@
 - [ ] Audio formats identified
 - [x] Level/scene data investigated
 - [x] Scripts/config/data tables investigated
-- [ ] Main ELF loaded into Ghidra
-- [ ] Function discovery/export investigated
+- [x] Main ELF loaded into Ghidra
+- [x] Bounded function discovery/export investigated for the LEVEL00 material/GS path
 - [ ] PS2Recomp compatibility investigated
 - [ ] First recompilation experiment performed
-- [ ] Major unsupported PS2 functionality documented
+- [x] Critical stock-Ghidra R5900/COP2 analysis limitations documented
 - [ ] Decision made on recompilation vs reimplementation direction

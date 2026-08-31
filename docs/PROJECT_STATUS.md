@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Milestone 0 - Effect Attribute / Blend Reverse Engineering
+Milestone 0 - Native Render State Recovery
 
 ## Milestone 0 - Discovery
 
@@ -22,7 +22,7 @@ Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers a
 
 ## Executable Analysis
 
-Not started.
+Bounded rendering-state analysis has started against the hash-verified canonical ELF. Ghidra 12.1.3 identified 6,963 functions, the LEVEL00 MTL load/deserialization path, and a paired-context GS `TEST`/`ALPHA`/`ZBUF` packet builder. Stock Ghidra does not decode critical R5900 `LQ`/`SQ`, multimedia, and COP2/VU instructions, so the type-2 runtime field and material-specific GS payloads remain unproven. No general gameplay/code analysis has begun.
 
 ## Recompilation Status
 
@@ -52,4 +52,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Perform a bounded Ghidra/VU-path investigation of the native render-state mapping for MTL type-2 values 2–5, beginning with CLOUD. Recover the GS `ALPHA` operands/fixed factor and relevant depth-write/order behavior without broadening into complete engine or character analysis.
+Add or validate R5900/Emotion Engine instruction-language support for the canonical ELF, then repeat only the bounded trace from the MTL deserializer at `0x0026d2d0` to the material draw-state payload. Stop at and identify a bounded VU1 microprogram if state selection is delegated there.
