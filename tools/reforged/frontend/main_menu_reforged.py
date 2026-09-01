@@ -305,20 +305,6 @@ SELECTED_ILLUMINATION: dict[str, Any] = {
     "noiseCeiling": 255,
 }
 
-POINTER_MATERIAL: dict[str, Any] = {
-    "body": (105, 59, 19),
-    "upperPlane": (190, 132, 49),
-    "lowerPlane": (62, 33, 13),
-    "rim": (228, 181, 87),
-    "ridge": (255, 232, 160),
-    "weathering": (51, 29, 15),
-    "halo": (226, 145, 39),
-    "haloOpacity": 29,
-    "haloRadius": 2.8,
-    "supersample": 4,
-}
-
-
 MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
     "unselected": {
         "top": (255, 252, 237), "upper": (225, 219, 199),
@@ -566,123 +552,42 @@ def selected_pointer_tip_for_state(
     return selected_pointer_tip(layout, menu_x, item_y, tokens["menu"]["markerGap"])
 
 
-def build_pointer_layers(width: int, height: int) -> dict[str, Image.Image]:
-    """Build supersampled classical spearhead planes and detail masks."""
-    if width < 8 or height < 6:
-        raise ValueError("selection pointer is too small to render")
-    ss = POINTER_MATERIAL["supersample"]
-    w, h = width * ss, height * ss
-    pad = max(4, round(4 * ss))
-    size = (w + pad * 2, h + pad * 2)
-    ox, oy = pad, pad
-    body = Image.new("L", size)
-    points = [
-        (ox, oy + h * .50),
-        (ox + w * .34, oy + h * .31),
-        (ox + w * .52, oy + h * .10),
-        (ox + w * .59, oy + h * .12),
-        (ox + w * .69, oy + h * .35),
-        (ox + w * .86, oy + h * .33),
-        (ox + w * .84, oy + h * .45),
-        (ox + w, oy + h * .50),
-        (ox + w * .84, oy + h * .55),
-        (ox + w * .86, oy + h * .67),
-        (ox + w * .69, oy + h * .65),
-        (ox + w * .59, oy + h * .88),
-        (ox + w * .52, oy + h * .90),
-        (ox + w * .34, oy + h * .69),
-    ]
-    ImageDraw.Draw(body).polygon(points, fill=255)
-    upper = Image.new("L", size)
-    ImageDraw.Draw(upper).polygon([
-        (ox, oy + h * .50), (ox + w * .34, oy + h * .31),
-        (ox + w * .52, oy + h * .10), (ox + w * .59, oy + h * .12),
-        (ox + w * .69, oy + h * .35), (ox + w, oy + h * .50),
-        (ox + w * .57, oy + h * .48), (ox + w * .34, oy + h * .48),
-    ], fill=255)
-    lower = Image.new("L", size)
-    ImageDraw.Draw(lower).polygon([
-        (ox, oy + h * .50), (ox + w * .34, oy + h * .52),
-        (ox + w * .57, oy + h * .52), (ox + w, oy + h * .50),
-        (ox + w * .69, oy + h * .65), (ox + w * .59, oy + h * .88),
-        (ox + w * .52, oy + h * .90), (ox + w * .34, oy + h * .69),
-    ], fill=255)
-    eroded = body.filter(ImageFilter.MinFilter(ss * 2 + 1))
-    rim = ImageChops.subtract(body, eroded)
-    ridge = Image.new("L", size)
-    ridge_draw = ImageDraw.Draw(ridge)
-    ridge_draw.line(
-        (ox + w * .05, oy + h * .50, ox + w * .94, oy + h * .50),
-        fill=235, width=max(1, ss),
-    )
-    ridge_draw.line(
-        (ox + w * .53, oy + h * .15, ox + w * .58, oy + h * .50),
-        fill=205, width=max(1, ss // 2),
-    )
-    ridge_draw.line(
-        (ox + w * .58, oy + h * .50, ox + w * .53, oy + h * .85),
-        fill=135, width=max(1, ss // 2),
-    )
-    central_detail = Image.new("L", size)
-    ImageDraw.Draw(central_detail).polygon([
-        (ox + w * .47, oy + h * .50),
-        (ox + w * .55, oy + h * .16),
-        (ox + w * .64, oy + h * .50),
-        (ox + w * .55, oy + h * .84),
-    ], fill=155)
-    central_detail = ImageChops.multiply(central_detail, body)
-    weathering = Image.new("L", size)
-    weather_draw = ImageDraw.Draw(weathering)
-    for fx, fy, radius in ((.31, .43, .018), (.48, .58, .015), (.71, .45, .014)):
-        r = max(1, w * radius)
-        cx, cy = ox + w * fx, oy + h * fy
-        weather_draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=105)
-    weathering = ImageChops.multiply(weathering, body)
-    return {
-        "body": body, "upper_plane": upper, "lower_plane": lower,
-        "rim": rim, "central_detail": central_detail,
-        "ridge": ridge, "weathering": weathering,
-    }
-
-
 def render_selection_pointer(
     target: Image.Image,
     tip: tuple[float, float],
     width: float,
     height: float,
-) -> dict[str, int]:
-    """Render a small physical bronze spearhead ornament anchored by its tip."""
-    output_w, output_h = max(8, round(width)), max(6, round(height))
-    layers = build_pointer_layers(output_w, output_h)
-    material = POINTER_MATERIAL
-    tile = Image.new("RGBA", layers["body"].size)
-    halo_mask = layers["body"].filter(
-        ImageFilter.GaussianBlur(material["haloRadius"] * material["supersample"])
-    )
-    halo = Image.new("RGBA", tile.size, (*material["halo"], 0))
-    halo.putalpha(_scaled_alpha(halo_mask, material["haloOpacity"]))
-    tile.alpha_composite(halo)
-    for layer_name, colour, opacity in (
-        ("body", material["body"], 255),
-        ("upper_plane", material["upperPlane"], 235),
-        ("lower_plane", material["lowerPlane"], 230),
-        ("weathering", material["weathering"], 115),
-        ("rim", material["rim"], 175),
-        ("central_detail", material["ridge"], 155),
-        ("ridge", material["ridge"], 225),
-    ):
-        layer = Image.new("RGBA", tile.size, (*colour, 0))
-        layer.putalpha(_scaled_alpha(layers[layer_name], opacity))
-        tile.alpha_composite(layer)
-    ss = material["supersample"]
-    rendered = tile.resize(
-        (max(1, round(tile.width / ss)), max(1, round(tile.height / ss))),
-        Image.Resampling.LANCZOS,
-    )
-    pad = round((tile.width / ss - output_w) / 2)
-    paste_at = (round(tip[0] - output_w - pad), round(tip[1] - output_h / 2 - pad))
+    pointer_path: pathlib.Path | None = None,
+) -> dict[str, int | str]:
+    """Scale and place the locked approved pointer raster by its visible bounds."""
+    if pointer_path is None:
+        pointer_path = resolve_asset_path("selectionMarker", load_json(DEFAULT_TOKENS))
+    if pointer_path is None:
+        raise FileNotFoundError("approved Reforged selection pointer is not configured")
+    with Image.open(pointer_path) as opened:
+        opened.load()
+        if opened.format != "PNG" or opened.mode != "RGBA":
+            raise ValueError(f"unexpected approved pointer runtime: {opened.format}/{opened.mode}")
+        source = opened.copy()
+    alpha_bounds = source.getchannel("A").getbbox()
+    if alpha_bounds is None:
+        raise ValueError("approved pointer runtime has no visible pixels")
+    source = source.crop(alpha_bounds)
+    requested_w, requested_h = max(1, round(width)), max(1, round(height))
+    ratio = min(requested_w / source.width, requested_h / source.height)
+    output_w = max(1, round(source.width * ratio))
+    output_h = max(1, round(source.height * ratio))
+    rendered = source.resize((output_w, output_h), Image.Resampling.LANCZOS)
+    paste_at = (round(tip[0] - output_w), round(tip[1] - output_h / 2))
     target.paste(rendered, paste_at, rendered)
-    return {name: sum(1 for value in layer.getdata() if value) for name, layer in layers.items()}
+    return {
+        "asset": str(pointer_path.relative_to(ROOT)).replace("\\", "/"),
+        "sourceWidth": source.width,
+        "sourceHeight": source.height,
+        "renderedWidth": output_w,
+        "renderedHeight": output_h,
+        "visiblePixels": sum(1 for value in rendered.getchannel("A").getdata() if value),
+    }
 
 
 def render_wireframe(
@@ -754,6 +659,7 @@ def render_wireframe(
     spacing = tokens["menu"]["itemSpacing"]
     marker_w, marker_h = tokens["menu"]["markerSize"]
     marker_gap = tokens["menu"]["markerGap"]
+    pointer_path = resolve_asset_path("selectionMarker", tokens)
     for index, item in enumerate(state.screen.items):
         y = my + index * spacing
         selected = item.semantic_id == state.selected_id
@@ -766,7 +672,8 @@ def render_wireframe(
         if selected:
             tip = selected_pointer_tip_for_state(layout, state, tokens)
             render_selection_pointer(
-                image, tip, marker_w * layout.scale, marker_h * layout.scale
+                image, tip, marker_w * layout.scale, marker_h * layout.scale,
+                pointer_path=pointer_path,
             )
         text_position = layout.point(mx, y)
         material_state = "locked" if item.locked else ("selected" if selected else "unselected")

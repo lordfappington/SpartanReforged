@@ -20,7 +20,7 @@
     "maxWidth": 690,
     "itemSpacing": 82,
     "markerGap": 17,
-    "markerSize": [68, 22],
+    "markerSize": [96, 22],
     "selectedScale": 1.025,
     "transitionDurationMs": 160,
     "confirmFlareDurationMs": 130
@@ -86,7 +86,7 @@
     "topFrieze": null,
     "bottomFrieze": null,
     "logoGlintMask": null,
-    "selectionMarker": null,
+    "selectionMarker": "pointer/approved/runtime/spartan-selection-pointer-approved.png",
     "padlock": null,
     "glyphCross": null,
     "glyphTriangle": null,

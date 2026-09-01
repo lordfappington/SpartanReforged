@@ -14,19 +14,23 @@ import json
 import pathlib
 import sys
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 OUTPUT_ROOT = ROOT / "assets/reforged/frontend/review/main-menu/current"
 LOGO_PATH = ROOT / "assets/reforged/frontend/main-menu/logo/approved/runtime/spartan-logo-approved.png"
 BACKGROUND_PATH = ROOT / "assets/reforged/frontend/main-menu/background/approved/runtime/spartan-background-approved.jpg"
+POINTER_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg"
+POINTER_RUNTIME_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png"
 TOKENS_PATH = ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json"
 LOCALE_PATH = ROOT / "assets/reforged/frontend/main-menu/locales/en.json"
 EXPECTED_LOGO_SHA256 = "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d"
 EXPECTED_LOGO_SIZE = (2172, 724)
 EXPECTED_BACKGROUND_SHA256 = "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802cc531a14c7fad5"
 EXPECTED_BACKGROUND_SIZE = (1280, 720)
+EXPECTED_POINTER_SOURCE_SHA256 = "8938fde3105960d2db38b86c8914ea90e79474ad950e556b818d6059d4752833"
+EXPECTED_POINTER_RUNTIME_SHA256 = "c3c174f1fe035bb02d7c39eb43917c0c4ecbdb80056bd16ae8862631a1077425"
 FONT_FILES = {
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Regular.ttf": "af0031129f27dc752e8629a80b793d27abea94027faa27cc660c3fc33f607a1f",
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Bold.ttf": "0c23ec565db45c5508ee95889c60ad87debd167ca07167a43a5d68572b4e2eac",
@@ -39,6 +43,8 @@ TARGETS = {
 }
 DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
 DIAGNOSTIC_SIZE = (1920, 1080)
+POINTER_DIAGNOSTIC_NAME = "selection-pointer-diagnostic.png"
+POINTER_DIAGNOSTIC_SIZE = (1600, 700)
 
 
 def sha256_path(path: pathlib.Path) -> str:
@@ -89,6 +95,19 @@ def validate_background() -> None:
             )
 
 
+def validate_pointer() -> None:
+    if sha256_path(POINTER_SOURCE_PATH) != EXPECTED_POINTER_SOURCE_SHA256:
+        raise ValueError("approved pointer source hash mismatch")
+    if sha256_path(POINTER_RUNTIME_PATH) != EXPECTED_POINTER_RUNTIME_SHA256:
+        raise ValueError("approved pointer runtime hash mismatch")
+    with Image.open(POINTER_SOURCE_PATH) as source:
+        if source.format != "JPEG" or source.mode != "RGB" or source.size != (1280, 427):
+            raise ValueError("unexpected approved pointer source metadata")
+    with Image.open(POINTER_RUNTIME_PATH) as runtime:
+        if runtime.format != "PNG" or runtime.mode != "RGBA" or runtime.size != (1228, 282):
+            raise ValueError("unexpected approved pointer runtime metadata")
+
+
 def validate_fonts() -> None:
     for path, expected in FONT_FILES.items():
         if not path.is_file() or sha256_path(path) != expected:
@@ -99,12 +118,15 @@ def render_reviews() -> dict[str, dict[str, object]]:
     ui = load_ui_module()
     logo = validate_logo()
     validate_background()
+    validate_pointer()
     validate_fonts()
     tokens = ui.load_json(TOKENS_PATH)
     if tokens["assets"]["logo"] != "logo/approved/runtime/spartan-logo-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime logo")
     if tokens["assets"]["background"] != "background/approved/runtime/spartan-background-approved.jpg":
         raise ValueError("menu tokens are not bound to the approved runtime background")
+    if tokens["assets"]["selectionMarker"] != "pointer/approved/runtime/spartan-selection-pointer-approved.png":
+        raise ValueError("menu tokens are not bound to the approved runtime pointer")
     if not tokens["background"].get("approvedPlateIncludesOrnamentBands"):
         raise ValueError("approved background must suppress duplicate ornament overlays")
     strings = ui.load_json(LOCALE_PATH)["strings"]
@@ -126,7 +148,8 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "approvedLogo": str(LOGO_PATH.relative_to(ROOT)).replace("\\", "/"),
             "approvedBackground": str(BACKGROUND_PATH.relative_to(ROOT)).replace("\\", "/"),
             "fontFamily": "Cinzel",
-            "provenance": "project-created Reforged menu renderer, approved background, and approved logo",
+            "approvedPointer": str(POINTER_RUNTIME_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "provenance": "project-created Reforged menu renderer with approved background, logo, and selection pointer",
         }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
     regular_normal = ui._font(52, tokens, "regular")
@@ -146,19 +169,19 @@ def render_reviews() -> dict[str, dict[str, object]]:
         )
     pointer_stats = {
         "normal-beside-new": ui.render_selection_pointer(
-            diagnostic, (173, 99), 68, 22
+            diagnostic, (173, 99), 96, 22
         ),
         "normal-beside-load": ui.render_selection_pointer(
-            diagnostic, (933, 99), 68, 22
+            diagnostic, (933, 99), 96, 22
         ),
         "enlarged-beside-new": ui.render_selection_pointer(
-            diagnostic, (251, 410), round(68 * 160 / 56), round(22 * 160 / 56)
+            diagnostic, (251, 410), round(96 * 160 / 56), round(22 * 160 / 56)
         ),
         "enlarged-beside-load": ui.render_selection_pointer(
-            diagnostic, (1001, 720), round(68 * 160 / 56), round(22 * 160 / 56)
+            diagnostic, (1001, 720), round(96 * 160 / 56), round(22 * 160 / 56)
         ),
         "enlarged-isolated": ui.render_selection_pointer(
-            diagnostic, (680, 940), 272, 88
+            diagnostic, (680, 940), 384, 88
         ),
     }
     diagnostic_path = OUTPUT_ROOT / DIAGNOSTIC_NAME
@@ -170,14 +193,43 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "bytes": diagnostic_path.stat().st_size,
         "fontFamily": "Cinzel",
         "samples": [
-            "selected NEW GAME at 56 px with 68x22 pointer",
-            "selected LOAD GAME at 56 px with 68x22 pointer",
+            "selected NEW GAME at 56 px with approved 96x22 pointer",
+            "selected LOAD GAME at 56 px with approved 96x22 pointer",
             "unselected LOAD GAME at 52 px", "selected NEW GAME enlarged to 160 px",
-            "selected LOAD GAME enlarged to 160 px", "pointer enlarged to 272x88",
+            "selected LOAD GAME enlarged to 160 px", "approved pointer enlarged to 384x88",
         ],
         "materialLayers": layer_stats,
         "pointerLayers": pointer_stats,
-        "provenance": "project-created deterministic typography material diagnostic",
+        "provenance": "project-created deterministic typography diagnostic using approved pointer art",
+    }
+
+    pointer_diagnostic = Image.new("RGB", POINTER_DIAGNOSTIC_SIZE, (7, 13, 23))
+    pointer_draw = ImageDraw.Draw(pointer_diagnostic)
+    heading_font = ui._font(22, tokens, "regular")
+    pointer_draw.text((40, 30), "HUMAN-APPROVED SELECTION POINTER — RUNTIME INTEGRATION", font=heading_font, fill=(240, 233, 217))
+    pointer_draw.text((40, 62), f"source 1280x427 JPEG  {EXPECTED_POINTER_SOURCE_SHA256}", font=heading_font, fill=(176, 179, 178))
+    pointer_draw.text((40, 92), f"runtime 1228x282 RGBA  {EXPECTED_POINTER_RUNTIME_SHA256}", font=heading_font, fill=(176, 179, 178))
+    diagnostic_stats = {
+        "enlarged": ui.render_selection_pointer(pointer_diagnostic, (610, 205), 540, 124),
+        "menu-scale-new": ui.render_selection_pointer(pointer_diagnostic, (180, 360), 96, 22),
+        "menu-scale-load": ui.render_selection_pointer(pointer_diagnostic, (180, 460), 96, 22),
+    }
+    selected_font = ui._font(56, tokens, "bold")
+    ui.render_material_text(pointer_diagnostic, (197, 325), "NEW GAME", selected_font, "selected")
+    ui.render_material_text(pointer_diagnostic, (197, 425), "LOAD GAME", selected_font, "selected")
+    pointer_draw.rectangle((70, 349, 166, 371), outline=(92, 148, 178), width=1)
+    pointer_draw.text((40, 520), "Visible design bounds: 96x22 px at 1920x1080; right edge anchored 17 px left of selected label.", font=heading_font, fill=(216, 212, 200))
+    pointer_diagnostic_path = OUTPUT_ROOT / POINTER_DIAGNOSTIC_NAME
+    pointer_diagnostic.save(pointer_diagnostic_path, "PNG", optimize=False, compress_level=9)
+    manifest[POINTER_DIAGNOSTIC_NAME] = {
+        "dimensions": list(POINTER_DIAGNOSTIC_SIZE),
+        "mode": pointer_diagnostic.mode,
+        "sha256": sha256_path(pointer_diagnostic_path),
+        "bytes": pointer_diagnostic_path.stat().st_size,
+        "sourceSha256": EXPECTED_POINTER_SOURCE_SHA256,
+        "runtimeSha256": EXPECTED_POINTER_RUNTIME_SHA256,
+        "samples": diagnostic_stats,
+        "provenance": "public-safe project diagnostic using locked approved Reforged pointer artwork",
     }
     return manifest
 

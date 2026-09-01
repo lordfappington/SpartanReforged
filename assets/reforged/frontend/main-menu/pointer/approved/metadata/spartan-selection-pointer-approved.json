@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "status": "HUMAN_APPROVED_LOCKED_PRODUCTION_ART",
+  "source": {
+    "path": "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg",
+    "format": "JPEG",
+    "dimensions": [
+      1280,
+      427
+    ],
+    "mode": "RGB",
+    "bytes": 39721,
+    "sha256": "8938fde3105960d2db38b86c8914ea90e79474ad950e556b818d6059d4752833",
+    "preservedByteIdentically": true
+  },
+  "runtime": {
+    "path": "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png",
+    "format": "PNG",
+    "dimensions": [
+      1228,
+      282
+    ],
+    "mode": "RGBA",
+    "sha256": "c3c174f1fe035bb02d7c39eb43917c0c4ecbdb80056bd16ae8862631a1077425",
+    "sourceVisibleBounds": [
+      22,
+      67,
+      1250,
+      349
+    ],
+    "alphaBounds": [
+      0,
+      0,
+      1228,
+      282
+    ]
+  },
+  "matte": {
+    "required": true,
+    "reason": "approved JPEG contains a black field and no alpha channel",
+    "coreThreshold": 8,
+    "method": "largest connected body plus hole fill; retained body pixels preserve source RGB exactly; high-resolution alpha edge is filtered only during menu scaling",
+    "visualRedesign": false
+  }
+}

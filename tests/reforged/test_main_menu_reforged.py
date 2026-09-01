@@ -19,6 +19,8 @@ UI = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = UI
 SPEC.loader.exec_module(UI)
 TOKENS = UI.load_json(ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json")
+POINTER_SOURCE = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg"
+POINTER_RUNTIME = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png"
 
 
 class MainMenuReforgedTests(unittest.TestCase):
@@ -171,18 +173,29 @@ class MainMenuReforgedTests(unittest.TestCase):
             "2ec52ee699316366116dec1803d859230936b7c6201584b50ab115192b7d6fa7",
         )
 
-    def test_pointer_is_layered_metal_geometry_not_flat_triangle(self) -> None:
-        layers = UI.build_pointer_layers(68, 22)
-        self.assertEqual(
-            set(layers),
-            {
-                "body", "upper_plane", "lower_plane", "rim",
-                "central_detail", "ridge", "weathering",
-            },
-        )
-        self.assertTrue(all(layer.getbbox() is not None for layer in layers.values()))
-        self.assertNotEqual(layers["upper_plane"].tobytes(), layers["lower_plane"].tobytes())
-        self.assertLess(sum(layers["ridge"].getdata()), sum(layers["body"].getdata()))
+    def test_selected_and_locked_typography_baselines_are_preserved(self) -> None:
+        selected = Image.new("RGB", (500, 100), (7, 13, 23))
+        UI.render_material_text(selected, (20, 10), "NEW GAME", UI._font(56, TOKENS, "bold"), "selected")
+        self.assertEqual(hashlib.sha256(selected.tobytes()).hexdigest(), "9ae1d673a299412f8b7d827435fcf1bbd3ec4e920ecb8456d2ccb7d0f1da61c1")
+        locked = Image.new("RGB", (700, 100), (7, 13, 23))
+        UI.render_material_text(locked, (20, 10), "SINGLE MISSION REPLAY", UI._font(52, TOKENS, "regular"), "locked")
+        self.assertEqual(hashlib.sha256(locked.tobytes()).hexdigest(), "686906c1a92ee647371de644df4e80a0c8de29f648a5fde76eff8dc4d1883e01")
+
+    def test_approved_pointer_assets_are_locked_and_active(self) -> None:
+        self.assertEqual(hashlib.sha256(POINTER_SOURCE.read_bytes()).hexdigest(), "8938fde3105960d2db38b86c8914ea90e79474ad950e556b818d6059d4752833")
+        self.assertEqual(hashlib.sha256(POINTER_RUNTIME.read_bytes()).hexdigest(), "c3c174f1fe035bb02d7c39eb43917c0c4ecbdb80056bd16ae8862631a1077425")
+        self.assertEqual(TOKENS["assets"]["selectionMarker"], "pointer/approved/runtime/spartan-selection-pointer-approved.png")
+        with Image.open(POINTER_RUNTIME) as pointer:
+            self.assertEqual((pointer.format, pointer.mode, pointer.size), ("PNG", "RGBA", (1228, 282)))
+            self.assertEqual(pointer.getchannel("A").getbbox(), (0, 0, 1228, 282))
+
+    def test_old_procedural_pointer_is_inactive(self) -> None:
+        self.assertFalse(hasattr(UI, "build_pointer_layers"))
+        self.assertFalse(hasattr(UI, "POINTER_MATERIAL"))
+        canvas = Image.new("RGB", (300, 100), (7, 13, 23))
+        stats = UI.render_selection_pointer(canvas, (150, 50), 96, 22)
+        self.assertTrue(str(stats["asset"]).endswith("spartan-selection-pointer-approved.png"))
+        self.assertEqual((stats["renderedWidth"], stats["renderedHeight"]), (96, 22))
 
     def test_pointer_tip_remains_anchored_to_selected_item(self) -> None:
         layout = UI.layout_for_viewport(1920, 1080, TOKENS)
@@ -196,7 +209,7 @@ class MainMenuReforgedTests(unittest.TestCase):
         tip_1080 = UI.selected_pointer_tip_for_state(UI.layout_for_viewport(1920, 1080, TOKENS), state, TOKENS)
         tip_4k = UI.selected_pointer_tip_for_state(UI.layout_for_viewport(3840, 2160, TOKENS), state, TOKENS)
         self.assertEqual(tip_4k, (tip_1080[0] * 2, tip_1080[1] * 2))
-        self.assertEqual(TOKENS["menu"]["markerSize"], [68, 22])
+        self.assertEqual(TOKENS["menu"]["markerSize"], [96, 22])
 
     def test_selected_luminance_is_label_driven_not_new_game_special_cased(self) -> None:
         font = UI._font(56, TOKENS, "bold")
