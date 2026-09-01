@@ -125,11 +125,30 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertNotIn("strokeWidth", TOKENS["typography"])
 
     def test_locked_material_has_reduced_specular_contrast(self) -> None:
-        selected = UI.MATERIAL_PALETTES["selected"]
+        selected = UI.SELECTED_ILLUMINATION
         locked = UI.MATERIAL_PALETTES["locked"]
-        selected_span = sum(selected["highlight"]) - sum(selected["opposing"])
+        selected_span = sum(selected["thinEdge"]) - sum(selected["opposingEdge"])
         locked_span = sum(locked["highlight"]) - sum(locked["opposing"])
         self.assertLess(locked_span, selected_span)
+
+    def test_selected_state_uses_clipped_internal_illumination(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        layers, _ = UI.build_material_text_layers("NEW GAME", font, "selected")
+        illumination = UI.build_selected_illumination_masks(layers["glyph"], 1.0)
+        for name in ("internal_light", "thin_edge", "hotspots"):
+            self.assertIsNotNone(illumination[name].getbbox())
+            escaped = UI.ImageChops.subtract(illumination[name], layers["glyph"])
+            self.assertIsNone(escaped.getbbox(), f"{name} escaped glyph coverage")
+
+    def test_selected_state_has_independent_halo_and_no_bronze_inset(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        canvas = Image.new("RGB", (500, 100), (7, 13, 23))
+        stats = UI.render_material_text(canvas, (20, 10), "NEW GAME", font, "selected")
+        self.assertIn("internal_light", stats)
+        self.assertIn("hotspots", stats)
+        self.assertIn("thin_edge", stats)
+        self.assertNotIn("inset", stats)
+        self.assertGreater(UI.SELECTED_ILLUMINATION["haloRadius"], 0)
 
 
 if __name__ == "__main__":

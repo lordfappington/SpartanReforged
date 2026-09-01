@@ -129,17 +129,18 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "provenance": "project-created Reforged menu renderer, approved background, and approved logo",
         }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
-    regular = ui._font(104, tokens, "regular")
-    bold = ui._font(112, tokens, "bold")
+    regular_normal = ui._font(52, tokens, "regular")
+    bold_normal = ui._font(56, tokens, "bold")
+    bold_enlarged = ui._font(160, tokens, "bold")
     samples = (
-        ("NEW GAME", bold, "selected", (120, 92)),
-        ("LOAD GAME", regular, "unselected", (120, 300)),
-        ("SINGLE MISSION REPLAY", regular, "locked", (120, 508)),
+        ("NEW GAME", bold_normal, "selected", (100, 62), 1.0, "selected-normal"),
+        ("LOAD GAME", regular_normal, "unselected", (620, 65), 1.0, "unselected-normal"),
+        ("NEW GAME", bold_enlarged, "selected", (100, 275), 160 / 56, "selected-enlarged"),
     )
     layer_stats: dict[str, dict[str, int]] = {}
-    for text, font, state_name, position in samples:
-        layer_stats[state_name] = ui.render_material_text(
-            diagnostic, position, text, font, state_name, scale=2.0
+    for text, font, state_name, position, scale, sample_name in samples:
+        layer_stats[sample_name] = ui.render_material_text(
+            diagnostic, position, text, font, state_name, scale=scale
         )
     diagnostic_path = OUTPUT_ROOT / DIAGNOSTIC_NAME
     diagnostic.save(diagnostic_path, "PNG", optimize=False, compress_level=9)
@@ -149,7 +150,10 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "sha256": sha256_path(diagnostic_path),
         "bytes": diagnostic_path.stat().st_size,
         "fontFamily": "Cinzel",
-        "samples": ["selected NEW GAME", "unselected LOAD GAME", "locked SINGLE MISSION REPLAY"],
+        "samples": [
+            "selected NEW GAME at 56 px", "selected NEW GAME enlarged to 160 px",
+            "unselected LOAD GAME at 52 px",
+        ],
         "materialLayers": layer_stats,
         "provenance": "project-created deterministic typography material diagnostic",
     }

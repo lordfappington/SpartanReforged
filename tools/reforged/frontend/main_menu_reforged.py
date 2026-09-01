@@ -282,13 +282,27 @@ def _scaled_box(layout: ViewportLayout, xyxy: tuple[float, float, float, float])
     return tuple(round(value) for value in (*p0, *p1))
 
 
+SELECTED_ILLUMINATION: dict[str, Any] = {
+    "faceStops": (
+        (0.00, (255, 214, 102)), (0.22, (244, 157, 37)),
+        (0.52, (155, 69, 8)), (0.72, (232, 126, 18)),
+        (1.00, (180, 78, 8)),
+    ),
+    "internalLight": (255, 182, 46),
+    "internalLightOpacity": 176,
+    "hotspot": (255, 233, 163),
+    "hotspotOpacity": 112,
+    "thinEdge": (255, 243, 196),
+    "thinEdgeOpacity": 224,
+    "opposingEdge": (112, 48, 7),
+    "opposingEdgeOpacity": 72,
+    "halo": (230, 143, 28),
+    "haloOpacity": 42,
+    "haloRadius": 3.2,
+}
+
+
 MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
-    "selected": {
-        "top": (248, 229, 169), "upper": (210, 169, 91),
-        "centre": (124, 82, 35), "lower": (185, 132, 58),
-        "bottom": (74, 43, 20), "highlight": (255, 239, 184),
-        "recess": (92, 55, 23), "opposing": (68, 38, 17),
-    },
     "unselected": {
         "top": (255, 252, 237), "upper": (225, 219, 199),
         "centre": (157, 153, 142), "lower": (214, 207, 187),
@@ -322,7 +336,7 @@ def build_material_text_layers(
     scale: float = 1.0,
 ) -> tuple[dict[str, Image.Image], tuple[int, int]]:
     """Build deterministic internal metal/bevel masks for one text run."""
-    if state not in MATERIAL_PALETTES:
+    if state not in ("selected", *MATERIAL_PALETTES):
         raise ValueError(f"unsupported typography material state: {state}")
     probe = ImageDraw.Draw(Image.new("L", (1, 1)))
     bbox = probe.textbbox((0, 0), text, font=font)
@@ -368,6 +382,88 @@ def _vertical_material_gradient(size: tuple[int, int], palette: dict[str, tuple[
     return gradient
 
 
+def _gradient_from_stops(
+    size: tuple[int, int], stops: tuple[tuple[float, tuple[int, int, int]], ...]
+) -> Image.Image:
+    gradient = Image.new("RGBA", size)
+    pixels = gradient.load()
+    height = max(1, size[1] - 1)
+    for y in range(size[1]):
+        t = y / height
+        left, right = stops[0], stops[-1]
+        for index in range(len(stops) - 1):
+            if stops[index][0] <= t <= stops[index + 1][0]:
+                left, right = stops[index], stops[index + 1]
+                break
+        local = (t - left[0]) / max(1e-9, right[0] - left[0])
+        colour = tuple(round(left[1][c] * (1 - local) + right[1][c] * local) for c in range(3))
+        for x in range(size[0]):
+            pixels[x, y] = (*colour, 255)
+    return gradient
+
+
+def build_selected_illumination_masks(
+    glyph: Image.Image, scale: float
+) -> dict[str, Image.Image]:
+    """Derive interior light, fine edge and adaptive hotspots for selected text."""
+    core = glyph.filter(ImageFilter.MinFilter(3))
+    internal = ImageChops.multiply(
+        glyph,
+        core.filter(ImageFilter.GaussianBlur(max(1.2, 2.0 * scale))),
+    )
+    thin_edge = ImageChops.subtract(glyph, core)
+    hotspot_field = Image.new("L", glyph.size)
+    hotspot_draw = ImageDraw.Draw(hotspot_field)
+    count = max(2, min(5, round(glyph.width / max(1, 110 * scale))))
+    cell = glyph.width / count
+    for index in range(count):
+        centre_x = (index + .5) * cell
+        centre_y = glyph.height * (.38 if index % 2 == 0 else .62)
+        radius_x = cell * .24
+        radius_y = glyph.height * .20
+        hotspot_draw.ellipse(
+            (centre_x - radius_x, centre_y - radius_y,
+             centre_x + radius_x, centre_y + radius_y),
+            fill=210,
+        )
+    hotspots = ImageChops.multiply(
+        internal,
+        hotspot_field.filter(ImageFilter.GaussianBlur(max(2.0, 4.0 * scale))),
+    )
+    return {"internal_light": internal, "thin_edge": thin_edge, "hotspots": hotspots}
+
+
+def _composite_selected_illumination(
+    tile: Image.Image,
+    layers: dict[str, Image.Image],
+    scale: float,
+) -> dict[str, Image.Image]:
+    settings = SELECTED_ILLUMINATION
+    illumination = build_selected_illumination_masks(layers["glyph"], scale)
+    halo_mask = layers["glyph"].filter(
+        ImageFilter.GaussianBlur(max(2.0, settings["haloRadius"] * scale))
+    )
+    halo = Image.new("RGBA", tile.size, (*settings["halo"], 0))
+    halo.putalpha(_scaled_alpha(halo_mask, settings["haloOpacity"]))
+    tile.alpha_composite(halo)
+    face = _gradient_from_stops(tile.size, settings["faceStops"])
+    face.putalpha(layers["glyph"])
+    tile.alpha_composite(face)
+    internal = Image.new("RGBA", tile.size, (*settings["internalLight"], 0))
+    internal.putalpha(_scaled_alpha(illumination["internal_light"], settings["internalLightOpacity"]))
+    tile.alpha_composite(internal)
+    hotspots = Image.new("RGBA", tile.size, (*settings["hotspot"], 0))
+    hotspots.putalpha(_scaled_alpha(illumination["hotspots"], settings["hotspotOpacity"]))
+    tile.alpha_composite(hotspots)
+    opposing = Image.new("RGBA", tile.size, (*settings["opposingEdge"], 0))
+    opposing.putalpha(_scaled_alpha(layers["opposing_bevel"], settings["opposingEdgeOpacity"]))
+    tile.alpha_composite(opposing)
+    edge = Image.new("RGBA", tile.size, (*settings["thinEdge"], 0))
+    edge.putalpha(_scaled_alpha(illumination["thin_edge"], settings["thinEdgeOpacity"]))
+    tile.alpha_composite(edge)
+    return illumination
+
+
 def render_material_text(
     target: Image.Image,
     position: tuple[float, float],
@@ -378,17 +474,22 @@ def render_material_text(
 ) -> dict[str, int]:
     """Composite internally bevelled Cinzel text and return layer statistics."""
     layers, offset = build_material_text_layers(text, font, state, scale)
-    palette = MATERIAL_PALETTES[state]
     tile = Image.new("RGBA", layers["glyph"].size)
     shadow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(.65, 1.0 * scale)))
     shadow = Image.new("RGBA", tile.size, (2, 5, 9, 0))
     shadow.putalpha(_scaled_alpha(_shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76))
     tile.alpha_composite(shadow)
     if state == "selected":
-        glow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(2.0, 3.2 * scale)))
-        glow = Image.new("RGBA", tile.size, (220, 168, 73, 0))
-        glow.putalpha(_scaled_alpha(glow_mask, 38))
-        tile.alpha_composite(glow)
+        illumination = _composite_selected_illumination(tile, layers, scale)
+        paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
+        target.paste(tile, paste_at, tile)
+        combined = {
+            "glyph": layers["glyph"],
+            "opposing_bevel": layers["opposing_bevel"],
+            **illumination,
+        }
+        return {name: sum(1 for value in layer.getdata() if value) for name, layer in combined.items()}
+    palette = MATERIAL_PALETTES[state]
     base = _vertical_material_gradient(tile.size, palette)
     base.putalpha(layers["glyph"])
     tile.alpha_composite(base)
