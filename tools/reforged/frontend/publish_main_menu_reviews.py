@@ -23,6 +23,7 @@ LOGO_PATH = ROOT / "assets/reforged/frontend/main-menu/logo/approved/runtime/spa
 BACKGROUND_PATH = ROOT / "assets/reforged/frontend/main-menu/background/approved/runtime/spartan-background-approved.jpg"
 POINTER_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg"
 POINTER_RUNTIME_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png"
+PROMPT_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/source/spartan-playstation-shields-approved.jpg"
 TOKENS_PATH = ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json"
 LOCALE_PATH = ROOT / "assets/reforged/frontend/main-menu/locales/en.json"
 EXPECTED_LOGO_SHA256 = "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d"
@@ -31,6 +32,13 @@ EXPECTED_BACKGROUND_SHA256 = "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802
 EXPECTED_BACKGROUND_SIZE = (1280, 720)
 EXPECTED_POINTER_SOURCE_SHA256 = "8938fde3105960d2db38b86c8914ea90e79474ad950e556b818d6059d4752833"
 EXPECTED_POINTER_RUNTIME_SHA256 = "c3c174f1fe035bb02d7c39eb43917c0c4ecbdb80056bd16ae8862631a1077425"
+EXPECTED_PROMPT_SOURCE_SHA256 = "0ad9b4e09f91602617516cd48e992d0e421bb1a39ff86ca680441f384fbb8af6"
+EXPECTED_PROMPT_RUNTIME_SHA256 = {
+    "TRIANGLE": "83fb48f84a6cec78b2bac5bc2d9c5a8cd06749fe08a11dcd490deef746d3d35c",
+    "CIRCLE": "f70305a12930d273708e62995c0b8086d051d90c4fc7e60deb7fe680d5622662",
+    "CROSS": "6cb1178304bc5e027fc0c3f1c8ec4ae9719af904f3d7ab59cd659bd2dfa1d97e",
+    "SQUARE": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342",
+}
 FONT_FILES = {
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Regular.ttf": "af0031129f27dc752e8629a80b793d27abea94027faa27cc660c3fc33f607a1f",
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Bold.ttf": "0c23ec565db45c5508ee95889c60ad87debd167ca07167a43a5d68572b4e2eac",
@@ -45,6 +53,8 @@ DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
 DIAGNOSTIC_SIZE = (1920, 1080)
 POINTER_DIAGNOSTIC_NAME = "selection-pointer-diagnostic.png"
 POINTER_DIAGNOSTIC_SIZE = (1600, 700)
+PROMPT_DIAGNOSTIC_NAME = "playstation-shield-prompts-diagnostic.png"
+PROMPT_DIAGNOSTIC_SIZE = (1600, 900)
 
 
 def sha256_path(path: pathlib.Path) -> str:
@@ -108,6 +118,20 @@ def validate_pointer() -> None:
             raise ValueError("unexpected approved pointer runtime metadata")
 
 
+def validate_playstation_prompts(tokens: dict[str, object]) -> None:
+    if sha256_path(PROMPT_SOURCE_PATH) != EXPECTED_PROMPT_SOURCE_SHA256:
+        raise ValueError("approved PlayStation prompt source hash mismatch")
+    for glyph, expected in EXPECTED_PROMPT_RUNTIME_SHA256.items():
+        asset_id = {"TRIANGLE": "glyphTriangle", "CIRCLE": "glyphCircle", "CROSS": "glyphCross", "SQUARE": "glyphSquare"}[glyph]
+        relative = tokens["assets"][asset_id]  # type: ignore[index]
+        path = ROOT / "assets/reforged/frontend/main-menu" / str(relative)
+        if sha256_path(path) != expected:
+            raise ValueError(f"approved PlayStation prompt hash mismatch: {glyph}")
+        with Image.open(path) as prompt:
+            if prompt.format != "PNG" or prompt.mode != "RGBA" or prompt.size != (448, 448):
+                raise ValueError(f"unexpected approved PlayStation prompt metadata: {glyph}")
+
+
 def validate_fonts() -> None:
     for path, expected in FONT_FILES.items():
         if not path.is_file() or sha256_path(path) != expected:
@@ -121,6 +145,7 @@ def render_reviews() -> dict[str, dict[str, object]]:
     validate_pointer()
     validate_fonts()
     tokens = ui.load_json(TOKENS_PATH)
+    validate_playstation_prompts(tokens)
     if tokens["assets"]["logo"] != "logo/approved/runtime/spartan-logo-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime logo")
     if tokens["assets"]["background"] != "background/approved/runtime/spartan-background-approved.jpg":
@@ -149,7 +174,8 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "approvedBackground": str(BACKGROUND_PATH.relative_to(ROOT)).replace("\\", "/"),
             "fontFamily": "Cinzel",
             "approvedPointer": str(POINTER_RUNTIME_PATH.relative_to(ROOT)).replace("\\", "/"),
-            "provenance": "project-created Reforged menu renderer with approved background, logo, and selection pointer",
+            "approvedPromptSheet": str(PROMPT_SOURCE_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "provenance": "project-created Reforged menu renderer with approved background, logo, selection pointer, and PlayStation prompts",
         }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
     regular_normal = ui._font(52, tokens, "regular")
@@ -230,6 +256,43 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "runtimeSha256": EXPECTED_POINTER_RUNTIME_SHA256,
         "samples": diagnostic_stats,
         "provenance": "public-safe project diagnostic using locked approved Reforged pointer artwork",
+    }
+
+    prompt_diagnostic = Image.new("RGB", PROMPT_DIAGNOSTIC_SIZE, (7, 13, 23))
+    prompt_draw = ImageDraw.Draw(prompt_diagnostic)
+    prompt_heading = ui._font(22, tokens, "regular")
+    prompt_draw.text((40, 28), "HUMAN-APPROVED PLAYSTATION SHIELD PROMPTS", font=prompt_heading, fill=(240, 233, 217))
+    prompt_draw.text((40, 60), f"source 1280x853 JPEG  {EXPECTED_PROMPT_SOURCE_SHA256}", font=prompt_heading, fill=(176, 179, 178))
+    glyphs = ("TRIANGLE", "CIRCLE", "CROSS", "SQUARE")
+    centres = (220, 610, 1000, 1390)
+    hash_font = ui._font(16, tokens, "regular")
+    prompt_stats: dict[str, dict[str, int | str]] = {}
+    for glyph, x in zip(glyphs, centres):
+        prompt_stats[f"{glyph.lower()}-enlarged"] = ui.render_playstation_prompt_shield(
+            prompt_diagnostic, (x, 265), 280, glyph, tokens
+        )
+        prompt_stats[f"{glyph.lower()}-ui"] = ui.render_playstation_prompt_shield(
+            prompt_diagnostic, (x, 570), 52, glyph, tokens
+        )
+        prompt_draw.rectangle((x - 26, 544, x + 26, 596), outline=(92, 148, 178), width=1)
+        label = f"{glyph} — 52 px"
+        width = prompt_draw.textlength(label, font=prompt_heading)
+        prompt_draw.text((x - width / 2, 625), label, font=prompt_heading, fill=(216, 212, 200))
+    for index, glyph in enumerate(glyphs):
+        x = 40 if index % 2 == 0 else 810
+        y = 690 + (index // 2) * 34
+        prompt_draw.text((x, y), f"{glyph}: {EXPECTED_PROMPT_RUNTIME_SHA256[glyph]}", font=hash_font, fill=(176, 179, 178))
+    prompt_draw.text((40, 820), "Normalized canvas: 448x448 RGBA. Visible diameter: 416 runtime pixels; 52 design pixels at 1920x1080.", font=prompt_heading, fill=(176, 179, 178))
+    prompt_diagnostic_path = OUTPUT_ROOT / PROMPT_DIAGNOSTIC_NAME
+    prompt_diagnostic.save(prompt_diagnostic_path, "PNG", optimize=False, compress_level=9)
+    manifest[PROMPT_DIAGNOSTIC_NAME] = {
+        "dimensions": list(PROMPT_DIAGNOSTIC_SIZE), "mode": prompt_diagnostic.mode,
+        "sha256": sha256_path(prompt_diagnostic_path),
+        "bytes": prompt_diagnostic_path.stat().st_size,
+        "sourceSha256": EXPECTED_PROMPT_SOURCE_SHA256,
+        "runtimeSha256": EXPECTED_PROMPT_RUNTIME_SHA256,
+        "samples": prompt_stats,
+        "provenance": "public-safe project diagnostic using locked approved Reforged PlayStation shield artwork",
     }
     return manifest
 

@@ -75,6 +75,13 @@ INPUT_PROFILES: dict[str, dict[InputAction, str]] = {
     },
 }
 
+PLAYSTATION_PROMPT_ASSETS = {
+    "TRIANGLE": "glyphTriangle",
+    "CIRCLE": "glyphCircle",
+    "CROSS": "glyphCross",
+    "SQUARE": "glyphSquare",
+}
+
 
 @dataclass(frozen=True)
 class MenuItem:
@@ -221,6 +228,43 @@ def resolve_prompt(profile: str, action: InputAction) -> str:
         return INPUT_PROFILES[profile][action]
     except KeyError as exc:
         raise ValueError(f"unsupported input profile/action: {profile}/{action.value}") from exc
+
+
+def resolve_playstation_prompt_asset(glyph: str, tokens: dict[str, Any]) -> pathlib.Path | None:
+    asset_id = PLAYSTATION_PROMPT_ASSETS.get(glyph)
+    return resolve_asset_path(asset_id, tokens) if asset_id else None
+
+
+def render_playstation_prompt_shield(
+    target: Image.Image,
+    center: tuple[float, float],
+    visible_diameter: float,
+    glyph: str,
+    tokens: dict[str, Any],
+) -> dict[str, int | str]:
+    """Render one approved shield directly, without a procedural housing."""
+    path = resolve_playstation_prompt_asset(glyph, tokens)
+    if path is None:
+        raise FileNotFoundError(f"approved PlayStation prompt is not configured: {glyph}")
+    with Image.open(path) as opened:
+        opened.load()
+        if opened.format != "PNG" or opened.mode != "RGBA" or opened.size != (448, 448):
+            raise ValueError(f"unexpected approved PlayStation prompt: {path}")
+        source = opened.copy()
+    bounds = source.getchannel("A").getbbox()
+    if bounds is None:
+        raise ValueError(f"approved PlayStation prompt has no visible pixels: {path}")
+    visible = source.crop(bounds)
+    scale = visible_diameter / max(visible.size)
+    size = (max(1, round(visible.width * scale)), max(1, round(visible.height * scale)))
+    rendered = visible.resize(size, Image.Resampling.LANCZOS)
+    paste_at = (round(center[0] - size[0] / 2), round(center[1] - size[1] / 2))
+    target.paste(rendered, paste_at, rendered)
+    return {
+        "asset": str(path.relative_to(ROOT)).replace("\\", "/"),
+        "renderedWidth": size[0], "renderedHeight": size[1],
+        "visibleDiameter": max(size),
+    }
 
 
 def wrap_text(text: str, max_width: float, font: ImageFont.ImageFont) -> list[str]:
@@ -712,7 +756,7 @@ def render_wireframe(
         )
         body_y += tokens["typography"]["ContextBody"] * 1.35
 
-    # Bottom-right semantic prompts with replaceable metallic-housing placeholders.
+    # Bottom-right semantic prompts; PlayStation uses the approved shield artwork directly.
     px, py = tokens["prompt"]["position"]
     prompt_font = _font(round(tokens["typography"]["PromptLabel"] * layout.scale), tokens)
     cursor = px
@@ -720,15 +764,21 @@ def render_wireframe(
         glyph = resolve_prompt(profile, prompt.action)
         label = strings[prompt.label_key]
         label_width = ImageDraw.Draw(Image.new("L", (1, 1))).textlength(label, font=prompt_font) / layout.scale
-        group_width = tokens["prompt"]["glyphSize"] + 12 + label_width
+        glyph_label_gap = tokens["prompt"]["glyphLabelGap"]
+        group_width = tokens["prompt"]["glyphSize"] + glyph_label_gap + label_width
         cursor -= group_width
         center = layout.point(cursor + tokens["prompt"]["glyphSize"] / 2, py)
         radius = tokens["prompt"]["glyphSize"] * layout.scale / 2
-        draw.ellipse((center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius), fill=(20, 23, 29, 255), outline=_colour(tokens, "ornamentNeutral"), width=max(1, round(3 * layout.scale)))
-        symbol = "X" if glyph == "CROSS" else ("△" if glyph == "TRIANGLE" else glyph[:1])
-        symbol_font = _font(round(20 * layout.scale))
-        draw.text((center[0] - radius * .32, center[1] - radius * .62), symbol, font=symbol_font, fill=_colour(tokens, "textPrimary"))
-        prompt_position = layout.point(cursor + tokens["prompt"]["glyphSize"] + 12, py - 13)
+        if profile == "playstation":
+            render_playstation_prompt_shield(
+                image, center, tokens["prompt"]["glyphSize"] * layout.scale,
+                glyph, tokens,
+            )
+        else:
+            draw.ellipse((center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius), fill=(20, 23, 29, 255), outline=_colour(tokens, "ornamentNeutral"), width=max(1, round(3 * layout.scale)))
+            symbol_font = _font(round(20 * layout.scale))
+            draw.text((center[0] - radius * .32, center[1] - radius * .62), glyph[:1], font=symbol_font, fill=_colour(tokens, "textPrimary"))
+        prompt_position = layout.point(cursor + tokens["prompt"]["glyphSize"] + glyph_label_gap, py - 13)
         draw.text(
             prompt_position,
             label,

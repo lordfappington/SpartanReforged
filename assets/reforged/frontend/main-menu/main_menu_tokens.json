@@ -35,7 +35,8 @@
     "anchor": "bottom-right",
     "position": [1780, 930],
     "itemGap": 42,
-    "glyphSize": 46
+    "glyphSize": 52,
+    "glyphLabelGap": 12
   },
   "ornament": { "height": 34, "endCapWidth": 82, "tileWidth": 96 },
   "background": {
@@ -88,10 +89,10 @@
     "logoGlintMask": null,
     "selectionMarker": "pointer/approved/runtime/spartan-selection-pointer-approved.png",
     "padlock": null,
-    "glyphCross": null,
-    "glyphTriangle": null,
-    "glyphCircle": null,
-    "glyphSquare": null,
+    "glyphCross": "prompts/playstation/approved/runtime/spartan-prompt-cross-approved.png",
+    "glyphTriangle": "prompts/playstation/approved/runtime/spartan-prompt-triangle-approved.png",
+    "glyphCircle": "prompts/playstation/approved/runtime/spartan-prompt-circle-approved.png",
+    "glyphSquare": "prompts/playstation/approved/runtime/spartan-prompt-square-approved.png",
     "smoke": null,
     "embers": null
   }

@@ -21,6 +21,19 @@ SPEC.loader.exec_module(UI)
 TOKENS = UI.load_json(ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json")
 POINTER_SOURCE = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg"
 POINTER_RUNTIME = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png"
+PROMPT_SOURCE = ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/source/spartan-playstation-shields-approved.jpg"
+PROMPT_RUNTIME = {
+    "TRIANGLE": ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-triangle-approved.png",
+    "CIRCLE": ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-circle-approved.png",
+    "CROSS": ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-cross-approved.png",
+    "SQUARE": ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-square-approved.png",
+}
+PROMPT_HASHES = {
+    "TRIANGLE": "83fb48f84a6cec78b2bac5bc2d9c5a8cd06749fe08a11dcd490deef746d3d35c",
+    "CIRCLE": "f70305a12930d273708e62995c0b8086d051d90c4fc7e60deb7fe680d5622662",
+    "CROSS": "6cb1178304bc5e027fc0c3f1c8ec4ae9719af904f3d7ab59cd659bd2dfa1d97e",
+    "SQUARE": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342",
+}
 
 
 class MainMenuReforgedTests(unittest.TestCase):
@@ -69,6 +82,32 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertEqual(UI.resolve_prompt("xbox", UI.InputAction.CONFIRM), "A")
         self.assertEqual(UI.resolve_prompt("keyboard", UI.InputAction.BACK), "ESCAPE")
 
+    def test_approved_playstation_prompt_assets_are_normalized_and_locked(self) -> None:
+        self.assertEqual(hashlib.sha256(PROMPT_SOURCE.read_bytes()).hexdigest(), "0ad9b4e09f91602617516cd48e992d0e421bb1a39ff86ca680441f384fbb8af6")
+        centres = []
+        for glyph, path in PROMPT_RUNTIME.items():
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), PROMPT_HASHES[glyph])
+            with Image.open(path) as prompt:
+                self.assertEqual((prompt.format, prompt.mode, prompt.size), ("PNG", "RGBA", (448, 448)))
+                bounds = prompt.getchannel("A").getbbox()
+                self.assertIsNotNone(bounds)
+                assert bounds is not None
+                self.assertEqual(max(bounds[2] - bounds[0], bounds[3] - bounds[1]), 416)
+                centres.append(((bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2))
+        self.assertTrue(all(abs(x - 224) <= .5 and abs(y - 224) <= .5 for x, y in centres))
+
+    def test_playstation_prompt_assets_remain_semantic_and_directly_rendered(self) -> None:
+        expected_ids = {"TRIANGLE": "glyphTriangle", "CIRCLE": "glyphCircle", "CROSS": "glyphCross", "SQUARE": "glyphSquare"}
+        canvas = Image.new("RGB", (400, 100), (7, 13, 23))
+        for glyph, asset_id in expected_ids.items():
+            self.assertEqual(UI.resolve_playstation_prompt_asset(glyph, TOKENS), PROMPT_RUNTIME[glyph])
+            stats = UI.render_playstation_prompt_shield(canvas, (50, 50), 52, glyph, TOKENS)
+            self.assertEqual(stats["visibleDiameter"], 52)
+            self.assertIn(TOKENS["assets"][asset_id], str(stats["asset"]))
+        self.assertEqual(UI.resolve_prompt("playstation", UI.InputAction.CONFIRM), "CROSS")
+        self.assertEqual(UI.resolve_prompt("playstation", UI.InputAction.BACK), "TRIANGLE")
+        self.assertNotIn("ellipse", UI.render_playstation_prompt_shield.__code__.co_names)
+
     def test_text_wrapping_respects_width(self) -> None:
         font = UI._font(18)
         lines = UI.wrap_text("one two three four five six", 80, font)
@@ -106,6 +145,7 @@ class MainMenuReforgedTests(unittest.TestCase):
             self.assertTrue((ROOT / "assets/reforged/frontend/main-menu" / filename).is_file())
         self.assertEqual(TOKENS["typography"]["MenuPrimary"], 52)
         self.assertEqual(TOKENS["typography"]["MenuPrimarySelected"], 56)
+        self.assertEqual(TOKENS["menu"]["itemSpacing"], 82)
 
     def test_material_typography_has_real_internal_layers(self) -> None:
         selected_font = UI._font(56, TOKENS, "bold")

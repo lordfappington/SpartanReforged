@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "status": "HUMAN_APPROVED_LOCKED_PRODUCTION_ART",
+  "source": {
+    "path": "assets/reforged/frontend/main-menu/prompts/playstation/approved/source/spartan-playstation-shields-approved.jpg",
+    "format": "JPEG",
+    "dimensions": [
+      1280,
+      853
+    ],
+    "mode": "RGB",
+    "bytes": 156234,
+    "sha256": "0ad9b4e09f91602617516cd48e992d0e421bb1a39ff86ca680441f384fbb8af6",
+    "preservedByteIdentically": true
+  },
+  "normalization": {
+    "canvasDimensions": [
+      448,
+      448
+    ],
+    "targetVisibleDiameter": 416,
+    "uniformScalingOnly": true,
+    "opticalCentre": [
+      224,
+      224
+    ],
+    "backgroundRemoval": "largest connected shield body above black-field threshold; enclosed dark shield pixels filled; source RGB retained before uniform normalization",
+    "visualRedesign": false
+  },
+  "assets": {
+    "triangle": {
+      "path": "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-triangle-approved.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "dimensions": [
+        448,
+        448
+      ],
+      "sourceBounds": [
+        152,
+        0,
+        574,
+        416
+      ],
+      "visibleBounds": [
+        16,
+        19,
+        432,
+        429
+      ],
+      "visibleSize": [
+        416,
+        410
+      ],
+      "sha256": "83fb48f84a6cec78b2bac5bc2d9c5a8cd06749fe08a11dcd490deef746d3d35c"
+    },
+    "circle": {
+      "path": "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-circle-approved.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "dimensions": [
+        448,
+        448
+      ],
+      "sourceBounds": [
+        700,
+        0,
+        1121,
+        416
+      ],
+      "visibleBounds": [
+        16,
+        18,
+        432,
+        429
+      ],
+      "visibleSize": [
+        416,
+        411
+      ],
+      "sha256": "f70305a12930d273708e62995c0b8086d051d90c4fc7e60deb7fe680d5622662"
+    },
+    "cross": {
+      "path": "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-cross-approved.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "dimensions": [
+        448,
+        448
+      ],
+      "sourceBounds": [
+        145,
+        416,
+        575,
+        835
+      ],
+      "visibleBounds": [
+        16,
+        22,
+        432,
+        427
+      ],
+      "visibleSize": [
+        416,
+        405
+      ],
+      "sha256": "6cb1178304bc5e027fc0c3f1c8ec4ae9719af904f3d7ab59cd659bd2dfa1d97e"
+    },
+    "square": {
+      "path": "assets/reforged/frontend/main-menu/prompts/playstation/approved/runtime/spartan-prompt-square-approved.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "dimensions": [
+        448,
+        448
+      ],
+      "sourceBounds": [
+        694,
+        416,
+        1128,
+        835
+      ],
+      "visibleBounds": [
+        16,
+        23,
+        432,
+        425
+      ],
+      "visibleSize": [
+        416,
+        402
+      ],
+      "sha256": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342"
+    }
+  }
+}

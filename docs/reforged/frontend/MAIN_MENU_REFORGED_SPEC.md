@@ -109,7 +109,7 @@ Selection-change timing starts at 160 ms: marker slide/fade, neutral-to-gold int
 
 ### Prompts and glyphs
 
-`InputPrompts` consumes semantic actions and the active device profile. `ControllerGlyph` accepts Cross, Triangle, Circle, and Square assets even though this screen shows only Cross and Triangle. The wireframe uses labelled circular metallic-housing placeholders; Unicode is not a final-art solution.
+`InputPrompts` consumes semantic actions and the active device profile. The PlayStation profile uses the four locked human-approved shield rasters under `prompts/playstation/approved/`: Cross, Triangle, Circle, and Square. Each derived runtime asset is centred on the same 448×448 transparent canvas with a normalized 416-pixel visible diameter. Reforged renders the shield artwork directly at a 52-design-pixel visible diameter—there is no procedural ring, secondary housing, border, or Unicode symbol. Semantic mapping remains profile-driven: Cross is Confirm and Triangle is Back on this screen, while Circle and Square remain available. Non-PlayStation profiles retain replaceable development fallbacks until their own production assets are approved.
 
 ### OrnamentalBand
 
