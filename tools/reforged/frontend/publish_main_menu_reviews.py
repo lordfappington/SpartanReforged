@@ -27,6 +27,10 @@ EXPECTED_LOGO_SHA256 = "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df67
 EXPECTED_LOGO_SIZE = (2172, 724)
 EXPECTED_BACKGROUND_SHA256 = "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802cc531a14c7fad5"
 EXPECTED_BACKGROUND_SIZE = (1280, 720)
+FONT_FILES = {
+    ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Regular.ttf": "af0031129f27dc752e8629a80b793d27abea94027faa27cc660c3fc33f607a1f",
+    ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Bold.ttf": "0c23ec565db45c5508ee95889c60ad87debd167ca07167a43a5d68572b4e2eac",
+}
 TARGETS = {
     "main-menu-1080p.png": (1920, 1080),
     "main-menu-1440p.png": (2560, 1440),
@@ -83,10 +87,17 @@ def validate_background() -> None:
             )
 
 
+def validate_fonts() -> None:
+    for path, expected in FONT_FILES.items():
+        if not path.is_file() or sha256_path(path) != expected:
+            raise ValueError(f"configured Cinzel font is missing or changed: {path}")
+
+
 def render_reviews() -> dict[str, dict[str, object]]:
     ui = load_ui_module()
     logo = validate_logo()
     validate_background()
+    validate_fonts()
     tokens = ui.load_json(TOKENS_PATH)
     if tokens["assets"]["logo"] != "logo/approved/runtime/spartan-logo-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime logo")
@@ -112,6 +123,7 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "bytes": output.stat().st_size,
             "approvedLogo": str(LOGO_PATH.relative_to(ROOT)).replace("\\", "/"),
             "approvedBackground": str(BACKGROUND_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "fontFamily": "Cinzel",
             "provenance": "project-created Reforged menu renderer, approved background, and approved logo",
         }
     return manifest

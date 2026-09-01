@@ -260,7 +260,17 @@ def _colour(tokens: dict[str, Any], name: str) -> str:
     return tokens["colours"][name]
 
 
-def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+def _font(
+    size: int,
+    tokens: dict[str, Any] | None = None,
+    weight: str = "regular",
+) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    if tokens is not None:
+        relative = tokens["typography"]["fontFiles"][weight]
+        path = ROOT / "assets/reforged/frontend/main-menu" / relative
+        if not path.is_file():
+            raise FileNotFoundError(f"configured Reforged font is missing: {path}")
+        return ImageFont.truetype(str(path), size=max(8, size))
     try:
         return ImageFont.truetype("DejaVuSans.ttf", size=max(8, size))
     except OSError:
@@ -333,9 +343,9 @@ def render_wireframe(
         image.paste(rendered_logo, (logo_box[0], logo_box[1]), rendered_logo)
     else:
         draw.rounded_rectangle(logo_box, radius=round(12 * layout.scale), outline=_colour(tokens, "selectedGold"), width=max(2, round(3 * layout.scale)))
-        logo_font = _font(round(46 * layout.scale))
+        logo_font = _font(round(46 * layout.scale), tokens, "bold")
         draw.text(layout.point(lx + 24, ly + 54), "SPARTAN / TOTAL WARRIOR", font=logo_font, fill=_colour(tokens, "selectedGold"))
-        draw.text(layout.point(lx + 24, ly + 124), "REPLACEABLE LOGO + GLINT LAYERS", font=_font(round(18 * layout.scale)), fill=_colour(tokens, "textSecondary"))
+        draw.text(layout.point(lx + 24, ly + 124), "REPLACEABLE LOGO + GLINT LAYERS", font=_font(round(18 * layout.scale), tokens), fill=_colour(tokens, "textSecondary"))
 
     mx, my = tokens["menu"]["position"]
     spacing = tokens["menu"]["itemSpacing"]
@@ -346,33 +356,72 @@ def render_wireframe(
         selected = item.semantic_id == state.selected_id
         colour_name = "lockedText" if item.locked else ("selectedGold" if selected else "textPrimary")
         size_key = "MenuPrimarySelected" if selected else "MenuPrimary"
-        font = _font(round(tokens["typography"][size_key] * layout.scale))
+        font = _font(
+            round(tokens["typography"][size_key] * layout.scale),
+            tokens,
+            "bold" if selected else "regular",
+        )
         if selected:
             tip = layout.point(mx - marker_gap, y + 18)
             base_top = layout.point(mx - marker_gap - marker_w, y + 18 - marker_h / 2)
             base_bottom = layout.point(mx - marker_gap - marker_w, y + 18 + marker_h / 2)
             draw.polygon((tip, base_top, base_bottom), fill=_colour(tokens, "selectedGold"))
-        draw.text(layout.point(mx, y), strings[item.label_key], font=font, fill=_colour(tokens, colour_name))
+        text_position = layout.point(mx, y)
+        if selected:
+            glow_rgb = ImageColor_getrgb(_colour(tokens, "selectedGlow"))
+            glow_step = max(1, round(2 * layout.scale))
+            for dx, dy in ((-glow_step, 0), (glow_step, 0), (0, -glow_step), (0, glow_step)):
+                draw.text(
+                    (text_position[0] + dx, text_position[1] + dy),
+                    strings[item.label_key],
+                    font=font,
+                    fill=(*glow_rgb, 54),
+                )
+        draw.text(
+            text_position,
+            strings[item.label_key],
+            font=font,
+            fill=_colour(tokens, colour_name),
+            stroke_width=max(1, round(layout.scale)),
+            stroke_fill=(3, 7, 12, 210),
+        )
         if item.locked:
-            px, py = layout.point(mx + 550, y + 4)
-            s = max(10, round(18 * layout.scale))
+            label_width = draw.textlength(strings[item.label_key], font=font)
+            px = text_position[0] + label_width + round(14 * layout.scale)
+            py = text_position[1] + round(9 * layout.scale)
+            s = max(12, round(20 * layout.scale))
             draw.rectangle((px, py + s * .45, px + s, py + s * 1.35), outline=_colour(tokens, "lockedText"), width=max(1, round(2 * layout.scale)))
             draw.arc((px + s * .15, py, px + s * .85, py + s), 180, 360, fill=_colour(tokens, "lockedText"), width=max(1, round(2 * layout.scale)))
 
     selected = state.selected
     cx, cy = tokens["context"]["position"]
     max_width = tokens["context"]["maxWidth"] * layout.scale
-    heading_font = _font(round(tokens["typography"]["ContextHeading"] * layout.scale))
-    body_font = _font(round(tokens["typography"]["ContextBody"] * layout.scale))
-    draw.text(layout.point(cx, cy), strings[selected.heading_key], font=heading_font, fill=_colour(tokens, "contextHeading"))
+    heading_font = _font(round(tokens["typography"]["ContextHeading"] * layout.scale), tokens, "bold")
+    body_font = _font(round(tokens["typography"]["ContextBody"] * layout.scale), tokens)
+    heading_position = layout.point(cx, cy)
+    draw.text(
+        (heading_position[0] + max(1, round(layout.scale)), heading_position[1] + max(1, round(layout.scale))),
+        strings[selected.heading_key],
+        font=heading_font,
+        fill=(3, 7, 12, 190),
+    )
+    draw.text(heading_position, strings[selected.heading_key], font=heading_font, fill=_colour(tokens, "contextHeading"))
     body_y = cy + tokens["typography"]["ContextHeading"] + tokens["context"]["headingBodyGap"]
     for line in wrap_text(strings[selected.body_key], max_width, body_font):
-        draw.text(layout.point(cx, body_y), line, font=body_font, fill=_colour(tokens, "contextBody"))
+        body_position = layout.point(cx, body_y)
+        draw.text(
+            body_position,
+            line,
+            font=body_font,
+            fill=_colour(tokens, "contextBody"),
+            stroke_width=max(1, round(layout.scale)),
+            stroke_fill=(3, 7, 12, 180),
+        )
         body_y += tokens["typography"]["ContextBody"] * 1.35
 
     # Bottom-right semantic prompts with replaceable metallic-housing placeholders.
     px, py = tokens["prompt"]["position"]
-    prompt_font = _font(round(tokens["typography"]["PromptLabel"] * layout.scale))
+    prompt_font = _font(round(tokens["typography"]["PromptLabel"] * layout.scale), tokens)
     cursor = px
     for prompt in reversed(state.screen.prompts):
         glyph = resolve_prompt(profile, prompt.action)
@@ -386,7 +435,15 @@ def render_wireframe(
         symbol = "X" if glyph == "CROSS" else ("△" if glyph == "TRIANGLE" else glyph[:1])
         symbol_font = _font(round(20 * layout.scale))
         draw.text((center[0] - radius * .32, center[1] - radius * .62), symbol, font=symbol_font, fill=_colour(tokens, "textPrimary"))
-        draw.text(layout.point(cursor + tokens["prompt"]["glyphSize"] + 12, py - 12), label, font=prompt_font, fill=_colour(tokens, "textPrimary"))
+        prompt_position = layout.point(cursor + tokens["prompt"]["glyphSize"] + 12, py - 13)
+        draw.text(
+            prompt_position,
+            label,
+            font=prompt_font,
+            fill=_colour(tokens, "textPrimary"),
+            stroke_width=max(1, round(layout.scale)),
+            stroke_fill=(3, 7, 12, 200),
+        )
         cursor -= tokens["prompt"]["itemGap"]
 
     if not background_path:

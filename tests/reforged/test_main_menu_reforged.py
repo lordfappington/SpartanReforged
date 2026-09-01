@@ -46,7 +46,7 @@ class MainMenuReforgedTests(unittest.TestCase):
     def test_menu_spacing_and_navigation(self) -> None:
         screen = UI.build_main_start(maxlevel=3)
         state = UI.MenuState(screen, "new_game")
-        self.assertEqual(TOKENS["menu"]["itemSpacing"], 64)
+        self.assertEqual(TOKENS["menu"]["itemSpacing"], 76)
         self.assertEqual(state.navigate(UI.InputAction.DOWN).selected_id, "load_game")
         self.assertEqual(state.navigate(UI.InputAction.UP).selected_id, "extras")
 
@@ -93,6 +93,13 @@ class MainMenuReforgedTests(unittest.TestCase):
         })
         self.assertTrue(all(effect.excludes_ui_safe_regions for effect in effects))
         self.assertTrue(all(effect.reduced_motion_instances <= effect.max_instances for effect in effects))
+
+    def test_production_navigation_uses_licensed_cinzel(self) -> None:
+        self.assertEqual(TOKENS["typography"]["fontFamily"], "Cinzel")
+        self.assertEqual(TOKENS["typography"]["fontLicense"], "SIL Open Font License 1.1")
+        for filename in TOKENS["typography"]["fontFiles"].values():
+            self.assertTrue((ROOT / "assets/reforged/frontend/main-menu" / filename).is_file())
+        self.assertGreaterEqual(TOKENS["typography"]["MenuPrimary"], 52)
 
 
 if __name__ == "__main__":

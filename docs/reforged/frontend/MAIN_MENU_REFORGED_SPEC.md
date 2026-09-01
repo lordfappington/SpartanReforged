@@ -121,7 +121,7 @@ Back/front atmosphere exposes smoke, mist, embers, logo glint, and selected glow
 
 ## Typography
 
-Typography roles are `MenuPrimary`, `MenuPrimarySelected`, `ContextHeading`, `ContextBody`, and `PromptLabel`. They are scalable runtime text styles, never rasterized English labels. The development renderer requests DejaVu Sans and falls back to Pillow's built-in font; this is not a final typeface choice. A final classical/ancient face requires human approval, verified redistribution/runtime licensing, required locale coverage, and legibility testing.
+Typography roles are `MenuPrimary`, `MenuPrimarySelected`, `ContextHeading`, `ContextBody`, and `PromptLabel`. They are scalable runtime text styles, never rasterized English labels. The Reforged renderer uses Cinzel Regular and Bold, pinned from the upstream Cinzel project and redistributed under SIL Open Font License 1.1. Its first-century Roman inscription influence and classical proportions harmonise with the approved title while remaining an independent UI typeface rather than an imitation of the logo geometry. Locale coverage and fallback remain future review requirements.
 
 Selected styling may add restrained shadow/glow without changing glyph metrics. Localization must be tested for expansion, missing glyphs, line breaks, and locale-specific font fallback.
 

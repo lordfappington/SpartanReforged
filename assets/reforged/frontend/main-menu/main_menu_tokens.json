@@ -16,26 +16,26 @@
   },
   "menu": {
     "anchor": "top-left",
-    "position": [172, 350],
+    "position": [172, 340],
     "maxWidth": 690,
-    "itemSpacing": 64,
-    "markerGap": 30,
-    "markerSize": [48, 18],
+    "itemSpacing": 76,
+    "markerGap": 12,
+    "markerSize": [44, 18],
     "selectedScale": 1.025,
     "transitionDurationMs": 160,
     "confirmFlareDurationMs": 130
   },
   "context": {
     "anchor": "bottom-left",
-    "position": [130, 805],
+    "position": [130, 820],
     "maxWidth": 700,
     "headingBodyGap": 18
   },
   "prompt": {
     "anchor": "bottom-right",
-    "position": [1790, 962],
-    "itemGap": 36,
-    "glyphSize": 38
+    "position": [1780, 930],
+    "itemGap": 42,
+    "glyphSize": 46
   },
   "ornament": { "height": 34, "endCapWidth": 82, "tileWidth": 96 },
   "background": {
@@ -45,25 +45,30 @@
     "approvedPlateIncludesOrnamentBands": true
   },
   "typography": {
-    "developmentFont": "DejaVu Sans",
-    "MenuPrimary": 38,
-    "MenuPrimarySelected": 40,
-    "ContextHeading": 26,
-    "ContextBody": 20,
-    "PromptLabel": 18
+    "fontFamily": "Cinzel",
+    "fontLicense": "SIL Open Font License 1.1",
+    "fontFiles": {
+      "regular": "fonts/cinzel/Cinzel-Regular.ttf",
+      "bold": "fonts/cinzel/Cinzel-Bold.ttf"
+    },
+    "MenuPrimary": 52,
+    "MenuPrimarySelected": 56,
+    "ContextHeading": 32,
+    "ContextBody": 23,
+    "PromptLabel": 21
   },
   "colours": {
     "backgroundDark": "#070C15",
     "backgroundMid": "#101D2D",
     "environmentGuide": "#18314A",
     "foregroundGuide": "#111820",
-    "textPrimary": "#D8D6CF",
+    "textPrimary": "#F0E9D9",
     "textSecondary": "#969CA5",
-    "selectedGold": "#C9A45B",
-    "selectedGlow": "#E5BE6A",
-    "lockedText": "#6E7278",
-    "contextHeading": "#C9A45B",
-    "contextBody": "#AEB4BC",
+    "selectedGold": "#D2AE63",
+    "selectedGlow": "#E7C779",
+    "lockedText": "#85878A",
+    "contextHeading": "#D2AE63",
+    "contextBody": "#D8D4C8",
     "ornamentNeutral": "#746849",
     "safeAreaGuide": "#4C94B8",
     "placeholder": "#9B6577"
