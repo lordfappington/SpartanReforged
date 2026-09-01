@@ -7,6 +7,8 @@ import pathlib
 import sys
 import unittest
 
+from PIL import Image
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "tools/reforged/frontend/main_menu_reforged.py"
@@ -46,7 +48,7 @@ class MainMenuReforgedTests(unittest.TestCase):
     def test_menu_spacing_and_navigation(self) -> None:
         screen = UI.build_main_start(maxlevel=3)
         state = UI.MenuState(screen, "new_game")
-        self.assertEqual(TOKENS["menu"]["itemSpacing"], 76)
+        self.assertEqual(TOKENS["menu"]["itemSpacing"], 82)
         self.assertEqual(state.navigate(UI.InputAction.DOWN).selected_id, "load_game")
         self.assertEqual(state.navigate(UI.InputAction.UP).selected_id, "extras")
 
@@ -99,7 +101,35 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertEqual(TOKENS["typography"]["fontLicense"], "SIL Open Font License 1.1")
         for filename in TOKENS["typography"]["fontFiles"].values():
             self.assertTrue((ROOT / "assets/reforged/frontend/main-menu" / filename).is_file())
-        self.assertGreaterEqual(TOKENS["typography"]["MenuPrimary"], 52)
+        self.assertEqual(TOKENS["typography"]["MenuPrimary"], 52)
+        self.assertEqual(TOKENS["typography"]["MenuPrimarySelected"], 56)
+
+    def test_material_typography_has_real_internal_layers(self) -> None:
+        selected_font = UI._font(56, TOKENS, "bold")
+        for state in ("selected", "unselected", "locked"):
+            layers, _ = UI.build_material_text_layers("NEW GAME", selected_font, state)
+            self.assertIsNotNone(layers["face"].getbbox())
+            self.assertIsNotNone(layers["light_bevel"].getbbox())
+            self.assertIsNotNone(layers["opposing_bevel"].getbbox())
+            self.assertIsNotNone(layers["inset"].getbbox())
+            self.assertLess(sum(layers["inset"].getdata()), sum(layers["glyph"].getdata()))
+
+    def test_material_states_are_visibly_distinct_without_stroke_expansion(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        renders = {}
+        for state in ("selected", "unselected", "locked"):
+            canvas = Image.new("RGB", (500, 100), (7, 13, 23))
+            UI.render_material_text(canvas, (20, 10), "NEW GAME", font, state)
+            renders[state] = canvas.tobytes()
+        self.assertEqual(len(set(renders.values())), 3)
+        self.assertNotIn("strokeWidth", TOKENS["typography"])
+
+    def test_locked_material_has_reduced_specular_contrast(self) -> None:
+        selected = UI.MATERIAL_PALETTES["selected"]
+        locked = UI.MATERIAL_PALETTES["locked"]
+        selected_span = sum(selected["highlight"]) - sum(selected["opposing"])
+        locked_span = sum(locked["highlight"]) - sum(locked["opposing"])
+        self.assertLess(locked_span, selected_span)
 
 
 if __name__ == "__main__":

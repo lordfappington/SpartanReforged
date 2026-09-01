@@ -95,13 +95,13 @@ UI is never baked into the background. Foreground environment is independently h
 
 ### Menu navigation and SelectionMarker
 
-`MenuNavigation` is a floating left-aligned text stack with no button rectangles. `SelectionMarker` is a replaceable asset placed to the left of the selected baseline; the wireframe uses a simple triangle. Selected labels use semantic gold/glow tokens and a very small scale response. Unselected labels use a neutral token.
+`MenuNavigation` is a floating left-aligned text stack with no button rectangles. `SelectionMarker` is a replaceable asset placed to the left of the selected baseline; the wireframe uses a simple triangle. Selected, unselected, and locked labels share a deterministic internal material construction while retaining distinct emphasis palettes.
 
 Selection-change timing starts at 160 ms: marker slide/fade, neutral-to-gold interpolation, glow increase, and subtle scale. Confirmation starts a 130 ms warm flare/marker impulse before the original semantic transition. Reduced motion collapses these to an immediate state change. Original mode retains the recovered ±16 logical-pixel behavior through its own view; Reforged does not copy it by default.
 
 ### Locked state
 
-`StatusLock` is shown for locked items and uses replaceable scalable artwork. The wireframe padlock is procedural geometry only. Locked labels reduce emphasis. Confirmation produces restrained feedback, returns no action, and never changes screens. Unlock logic is not duplicated in presentation code beyond consuming `maxlevel == 0` state.
+`StatusLock` is shown for locked items and uses replaceable scalable artwork. The current procedural-outline padlock is **NOT APPROVED / AWAITING PRODUCTION ART**. It remains only as a functional placement placeholder beside Single Mission Replay and must not be mistaken for final Reforged artwork. Locked labels reduce emphasis. Confirmation produces restrained feedback, returns no action, and never changes screens. Unlock logic is not duplicated in presentation code beyond consuming `maxlevel == 0` state.
 
 ### Context description
 
@@ -123,7 +123,7 @@ Back/front atmosphere exposes smoke, mist, embers, logo glint, and selected glow
 
 Typography roles are `MenuPrimary`, `MenuPrimarySelected`, `ContextHeading`, `ContextBody`, and `PromptLabel`. They are scalable runtime text styles, never rasterized English labels. The Reforged renderer uses Cinzel Regular and Bold, pinned from the upstream Cinzel project and redistributed under SIL Open Font License 1.1. Its first-century Roman inscription influence and classical proportions harmonise with the approved title while remaining an independent UI typeface rather than an imitation of the logo geometry. Locale coverage and fallback remain future review requirements.
 
-Selected styling may add restrained shadow/glow without changing glyph metrics. Localization must be tested for expansion, missing glyphs, line breaks, and locale-specific font fallback.
+Navigation styling is constructed inside the antialiased Cinzel glyph mask: a tonal face gradient, a darker eroded inset band, a pale upper/left-facing bevel, and a bronze or grey lower/right-facing bevel. Only a narrow blurred separation shadow extends outside every glyph; the selected state additionally receives a low-alpha warm glow. No external text stroke is used. Selected gold has the strongest highlight and relief, unselected ivory uses the same construction more quietly, and locked grey reduces both contrast and specular response. The material renderer does not change glyph metrics. Localization must be tested for expansion, missing glyphs, line breaks, and locale-specific font fallback.
 
 ## Asset loading and fallback
 

@@ -37,6 +37,8 @@ TARGETS = {
     "main-menu-4k.png": (3840, 2160),
     "main-menu-21x9.png": (2560, 1080),
 }
+DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
+DIAGNOSTIC_SIZE = (1600, 720)
 
 
 def sha256_path(path: pathlib.Path) -> str:
@@ -126,6 +128,31 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "fontFamily": "Cinzel",
             "provenance": "project-created Reforged menu renderer, approved background, and approved logo",
         }
+    diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
+    regular = ui._font(104, tokens, "regular")
+    bold = ui._font(112, tokens, "bold")
+    samples = (
+        ("NEW GAME", bold, "selected", (120, 92)),
+        ("LOAD GAME", regular, "unselected", (120, 300)),
+        ("SINGLE MISSION REPLAY", regular, "locked", (120, 508)),
+    )
+    layer_stats: dict[str, dict[str, int]] = {}
+    for text, font, state_name, position in samples:
+        layer_stats[state_name] = ui.render_material_text(
+            diagnostic, position, text, font, state_name, scale=2.0
+        )
+    diagnostic_path = OUTPUT_ROOT / DIAGNOSTIC_NAME
+    diagnostic.save(diagnostic_path, "PNG", optimize=False, compress_level=9)
+    manifest[DIAGNOSTIC_NAME] = {
+        "dimensions": list(DIAGNOSTIC_SIZE),
+        "mode": diagnostic.mode,
+        "sha256": sha256_path(diagnostic_path),
+        "bytes": diagnostic_path.stat().st_size,
+        "fontFamily": "Cinzel",
+        "samples": ["selected NEW GAME", "unselected LOAD GAME", "locked SINGLE MISSION REPLAY"],
+        "materialLayers": layer_stats,
+        "provenance": "project-created deterministic typography material diagnostic",
+    }
     return manifest
 
 

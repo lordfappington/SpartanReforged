@@ -18,7 +18,7 @@
     "anchor": "top-left",
     "position": [172, 340],
     "maxWidth": 690,
-    "itemSpacing": 76,
+    "itemSpacing": 82,
     "markerGap": 12,
     "markerSize": [44, 18],
     "selectedScale": 1.025,

@@ -15,7 +15,7 @@ from dataclasses import dataclass, replace
 from enum import Enum, IntEnum
 from typing import Any
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
@@ -282,6 +282,130 @@ def _scaled_box(layout: ViewportLayout, xyxy: tuple[float, float, float, float])
     return tuple(round(value) for value in (*p0, *p1))
 
 
+MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
+    "selected": {
+        "top": (248, 229, 169), "upper": (210, 169, 91),
+        "centre": (124, 82, 35), "lower": (185, 132, 58),
+        "bottom": (74, 43, 20), "highlight": (255, 239, 184),
+        "recess": (92, 55, 23), "opposing": (68, 38, 17),
+    },
+    "unselected": {
+        "top": (255, 252, 237), "upper": (225, 219, 199),
+        "centre": (157, 153, 142), "lower": (214, 207, 187),
+        "bottom": (105, 105, 100), "highlight": (255, 255, 246),
+        "recess": (121, 119, 112), "opposing": (82, 83, 81),
+    },
+    "locked": {
+        "top": (173, 174, 172), "upper": (132, 134, 134),
+        "centre": (82, 85, 87), "lower": (117, 119, 119),
+        "bottom": (57, 60, 63), "highlight": (190, 190, 184),
+        "recess": (71, 74, 76), "opposing": (43, 46, 49),
+    },
+}
+
+
+def _shift_mask(mask: Image.Image, dx: int, dy: int) -> Image.Image:
+    """Translate an L mask without ImageChops.offset's wraparound."""
+    shifted = Image.new("L", mask.size)
+    shifted.paste(mask, (dx, dy))
+    return shifted
+
+
+def _scaled_alpha(mask: Image.Image, opacity: int) -> Image.Image:
+    return mask.point(lambda value: value * opacity // 255)
+
+
+def build_material_text_layers(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    state: str,
+    scale: float = 1.0,
+) -> tuple[dict[str, Image.Image], tuple[int, int]]:
+    """Build deterministic internal metal/bevel masks for one text run."""
+    if state not in MATERIAL_PALETTES:
+        raise ValueError(f"unsupported typography material state: {state}")
+    probe = ImageDraw.Draw(Image.new("L", (1, 1)))
+    bbox = probe.textbbox((0, 0), text, font=font)
+    bevel = max(1, round(1.5 * scale))
+    pad = max(6, round(7 * scale))
+    size = (max(1, bbox[2] - bbox[0] + pad * 2), max(1, bbox[3] - bbox[1] + pad * 2))
+    mask = Image.new("L", size)
+    ImageDraw.Draw(mask).text((pad - bbox[0], pad - bbox[1]), text, font=font, fill=255)
+    eroded_1 = mask.filter(ImageFilter.MinFilter(bevel * 2 + 1))
+    deep_width = bevel * 2 + 1
+    eroded_2 = eroded_1.filter(ImageFilter.MinFilter(deep_width * 2 + 1))
+    layers = {
+        "glyph": mask,
+        "light_bevel": ImageChops.subtract(mask, _shift_mask(mask, bevel, bevel)),
+        "opposing_bevel": ImageChops.subtract(mask, _shift_mask(mask, -bevel, -bevel)),
+        "inset": ImageChops.subtract(eroded_1, eroded_2),
+        "face": eroded_1,
+    }
+    return layers, (bbox[0] - pad, bbox[1] - pad)
+
+
+def _vertical_material_gradient(size: tuple[int, int], palette: dict[str, tuple[int, int, int]]) -> Image.Image:
+    stops = (
+        (0.00, palette["top"]), (0.17, palette["upper"]),
+        (0.48, palette["centre"]), (0.68, palette["lower"]),
+        (1.00, palette["bottom"]),
+    )
+    gradient = Image.new("RGBA", size)
+    pixels = gradient.load()
+    height = max(1, size[1] - 1)
+    for y in range(size[1]):
+        t = y / height
+        left, right = stops[0], stops[-1]
+        for index in range(len(stops) - 1):
+            if stops[index][0] <= t <= stops[index + 1][0]:
+                left, right = stops[index], stops[index + 1]
+                break
+        span = max(1e-9, right[0] - left[0])
+        local = (t - left[0]) / span
+        colour = tuple(round(left[1][c] * (1 - local) + right[1][c] * local) for c in range(3))
+        for x in range(size[0]):
+            pixels[x, y] = (*colour, 255)
+    return gradient
+
+
+def render_material_text(
+    target: Image.Image,
+    position: tuple[float, float],
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    state: str,
+    scale: float = 1.0,
+) -> dict[str, int]:
+    """Composite internally bevelled Cinzel text and return layer statistics."""
+    layers, offset = build_material_text_layers(text, font, state, scale)
+    palette = MATERIAL_PALETTES[state]
+    tile = Image.new("RGBA", layers["glyph"].size)
+    shadow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(.65, 1.0 * scale)))
+    shadow = Image.new("RGBA", tile.size, (2, 5, 9, 0))
+    shadow.putalpha(_scaled_alpha(_shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76))
+    tile.alpha_composite(shadow)
+    if state == "selected":
+        glow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(2.0, 3.2 * scale)))
+        glow = Image.new("RGBA", tile.size, (220, 168, 73, 0))
+        glow.putalpha(_scaled_alpha(glow_mask, 38))
+        tile.alpha_composite(glow)
+    base = _vertical_material_gradient(tile.size, palette)
+    base.putalpha(layers["glyph"])
+    tile.alpha_composite(base)
+    inset = Image.new("RGBA", tile.size, (*palette["recess"], 0))
+    inset.putalpha(_scaled_alpha(layers["inset"], 150 if state == "selected" else 105))
+    tile.alpha_composite(inset)
+    opposing = Image.new("RGBA", tile.size, (*palette["opposing"], 0))
+    opposing.putalpha(_scaled_alpha(layers["opposing_bevel"], 220 if state == "selected" else 155))
+    tile.alpha_composite(opposing)
+    highlight = Image.new("RGBA", tile.size, (*palette["highlight"], 0))
+    highlight.putalpha(_scaled_alpha(layers["light_bevel"], 230 if state == "selected" else (135 if state == "unselected" else 78)))
+    tile.alpha_composite(highlight)
+    paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
+    target.paste(tile, paste_at, tile)
+    return {name: sum(1 for value in layer.getdata() if value) for name, layer in layers.items()}
+
+
 def render_wireframe(
     width: int,
     height: int,
@@ -354,7 +478,6 @@ def render_wireframe(
     for index, item in enumerate(state.screen.items):
         y = my + index * spacing
         selected = item.semantic_id == state.selected_id
-        colour_name = "lockedText" if item.locked else ("selectedGold" if selected else "textPrimary")
         size_key = "MenuPrimarySelected" if selected else "MenuPrimary"
         font = _font(
             round(tokens["typography"][size_key] * layout.scale),
@@ -367,24 +490,8 @@ def render_wireframe(
             base_bottom = layout.point(mx - marker_gap - marker_w, y + 18 + marker_h / 2)
             draw.polygon((tip, base_top, base_bottom), fill=_colour(tokens, "selectedGold"))
         text_position = layout.point(mx, y)
-        if selected:
-            glow_rgb = ImageColor_getrgb(_colour(tokens, "selectedGlow"))
-            glow_step = max(1, round(2 * layout.scale))
-            for dx, dy in ((-glow_step, 0), (glow_step, 0), (0, -glow_step), (0, glow_step)):
-                draw.text(
-                    (text_position[0] + dx, text_position[1] + dy),
-                    strings[item.label_key],
-                    font=font,
-                    fill=(*glow_rgb, 54),
-                )
-        draw.text(
-            text_position,
-            strings[item.label_key],
-            font=font,
-            fill=_colour(tokens, colour_name),
-            stroke_width=max(1, round(layout.scale)),
-            stroke_fill=(3, 7, 12, 210),
-        )
+        material_state = "locked" if item.locked else ("selected" if selected else "unselected")
+        render_material_text(image, text_position, strings[item.label_key], font, material_state, layout.scale)
         if item.locked:
             label_width = draw.textlength(strings[item.label_key], font=font)
             px = text_position[0] + label_width + round(14 * layout.scale)
