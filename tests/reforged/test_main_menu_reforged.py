@@ -172,10 +172,13 @@ class MainMenuReforgedTests(unittest.TestCase):
         )
 
     def test_pointer_is_layered_metal_geometry_not_flat_triangle(self) -> None:
-        layers = UI.build_pointer_layers(44, 18)
+        layers = UI.build_pointer_layers(68, 22)
         self.assertEqual(
             set(layers),
-            {"body", "upper_plane", "lower_plane", "rim", "ridge", "weathering"},
+            {
+                "body", "upper_plane", "lower_plane", "rim",
+                "central_detail", "ridge", "weathering",
+            },
         )
         self.assertTrue(all(layer.getbbox() is not None for layer in layers.values()))
         self.assertNotEqual(layers["upper_plane"].tobytes(), layers["lower_plane"].tobytes())
@@ -183,9 +186,27 @@ class MainMenuReforgedTests(unittest.TestCase):
 
     def test_pointer_tip_remains_anchored_to_selected_item(self) -> None:
         layout = UI.layout_for_viewport(1920, 1080, TOKENS)
-        mx, my = TOKENS["menu"]["position"]
-        tip = UI.selected_pointer_tip(layout, mx, my, TOKENS["menu"]["markerGap"])
-        self.assertEqual(tip, (160.0, 375.0))
+        new_state = UI.MenuState(UI.build_main_start(), "new_game")
+        load_state = UI.MenuState(UI.build_main_start(), "load_game")
+        self.assertEqual(UI.selected_pointer_tip_for_state(layout, new_state, TOKENS), (155.0, 375.0))
+        self.assertEqual(UI.selected_pointer_tip_for_state(layout, load_state, TOKENS), (155.0, 457.0))
+
+    def test_pointer_scale_and_alignment_are_resolution_independent(self) -> None:
+        state = UI.MenuState(UI.build_main_start(), "load_game")
+        tip_1080 = UI.selected_pointer_tip_for_state(UI.layout_for_viewport(1920, 1080, TOKENS), state, TOKENS)
+        tip_4k = UI.selected_pointer_tip_for_state(UI.layout_for_viewport(3840, 2160, TOKENS), state, TOKENS)
+        self.assertEqual(tip_4k, (tip_1080[0] * 2, tip_1080[1] * 2))
+        self.assertEqual(TOKENS["menu"]["markerSize"], [68, 22])
+
+    def test_selected_luminance_is_label_driven_not_new_game_special_cased(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        fields = []
+        for label in ("NEW GAME", "LOAD GAME"):
+            layers, _ = UI.build_material_text_layers(label, font, "selected")
+            illumination = UI.build_selected_illumination_masks(layers["glyph"], 1.0, label)
+            self.assertIsNotNone(illumination["internal_light"].getbbox())
+            fields.append(hashlib.sha256(illumination["internal_light"].tobytes()).hexdigest())
+        self.assertNotEqual(fields[0], fields[1])
 
 
 if __name__ == "__main__":

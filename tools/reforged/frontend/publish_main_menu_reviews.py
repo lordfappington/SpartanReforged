@@ -38,7 +38,7 @@ TARGETS = {
     "main-menu-21x9.png": (2560, 1080),
 }
 DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
-DIAGNOSTIC_SIZE = (1600, 720)
+DIAGNOSTIC_SIZE = (1920, 1080)
 
 
 def sha256_path(path: pathlib.Path) -> str:
@@ -133,9 +133,11 @@ def render_reviews() -> dict[str, dict[str, object]]:
     bold_normal = ui._font(56, tokens, "bold")
     bold_enlarged = ui._font(160, tokens, "bold")
     samples = (
-        ("NEW GAME", bold_normal, "selected", (100, 62), 1.0, "selected-normal"),
-        ("LOAD GAME", regular_normal, "unselected", (620, 65), 1.0, "unselected-normal"),
-        ("NEW GAME", bold_enlarged, "selected", (100, 275), 160 / 56, "selected-enlarged"),
+        ("NEW GAME", bold_normal, "selected", (190, 64), 1.0, "new-selected-normal"),
+        ("LOAD GAME", bold_normal, "selected", (950, 64), 1.0, "load-selected-normal"),
+        ("LOAD GAME", regular_normal, "unselected", (1450, 68), 1.0, "load-unselected-normal"),
+        ("NEW GAME", bold_enlarged, "selected", (300, 310), 160 / 56, "new-selected-enlarged"),
+        ("LOAD GAME", bold_enlarged, "selected", (1050, 620), 160 / 56, "load-selected-enlarged"),
     )
     layer_stats: dict[str, dict[str, int]] = {}
     for text, font, state_name, position, scale, sample_name in samples:
@@ -143,11 +145,20 @@ def render_reviews() -> dict[str, dict[str, object]]:
             diagnostic, position, text, font, state_name, scale=scale
         )
     pointer_stats = {
-        "normal-beside-selected": ui.render_selection_pointer(
-            diagnostic, (90, 97), 44, 18
+        "normal-beside-new": ui.render_selection_pointer(
+            diagnostic, (173, 99), 68, 22
         ),
-        "enlarged": ui.render_selection_pointer(
-            diagnostic, (1510, 540), 220, 90
+        "normal-beside-load": ui.render_selection_pointer(
+            diagnostic, (933, 99), 68, 22
+        ),
+        "enlarged-beside-new": ui.render_selection_pointer(
+            diagnostic, (251, 410), round(68 * 160 / 56), round(22 * 160 / 56)
+        ),
+        "enlarged-beside-load": ui.render_selection_pointer(
+            diagnostic, (1001, 720), round(68 * 160 / 56), round(22 * 160 / 56)
+        ),
+        "enlarged-isolated": ui.render_selection_pointer(
+            diagnostic, (680, 940), 272, 88
         ),
     }
     diagnostic_path = OUTPUT_ROOT / DIAGNOSTIC_NAME
@@ -159,9 +170,10 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "bytes": diagnostic_path.stat().st_size,
         "fontFamily": "Cinzel",
         "samples": [
-            "selected NEW GAME at 56 px", "selected NEW GAME enlarged to 160 px",
-            "unselected LOAD GAME at 52 px", "pointer at 44x18 beside selected text",
-            "pointer enlarged to 220x90",
+            "selected NEW GAME at 56 px with 68x22 pointer",
+            "selected LOAD GAME at 56 px with 68x22 pointer",
+            "unselected LOAD GAME at 52 px", "selected NEW GAME enlarged to 160 px",
+            "selected LOAD GAME enlarged to 160 px", "pointer enlarged to 272x88",
         ],
         "materialLayers": layer_stats,
         "pointerLayers": pointer_stats,

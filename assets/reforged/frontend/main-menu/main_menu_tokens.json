@@ -19,8 +19,8 @@
     "position": [172, 340],
     "maxWidth": 690,
     "itemSpacing": 82,
-    "markerGap": 12,
-    "markerSize": [44, 18],
+    "markerGap": 17,
+    "markerSize": [68, 22],
     "selectedScale": 1.025,
     "transitionDurationMs": 160,
     "confirmFlareDurationMs": 130
