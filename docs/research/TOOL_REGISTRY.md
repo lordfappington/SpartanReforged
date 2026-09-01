@@ -13,11 +13,11 @@ Verified locally through 2026-08-31. External source repositories and downloaded
 | Windows SDK | Windows headers/libraries | 10.0.26100.0 | Visual Studio Installer | Yes | Selected by CMake smoke build; 10.0.28000.0 is also present locally |
 | Python | Analysis scripting | 3.13.7 | https://www.python.org/ | Yes | pip 25.2 verified |
 | CMake | Build configuration | 4.4.3 | https://cmake.org/ | Yes | Standalone install; command verified |
-| Ghidra | Reverse engineering | 12.1.3 | https://github.com/NationalSecurityAgency/ghidra/releases/tag/Ghidra_12.1.3_build | Yes | Official release at `%USERPROFILE%\AppData\Local\Programs\Ghidra\ghidra_12.1.3_PUBLIC`; headless startup verified |
+| Ghidra | Reverse engineering | 12.1.3 | https://github.com/NationalSecurityAgency/ghidra/releases/tag/Ghidra_12.1.3_build | Yes | Official per-user install under `%LOCALAPPDATA%\Programs\Ghidra\ghidra_12.1.3_PUBLIC`; headless startup verified |
 | Emotion Engine Reloaded | Ghidra R5900/PS2 language | Commit `ae013ee1475dc970db4fdeba3ec88def6b933d43`; language 1.4.0 | https://github.com/chaoticgd/ghidra-emotionengine-reloaded | Yes | Unmodified `main` checkout; built 2026-08-31 for Ghidra 12.1.3 with cached Gradle 8.14.3; `r5900:LE:32:default` headless import and LQ/SQ/MMI/COP2 decoding verified |
 | Gradle | Ghidra extension build | 8.14.3 | https://gradle.org/ | Cached | Existing wrapper distribution used; no additional system installation required |
 | Java/JDK | Ghidra runtime | Eclipse Temurin 21.0.12.1+1 LTS | https://adoptium.net/ | Yes | 64-bit JDK; system `JAVA_HOME` configured |
-| Noesis | Asset inspection/conversion | 4.474 | https://www.richwhitehouse.com/index.php?content=inc_projects.php&showproject=91 | Yes | Official portable release at `%USERPROFILE%\AppData\Local\Programs\Noesis`; GUI startup verified |
+| Noesis | Asset inspection/conversion | 4.474 | https://www.richwhitehouse.com/index.php?content=inc_projects.php&showproject=91 | Yes | Official portable release under `%LOCALAPPDATA%\Programs\Noesis`; GUI startup verified |
 | HxD | Hex editor | 2.5.0.0 | https://mh-nexus.de/en/hxd/ | Yes | Installed at `C:\Program Files\HxD` |
 | PS2Recomp | Experimental PS2 static recompiler | Commit `14b1e5cb39b4af7e6fc12f9a29fdc751efde49d7` | https://github.com/ran-j/PS2Recomp | Yes | Branch `main`; cloned recursively 2026-08-28 into `recomp/ps2recomp`; upstream commit date 2026-08-18 |
 | Spartan PAK tooling | PAK listing/extraction | QuickBMS 0.12.0; script 0.1.1 | https://mirror.aluigi.org/quickbms_list.php | Yes | Local under `tools/external/spartan-pak-tools`; PAK0/PAK1 reads supported; rebuild/reimport unverified; no game data tested |

@@ -6,17 +6,39 @@ game-extracted/*
 assets/original/*
 assets/references/existing-texture-pack/*
 captures/videos/*
+captures/pcsx2/*
+!captures/pcsx2/.gitkeep
+captures/screenshots/*
+!captures/screenshots/.gitkeep
+captures/renderdoc/*
 backups/*
 !backups/README.md
+**/bios/*
+SLES_*
+*.tm2
+*.psq
+*.bns
+*.anm
+*.pss
+*.irx
 
 # Generated and temporary output
 temp/*
 recomp/generated/*
+logs/analysis/*
+logs/ghidra/*
 assets/reforged/frontend/design-kit/main-menu/*.png
 temp/reforged/main-menu-wireframes/
 assets/reforged/frontend/review/logo/
 assets/reforged/frontend/incoming/
 *.log
+*.raw
+*.dump
+*.mem
+*.p2s
+*.gs
+*.gs.xz
+*.rdc
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -31,9 +53,32 @@ __pycache__/
 *.7z
 *.rar
 
+# Local reverse-engineering and DCC project state
+*.gpr
+*.gzf
+*.rep/
+.ghidra/
+ghidra_projects/
+*.blend
+*.blend1
+*.blend2
+*.blend@
+
+# Local credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.*
+secrets.*
+
 # IDE and build output
 .vs/
 .vscode/
+.idea/
+.DS_Store
+Thumbs.db
 CMakeFiles/
 CMakeCache.txt
 cmake-build-*/
@@ -45,5 +90,6 @@ build/
 # Locally downloaded third-party binaries (keep provenance docs/scripts)
 tools/external/spartan-pak-tools/quickbms.zip
 tools/external/spartan-pak-tools/quickbms/
+tools/external/spartan-pak-tools/spartan_total_war.bms
 tools/external/ghidra-emotionengine-reloaded/
 recomp/ps2recomp/
