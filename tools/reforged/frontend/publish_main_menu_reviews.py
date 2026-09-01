@@ -142,6 +142,14 @@ def render_reviews() -> dict[str, dict[str, object]]:
         layer_stats[sample_name] = ui.render_material_text(
             diagnostic, position, text, font, state_name, scale=scale
         )
+    pointer_stats = {
+        "normal-beside-selected": ui.render_selection_pointer(
+            diagnostic, (90, 97), 44, 18
+        ),
+        "enlarged": ui.render_selection_pointer(
+            diagnostic, (1510, 540), 220, 90
+        ),
+    }
     diagnostic_path = OUTPUT_ROOT / DIAGNOSTIC_NAME
     diagnostic.save(diagnostic_path, "PNG", optimize=False, compress_level=9)
     manifest[DIAGNOSTIC_NAME] = {
@@ -152,9 +160,11 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "fontFamily": "Cinzel",
         "samples": [
             "selected NEW GAME at 56 px", "selected NEW GAME enlarged to 160 px",
-            "unselected LOAD GAME at 52 px",
+            "unselected LOAD GAME at 52 px", "pointer at 44x18 beside selected text",
+            "pointer enlarged to 220x90",
         ],
         "materialLayers": layer_stats,
+        "pointerLayers": pointer_stats,
         "provenance": "project-created deterministic typography material diagnostic",
     }
     return manifest

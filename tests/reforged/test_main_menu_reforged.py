@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import pathlib
 import sys
 import unittest
@@ -127,18 +128,29 @@ class MainMenuReforgedTests(unittest.TestCase):
     def test_locked_material_has_reduced_specular_contrast(self) -> None:
         selected = UI.SELECTED_ILLUMINATION
         locked = UI.MATERIAL_PALETTES["locked"]
-        selected_span = sum(selected["thinEdge"]) - sum(selected["opposingEdge"])
+        selected_span = sum(selected["thinRim"]) - sum(selected["opposingEdge"])
         locked_span = sum(locked["highlight"]) - sum(locked["opposing"])
         self.assertLess(locked_span, selected_span)
 
     def test_selected_state_uses_clipped_internal_illumination(self) -> None:
         font = UI._font(56, TOKENS, "bold")
         layers, _ = UI.build_material_text_layers("NEW GAME", font, "selected")
-        illumination = UI.build_selected_illumination_masks(layers["glyph"], 1.0)
+        illumination = UI.build_selected_illumination_masks(layers["glyph"], 1.0, "NEW GAME")
         for name in ("internal_light", "thin_edge", "hotspots"):
             self.assertIsNotNone(illumination[name].getbbox())
             escaped = UI.ImageChops.subtract(illumination[name], layers["glyph"])
             self.assertIsNone(escaped.getbbox(), f"{name} escaped glyph coverage")
+        settings = UI.SELECTED_ILLUMINATION
+        internal_energy = (
+            sum(illumination["interior"].getdata()) * settings["amberTransitionOpacity"]
+            + sum(illumination["internal_light"].getdata()) * settings["internalLightOpacity"]
+            + sum(illumination["hotspots"].getdata()) * settings["hotspotOpacity"]
+        )
+        structural_energy = (
+            sum(illumination["thin_edge"].getdata()) * settings["thinRimOpacity"]
+            + sum(layers["opposing_bevel"].getdata()) * settings["opposingEdgeOpacity"]
+        )
+        self.assertGreater(internal_energy, structural_energy)
 
     def test_selected_state_has_independent_halo_and_no_bronze_inset(self) -> None:
         font = UI._font(56, TOKENS, "bold")
@@ -149,6 +161,31 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertIn("thin_edge", stats)
         self.assertNotIn("inset", stats)
         self.assertGreater(UI.SELECTED_ILLUMINATION["haloRadius"], 0)
+
+    def test_unselected_pixel_baseline_is_preserved(self) -> None:
+        font = UI._font(52, TOKENS, "regular")
+        canvas = Image.new("RGB", (500, 100), (7, 13, 23))
+        UI.render_material_text(canvas, (20, 10), "LOAD GAME", font, "unselected")
+        self.assertEqual(
+            hashlib.sha256(canvas.tobytes()).hexdigest(),
+            "2ec52ee699316366116dec1803d859230936b7c6201584b50ab115192b7d6fa7",
+        )
+
+    def test_pointer_is_layered_metal_geometry_not_flat_triangle(self) -> None:
+        layers = UI.build_pointer_layers(44, 18)
+        self.assertEqual(
+            set(layers),
+            {"body", "upper_plane", "lower_plane", "rim", "ridge", "weathering"},
+        )
+        self.assertTrue(all(layer.getbbox() is not None for layer in layers.values()))
+        self.assertNotEqual(layers["upper_plane"].tobytes(), layers["lower_plane"].tobytes())
+        self.assertLess(sum(layers["ridge"].getdata()), sum(layers["body"].getdata()))
+
+    def test_pointer_tip_remains_anchored_to_selected_item(self) -> None:
+        layout = UI.layout_for_viewport(1920, 1080, TOKENS)
+        mx, my = TOKENS["menu"]["position"]
+        tip = UI.selected_pointer_tip(layout, mx, my, TOKENS["menu"]["markerGap"])
+        self.assertEqual(tip, (160.0, 375.0))
 
 
 if __name__ == "__main__":

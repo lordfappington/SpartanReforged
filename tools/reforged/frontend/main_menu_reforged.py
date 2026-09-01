@@ -9,6 +9,7 @@ resolution-independent layout, and can draw development-only wireframes.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 from dataclasses import dataclass, replace
@@ -283,22 +284,35 @@ def _scaled_box(layout: ViewportLayout, xyxy: tuple[float, float, float, float])
 
 
 SELECTED_ILLUMINATION: dict[str, Any] = {
-    "faceStops": (
-        (0.00, (255, 214, 102)), (0.22, (244, 157, 37)),
-        (0.52, (155, 69, 8)), (0.72, (232, 126, 18)),
-        (1.00, (180, 78, 8)),
-    ),
-    "internalLight": (255, 182, 46),
-    "internalLightOpacity": 176,
-    "hotspot": (255, 233, 163),
-    "hotspotOpacity": 112,
-    "thinEdge": (255, 243, 196),
-    "thinEdgeOpacity": 224,
-    "opposingEdge": (112, 48, 7),
-    "opposingEdgeOpacity": 72,
-    "halo": (230, 143, 28),
-    "haloOpacity": 42,
-    "haloRadius": 3.2,
+    "container": (119, 55, 7),
+    "amberTransition": (232, 155, 38),
+    "amberTransitionOpacity": 238,
+    "internalLight": (255, 240, 190),
+    "internalLightOpacity": 238,
+    "hotspot": (255, 252, 229),
+    "hotspotOpacity": 210,
+    "thinRim": (255, 229, 153),
+    "thinRimOpacity": 205,
+    "opposingEdge": (100, 43, 5),
+    "opposingEdgeOpacity": 92,
+    "halo": (233, 150, 35),
+    "haloOpacity": 34,
+    "haloRadius": 3.0,
+    "noiseFloor": 132,
+    "noiseCeiling": 255,
+}
+
+POINTER_MATERIAL: dict[str, Any] = {
+    "body": (126, 76, 25),
+    "upperPlane": (205, 148, 59),
+    "lowerPlane": (76, 42, 17),
+    "rim": (235, 190, 96),
+    "ridge": (255, 229, 151),
+    "weathering": (51, 29, 15),
+    "halo": (226, 145, 39),
+    "haloOpacity": 24,
+    "haloRadius": 1.8,
+    "supersample": 4,
 }
 
 
@@ -382,73 +396,83 @@ def _vertical_material_gradient(size: tuple[int, int], palette: dict[str, tuple[
     return gradient
 
 
-def _gradient_from_stops(
-    size: tuple[int, int], stops: tuple[tuple[float, tuple[int, int, int]], ...]
-) -> Image.Image:
-    gradient = Image.new("RGBA", size)
-    pixels = gradient.load()
-    height = max(1, size[1] - 1)
-    for y in range(size[1]):
-        t = y / height
-        left, right = stops[0], stops[-1]
-        for index in range(len(stops) - 1):
-            if stops[index][0] <= t <= stops[index + 1][0]:
-                left, right = stops[index], stops[index + 1]
-                break
-        local = (t - left[0]) / max(1e-9, right[0] - left[0])
-        colour = tuple(round(left[1][c] * (1 - local) + right[1][c] * local) for c in range(3))
-        for x in range(size[0]):
-            pixels[x, y] = (*colour, 255)
-    return gradient
-
-
 def build_selected_illumination_masks(
-    glyph: Image.Image, scale: float
+    glyph: Image.Image, scale: float, text: str = ""
 ) -> dict[str, Image.Image]:
-    """Derive interior light, fine edge and adaptive hotspots for selected text."""
+    """Derive organic, label-stable light contained inside selected glyphs."""
     core = glyph.filter(ImageFilter.MinFilter(3))
-    internal = ImageChops.multiply(
+    interior = ImageChops.multiply(
         glyph,
-        core.filter(ImageFilter.GaussianBlur(max(1.2, 2.0 * scale))),
+        core.filter(ImageFilter.GaussianBlur(max(1.0, 1.5 * scale))),
     )
     thin_edge = ImageChops.subtract(glyph, core)
+
+    seed = hashlib.sha256(("SpartanReforged:selected:" + text).encode("utf-8")).digest()
+    coarse_w = max(4, round(glyph.width / max(1, 18 * scale)))
+    coarse_h = max(3, round(glyph.height / max(1, 13 * scale)))
+    noise_values: list[int] = []
+    counter = 0
+    while len(noise_values) < coarse_w * coarse_h:
+        block = hashlib.sha256(seed + counter.to_bytes(4, "little")).digest()
+        noise_values.extend(block)
+        counter += 1
+    floor = SELECTED_ILLUMINATION["noiseFloor"]
+    ceiling = SELECTED_ILLUMINATION["noiseCeiling"]
+    noise = Image.new("L", (coarse_w, coarse_h))
+    noise.putdata([
+        floor + value * (ceiling - floor) // 255
+        for value in noise_values[:coarse_w * coarse_h]
+    ])
+    noise = noise.resize(glyph.size, Image.Resampling.BICUBIC).filter(
+        ImageFilter.GaussianBlur(max(.8, 1.25 * scale))
+    )
+    internal = ImageChops.multiply(interior, noise)
+
     hotspot_field = Image.new("L", glyph.size)
     hotspot_draw = ImageDraw.Draw(hotspot_field)
-    count = max(2, min(5, round(glyph.width / max(1, 110 * scale))))
-    cell = glyph.width / count
+    count = 2 + seed[0] % 3
     for index in range(count):
-        centre_x = (index + .5) * cell
-        centre_y = glyph.height * (.38 if index % 2 == 0 else .62)
-        radius_x = cell * .24
-        radius_y = glyph.height * .20
+        base = 1 + index * 5
+        centre_x = glyph.width * (.10 + seed[base] / 255 * .80)
+        centre_y = glyph.height * (.22 + seed[base + 1] / 255 * .56)
+        radius_x = glyph.width * (.035 + seed[base + 2] / 255 * .075)
+        radius_y = glyph.height * (.10 + seed[base + 3] / 255 * .16)
+        intensity = 190 + seed[base + 4] % 66
         hotspot_draw.ellipse(
             (centre_x - radius_x, centre_y - radius_y,
              centre_x + radius_x, centre_y + radius_y),
-            fill=210,
+            fill=intensity,
         )
     hotspots = ImageChops.multiply(
-        internal,
-        hotspot_field.filter(ImageFilter.GaussianBlur(max(2.0, 4.0 * scale))),
+        interior,
+        hotspot_field.filter(ImageFilter.GaussianBlur(max(1.5, 3.0 * scale))),
     )
-    return {"internal_light": internal, "thin_edge": thin_edge, "hotspots": hotspots}
+    return {
+        "interior": interior, "internal_light": internal,
+        "thin_edge": thin_edge, "hotspots": hotspots,
+    }
 
 
 def _composite_selected_illumination(
     tile: Image.Image,
     layers: dict[str, Image.Image],
     scale: float,
+    text: str,
 ) -> dict[str, Image.Image]:
     settings = SELECTED_ILLUMINATION
-    illumination = build_selected_illumination_masks(layers["glyph"], scale)
+    illumination = build_selected_illumination_masks(layers["glyph"], scale, text=text)
     halo_mask = layers["glyph"].filter(
         ImageFilter.GaussianBlur(max(2.0, settings["haloRadius"] * scale))
     )
     halo = Image.new("RGBA", tile.size, (*settings["halo"], 0))
     halo.putalpha(_scaled_alpha(halo_mask, settings["haloOpacity"]))
     tile.alpha_composite(halo)
-    face = _gradient_from_stops(tile.size, settings["faceStops"])
-    face.putalpha(layers["glyph"])
-    tile.alpha_composite(face)
+    container = Image.new("RGBA", tile.size, (*settings["container"], 0))
+    container.putalpha(layers["glyph"])
+    tile.alpha_composite(container)
+    transition = Image.new("RGBA", tile.size, (*settings["amberTransition"], 0))
+    transition.putalpha(_scaled_alpha(illumination["interior"], settings["amberTransitionOpacity"]))
+    tile.alpha_composite(transition)
     internal = Image.new("RGBA", tile.size, (*settings["internalLight"], 0))
     internal.putalpha(_scaled_alpha(illumination["internal_light"], settings["internalLightOpacity"]))
     tile.alpha_composite(internal)
@@ -458,8 +482,8 @@ def _composite_selected_illumination(
     opposing = Image.new("RGBA", tile.size, (*settings["opposingEdge"], 0))
     opposing.putalpha(_scaled_alpha(layers["opposing_bevel"], settings["opposingEdgeOpacity"]))
     tile.alpha_composite(opposing)
-    edge = Image.new("RGBA", tile.size, (*settings["thinEdge"], 0))
-    edge.putalpha(_scaled_alpha(illumination["thin_edge"], settings["thinEdgeOpacity"]))
+    edge = Image.new("RGBA", tile.size, (*settings["thinRim"], 0))
+    edge.putalpha(_scaled_alpha(illumination["thin_edge"], settings["thinRimOpacity"]))
     tile.alpha_composite(edge)
     return illumination
 
@@ -480,7 +504,7 @@ def render_material_text(
     shadow.putalpha(_scaled_alpha(_shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76))
     tile.alpha_composite(shadow)
     if state == "selected":
-        illumination = _composite_selected_illumination(tile, layers, scale)
+        illumination = _composite_selected_illumination(tile, layers, scale, text)
         paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
         target.paste(tile, paste_at, tile)
         combined = {
@@ -504,6 +528,106 @@ def render_material_text(
     tile.alpha_composite(highlight)
     paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
     target.paste(tile, paste_at, tile)
+    return {name: sum(1 for value in layer.getdata() if value) for name, layer in layers.items()}
+
+
+def selected_pointer_tip(
+    layout: ViewportLayout, menu_x: float, item_y: float, marker_gap: float
+) -> tuple[float, float]:
+    """Return the pointer tip anchored to the selected label's optical centre."""
+    return layout.point(menu_x - marker_gap, item_y + 35)
+
+
+def build_pointer_layers(width: int, height: int) -> dict[str, Image.Image]:
+    """Build supersampled classical spearhead planes and detail masks."""
+    if width < 8 or height < 6:
+        raise ValueError("selection pointer is too small to render")
+    ss = POINTER_MATERIAL["supersample"]
+    w, h = width * ss, height * ss
+    pad = max(4, round(4 * ss))
+    size = (w + pad * 2, h + pad * 2)
+    ox, oy = pad, pad
+    body = Image.new("L", size)
+    points = [
+        (ox, oy + h * .41), (ox, oy + h * .59),
+        (ox + w * .31, oy + h * .59), (ox + w * .41, oy + h * .79),
+        (ox + w, oy + h * .50),
+        (ox + w * .41, oy + h * .21), (ox + w * .31, oy + h * .41),
+    ]
+    ImageDraw.Draw(body).polygon(points, fill=255)
+    upper = Image.new("L", size)
+    ImageDraw.Draw(upper).polygon([
+        (ox, oy + h * .41), (ox + w * .31, oy + h * .41),
+        (ox + w * .41, oy + h * .21), (ox + w, oy + h * .50),
+        (ox + w * .38, oy + h * .48), (ox, oy + h * .49),
+    ], fill=255)
+    lower = Image.new("L", size)
+    ImageDraw.Draw(lower).polygon([
+        (ox, oy + h * .51), (ox + w * .38, oy + h * .52),
+        (ox + w, oy + h * .50), (ox + w * .41, oy + h * .79),
+        (ox + w * .31, oy + h * .59), (ox, oy + h * .59),
+    ], fill=255)
+    eroded = body.filter(ImageFilter.MinFilter(ss * 2 + 1))
+    rim = ImageChops.subtract(body, eroded)
+    ridge = Image.new("L", size)
+    ridge_draw = ImageDraw.Draw(ridge)
+    ridge_draw.line(
+        (ox + w * .06, oy + h * .50, ox + w * .91, oy + h * .50),
+        fill=235, width=max(1, ss),
+    )
+    ridge_draw.line(
+        (ox + w * .36, oy + h * .43, ox + w * .91, oy + h * .50),
+        fill=150, width=max(1, ss // 2),
+    )
+    weathering = Image.new("L", size)
+    weather_draw = ImageDraw.Draw(weathering)
+    for fx, fy, radius in ((.27, .46, .026), (.48, .39, .018), (.63, .56, .022)):
+        r = max(1, w * radius)
+        cx, cy = ox + w * fx, oy + h * fy
+        weather_draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=105)
+    weathering = ImageChops.multiply(weathering, body)
+    return {
+        "body": body, "upper_plane": upper, "lower_plane": lower,
+        "rim": rim, "ridge": ridge, "weathering": weathering,
+    }
+
+
+def render_selection_pointer(
+    target: Image.Image,
+    tip: tuple[float, float],
+    width: float,
+    height: float,
+) -> dict[str, int]:
+    """Render a small physical bronze spearhead ornament anchored by its tip."""
+    output_w, output_h = max(8, round(width)), max(6, round(height))
+    layers = build_pointer_layers(output_w, output_h)
+    material = POINTER_MATERIAL
+    tile = Image.new("RGBA", layers["body"].size)
+    halo_mask = layers["body"].filter(
+        ImageFilter.GaussianBlur(material["haloRadius"] * material["supersample"])
+    )
+    halo = Image.new("RGBA", tile.size, (*material["halo"], 0))
+    halo.putalpha(_scaled_alpha(halo_mask, material["haloOpacity"]))
+    tile.alpha_composite(halo)
+    for layer_name, colour, opacity in (
+        ("body", material["body"], 255),
+        ("upper_plane", material["upperPlane"], 235),
+        ("lower_plane", material["lowerPlane"], 230),
+        ("weathering", material["weathering"], 115),
+        ("rim", material["rim"], 175),
+        ("ridge", material["ridge"], 225),
+    ):
+        layer = Image.new("RGBA", tile.size, (*colour, 0))
+        layer.putalpha(_scaled_alpha(layers[layer_name], opacity))
+        tile.alpha_composite(layer)
+    ss = material["supersample"]
+    rendered = tile.resize(
+        (max(1, round(tile.width / ss)), max(1, round(tile.height / ss))),
+        Image.Resampling.LANCZOS,
+    )
+    pad = round((tile.width / ss - output_w) / 2)
+    paste_at = (round(tip[0] - output_w - pad), round(tip[1] - output_h / 2 - pad))
+    target.paste(rendered, paste_at, rendered)
     return {name: sum(1 for value in layer.getdata() if value) for name, layer in layers.items()}
 
 
@@ -586,10 +710,10 @@ def render_wireframe(
             "bold" if selected else "regular",
         )
         if selected:
-            tip = layout.point(mx - marker_gap, y + 18)
-            base_top = layout.point(mx - marker_gap - marker_w, y + 18 - marker_h / 2)
-            base_bottom = layout.point(mx - marker_gap - marker_w, y + 18 + marker_h / 2)
-            draw.polygon((tip, base_top, base_bottom), fill=_colour(tokens, "selectedGold"))
+            tip = selected_pointer_tip(layout, mx, y, marker_gap)
+            render_selection_pointer(
+                image, tip, marker_w * layout.scale, marker_h * layout.scale
+            )
         text_position = layout.point(mx, y)
         material_state = "locked" if item.locked else ("selected" if selected else "unselected")
         render_material_text(image, text_position, strings[item.label_key], font, material_state, layout.scale)
