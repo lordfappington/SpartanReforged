@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "approvalStatus": "HUMAN APPROVED",
+  "source": {
+    "filename": "spartan-logo-approved.png",
+    "sha256": "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d",
+    "fileSize": 1542636,
+    "format": "PNG",
+    "mode": "RGBA",
+    "dimensions": [
+      2172,
+      724
+    ],
+    "aspectRatio": 3.0,
+    "alpha": {
+      "convention": "straight alpha",
+      "present": true,
+      "range": [
+        0,
+        255
+      ],
+      "uniqueValues": 256,
+      "transparentPixels": 818316,
+      "opaquePixels": 166,
+      "partialPixels": 754046,
+      "visibleBounds": [
+        0,
+        23,
+        2150,
+        724
+      ]
+    },
+    "incomingPath": "assets/reforged/frontend/incoming/spartan-logo-approved.png",
+    "archivalPath": "assets/reforged/frontend/main-menu/logo/approved/source/spartan-logo-approved.png"
+  },
+  "processing": {
+    "visualDesignAltered": false,
+    "vectorisationAttempted": false,
+    "cleanupRequired": false,
+    "cleanupPerformed": false,
+    "resizePerformed": false,
+    "sourceAndRuntimeByteIdentical": true
+  },
+  "layers": {
+    "dividerExtractionAttempted": false,
+    "dividerExtractionSuccessful": false,
+    "flareExtractionAttempted": false,
+    "flareExtractionSuccessful": false,
+    "decision": "Use the complete approved raster; destructive layer separation was not justified."
+  },
+  "runtime": {
+    "path": "assets/reforged/frontend/main-menu/logo/approved/runtime/spartan-logo-approved.png",
+    "sha256": "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d",
+    "dimensions": [
+      2172,
+      724
+    ],
+    "format": "PNG RGBA",
+    "colourSpace": "sRGB (PNG has no embedded profile)",
+    "alphaConvention": "straight alpha",
+    "anchor": "top-left in the central 1920x1080 composition",
+    "designPosition": [
+      130,
+      90
+    ],
+    "designBounds": [
+      650,
+      210
+    ],
+    "nominalDisplay1080p": [
+      630,
+      210
+    ],
+    "nominalDisplay1440p": [
+      840,
+      280
+    ],
+    "nominalDisplay4k": [
+      1260,
+      420
+    ],
+    "ultrawidePolicy": "central 16:9 composition; environment-only side extension"
+  },
+  "reviews": [
+    "assets/reforged/frontend/review/logo/approved/menu-approved-logo-1080p.png",
+    "assets/reforged/frontend/review/logo/approved/menu-approved-logo-1440p.png",
+    "assets/reforged/frontend/review/logo/approved/menu-approved-logo-4k.png",
+    "assets/reforged/frontend/review/logo/approved/menu-approved-logo-21x9.png",
+    "assets/reforged/frontend/review/logo/approved/approved-logo-dark-background.png",
+    "assets/reforged/frontend/review/logo/approved/logo-final-review.png"
+  ],
+  "retainedResearch": {
+    "pass1": "assets/reforged/frontend/main-menu/logo",
+    "pass2": "assets/reforged/frontend/main-menu/logo/pass2",
+    "pass2BevelResearchRetained": true
+  }
+}

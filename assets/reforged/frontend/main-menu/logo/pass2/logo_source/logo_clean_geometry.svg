@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2520" height="840" viewBox="0 0 2520 840">
+  <title>SpartanReforged main-menu logo Pass 2 clean geometry</title>
+  <desc>Intentional reusable line and cubic-Bezier glyph construction; no raster contour trace and no font dependency.</desc>
+  <defs>
+    <mask id="mask-S" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 835.0000 120.0000 C 705.0000 20.0000 315.0000 -5.0000 130.0000 145.0000 C -10.0000 260.0000 35.0000 430.0000 330.0000 520.0000 C 565.0000 592.0000 720.0000 610.0000 685.0000 735.0000 C 650.0000 865.0000 390.0000 900.0000 125.0000 750.0000 L 65.0000 895.0000 C 315.0000 1050.0000 715.0000 1035.0000 858.0000 810.0000 C 1005.0000 578.0000 885.0000 420.0000 558.0000 335.0000 C 350.0000 282.0000 220.0000 255.0000 260.0000 180.0000 C 305.0000 98.0000 535.0000 112.0000 780.0000 255.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-S"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-S)"/></g>
+    <mask id="mask-P" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 125.0000 70.0000 L 305.0000 70.0000 L 305.0000 940.0000 L 125.0000 940.0000 Z" fill="white"/>
+      <path d="M 65.0000 20.0000 L 370.0000 20.0000 L 350.0000 105.0000 L 85.0000 105.0000 Z" fill="white"/>
+      <path d="M 80.0000 900.0000 L 370.0000 900.0000 L 385.0000 985.0000 L 65.0000 985.0000 Z" fill="white"/>
+      <path d="M 270.0000 70.0000 L 535.0000 70.0000 C 795.0000 70.0000 905.0000 190.0000 905.0000 355.0000 C 905.0000 525.0000 770.0000 595.0000 300.0000 595.0000 L 300.0000 455.0000 L 510.0000 455.0000 C 660.0000 455.0000 720.0000 410.0000 720.0000 335.0000 C 720.0000 245.0000 650.0000 210.0000 300.0000 210.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-P"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-P)"/></g>
+    <mask id="mask-A" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 55.0000 940.0000 L 415.0000 25.0000 L 555.0000 25.0000 L 925.0000 940.0000 L 730.0000 940.0000 L 630.0000 675.0000 L 328.0000 675.0000 L 235.0000 940.0000 Z" fill="white"/>
+      <path d="M 350.0000 570.0000 L 610.0000 570.0000 L 650.0000 685.0000 L 310.0000 685.0000 Z" fill="white"/>
+      <path d="M 427.0000 250.0000 L 487.0000 105.0000 L 550.0000 250.0000 L 610.0000 490.0000 L 355.0000 490.0000 Z" fill="black"/>
+      <path d="M 40.0000 900.0000 L 285.0000 900.0000 L 300.0000 985.0000 L 25.0000 985.0000 Z" fill="white"/>
+      <path d="M 695.0000 900.0000 L 940.0000 900.0000 L 955.0000 985.0000 L 680.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-A"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-A)"/></g>
+    <mask id="mask-R" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 125.0000 70.0000 L 305.0000 70.0000 L 305.0000 940.0000 L 125.0000 940.0000 Z" fill="white"/>
+      <path d="M 65.0000 20.0000 L 370.0000 20.0000 L 350.0000 105.0000 L 85.0000 105.0000 Z" fill="white"/>
+      <path d="M 80.0000 900.0000 L 370.0000 900.0000 L 385.0000 985.0000 L 65.0000 985.0000 Z" fill="white"/>
+      <path d="M 270.0000 70.0000 L 535.0000 70.0000 C 795.0000 70.0000 905.0000 190.0000 905.0000 355.0000 C 905.0000 525.0000 770.0000 595.0000 300.0000 595.0000 L 300.0000 455.0000 L 510.0000 455.0000 C 660.0000 455.0000 720.0000 410.0000 720.0000 335.0000 C 720.0000 245.0000 650.0000 210.0000 300.0000 210.0000 Z" fill="white"/>
+      <path d="M 455.0000 510.0000 L 610.0000 475.0000 L 940.0000 930.0000 L 890.0000 985.0000 L 730.0000 950.0000 L 430.0000 555.0000 Z" fill="white"/>
+      <path d="M 725.0000 900.0000 L 950.0000 900.0000 L 965.0000 985.0000 L 710.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-R"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-R)"/></g>
+    <mask id="mask-T" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 45.0000 20.0000 L 855.0000 20.0000 L 825.0000 150.0000 L 525.0000 125.0000 L 525.0000 920.0000 L 610.0000 985.0000 L 290.0000 985.0000 L 375.0000 920.0000 L 375.0000 125.0000 L 75.0000 150.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-T"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-T)"/></g>
+    <mask id="mask-N" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 100.0000 70.0000 L 275.0000 70.0000 L 275.0000 940.0000 L 100.0000 940.0000 Z" fill="white"/>
+      <path d="M 700.0000 70.0000 L 875.0000 70.0000 L 875.0000 940.0000 L 700.0000 940.0000 Z" fill="white"/>
+      <path d="M 220.0000 80.0000 L 390.0000 80.0000 L 770.0000 835.0000 L 770.0000 965.0000 L 615.0000 965.0000 L 235.0000 210.0000 Z" fill="white"/>
+      <path d="M 45.0000 20.0000 L 335.0000 20.0000 L 315.0000 105.0000 L 65.0000 105.0000 Z" fill="white"/>
+      <path d="M 640.0000 20.0000 L 930.0000 20.0000 L 910.0000 105.0000 L 660.0000 105.0000 Z" fill="white"/>
+      <path d="M 60.0000 900.0000 L 320.0000 900.0000 L 335.0000 985.0000 L 45.0000 985.0000 Z" fill="white"/>
+      <path d="M 655.0000 900.0000 L 915.0000 900.0000 L 930.0000 985.0000 L 640.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-N"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-N)"/></g>
+    <mask id="mask-O" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 880.0000 505.0000 C 880.0000 237.1419 691.9596 20.0000 460.0000 20.0000 C 228.0404 20.0000 40.0000 237.1419 40.0000 505.0000 C 40.0000 772.8581 228.0404 990.0000 460.0000 990.0000 C 691.9596 990.0000 880.0000 772.8581 880.0000 505.0000 Z" fill="white"/>
+      <path d="M 715.0000 505.0000 C 715.0000 314.4618 600.8326 160.0000 460.0000 160.0000 C 319.1674 160.0000 205.0000 314.4618 205.0000 505.0000 C 205.0000 695.5382 319.1674 850.0000 460.0000 850.0000 C 600.8326 850.0000 715.0000 695.5382 715.0000 505.0000 Z" fill="black"/>
+    </mask>
+    <g id="glyph-O"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-O)"/></g>
+    <mask id="mask-L" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 120.0000 70.0000 L 300.0000 70.0000 L 300.0000 940.0000 L 120.0000 940.0000 Z" fill="white"/>
+      <path d="M 55.0000 20.0000 L 365.0000 20.0000 L 345.0000 105.0000 L 75.0000 105.0000 Z" fill="white"/>
+      <path d="M 120.0000 900.0000 L 650.0000 900.0000 L 720.0000 790.0000 L 690.0000 985.0000 L 55.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-L"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-L)"/></g>
+    <mask id="mask-W" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 35.0000 45.0000 L 225.0000 45.0000 L 405.0000 790.0000 L 505.0000 430.0000 L 610.0000 790.0000 L 815.0000 45.0000 L 1005.0000 45.0000 L 715.0000 980.0000 L 570.0000 980.0000 L 505.0000 655.0000 L 440.0000 980.0000 L 295.0000 980.0000 Z" fill="white"/>
+      <path d="M 10.0000 20.0000 L 260.0000 20.0000 L 240.0000 105.0000 L 30.0000 105.0000 Z" fill="white"/>
+      <path d="M 780.0000 20.0000 L 1040.0000 20.0000 L 1020.0000 105.0000 L 800.0000 105.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-W"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-W)"/></g>
+    <mask id="mask-I" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 145.0000 70.0000 L 275.0000 70.0000 L 275.0000 940.0000 L 145.0000 940.0000 Z" fill="white"/>
+      <path d="M 55.0000 20.0000 L 365.0000 20.0000 L 345.0000 105.0000 L 75.0000 105.0000 Z" fill="white"/>
+      <path d="M 70.0000 900.0000 L 350.0000 900.0000 L 365.0000 985.0000 L 55.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-I"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-I)"/></g>
+    <mask id="mask-M" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1200">
+      <path d="M 75.0000 70.0000 L 245.0000 70.0000 L 245.0000 940.0000 L 75.0000 940.0000 Z" fill="white"/>
+      <path d="M 835.0000 70.0000 L 1005.0000 70.0000 L 1005.0000 940.0000 L 835.0000 940.0000 Z" fill="white"/>
+      <path d="M 205.0000 80.0000 L 355.0000 80.0000 L 540.0000 600.0000 L 725.0000 80.0000 L 875.0000 80.0000 L 610.0000 850.0000 L 470.0000 850.0000 Z" fill="white"/>
+      <path d="M 20.0000 20.0000 L 300.0000 20.0000 L 280.0000 105.0000 L 40.0000 105.0000 Z" fill="white"/>
+      <path d="M 780.0000 20.0000 L 1060.0000 20.0000 L 1040.0000 105.0000 L 800.0000 105.0000 Z" fill="white"/>
+      <path d="M 35.0000 900.0000 L 285.0000 900.0000 L 300.0000 985.0000 L 20.0000 985.0000 Z" fill="white"/>
+      <path d="M 795.0000 900.0000 L 1045.0000 900.0000 L 1060.0000 985.0000 L 780.0000 985.0000 Z" fill="white"/>
+    </mask>
+    <g id="glyph-M"><rect x="-100" y="-100" width="1300" height="1200" fill="white" mask="url(#mask-M)"/></g>
+  </defs>
+  <use href="#glyph-S" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 96.0000 60.0000)"/>
+  <use href="#glyph-P" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 376.0832 60.0000)"/>
+  <use href="#glyph-A" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 653.1709 60.0000)"/>
+  <use href="#glyph-R" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 948.2318 60.0000)"/>
+  <use href="#glyph-T" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 1243.2927 60.0000)"/>
+  <use href="#glyph-A" data-line="SPARTAN" data-occurrence="1" transform="matrix(0.29955423 0 0 0.42000000 1529.3670 60.0000)"/>
+  <use href="#glyph-N" data-line="SPARTAN" data-occurrence="0" transform="matrix(0.29955423 0 0 0.42000000 1824.4279 60.0000)"/>
+  <use href="#glyph-T" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 96.0000 540.0000)"/>
+  <use href="#glyph-O" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 260.2649 540.0000)"/>
+  <use href="#glyph-T" data-line="TOTAL_WARRIOR" data-occurrence="1" transform="matrix(0.17218543 0 0 0.27600000 427.9735 540.0000)"/>
+  <use href="#glyph-A" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 592.2384 540.0000)"/>
+  <use href="#glyph-L" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 761.6689 540.0000)"/>
+  <use href="#glyph-W" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 1004.1060 540.0000)"/>
+  <use href="#glyph-A" data-line="TOTAL_WARRIOR" data-occurrence="1" transform="matrix(0.17218543 0 0 0.27600000 1206.2517 540.0000)"/>
+  <use href="#glyph-R" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 1375.6821 540.0000)"/>
+  <use href="#glyph-R" data-line="TOTAL_WARRIOR" data-occurrence="1" transform="matrix(0.17218543 0 0 0.27600000 1545.1126 540.0000)"/>
+  <use href="#glyph-I" data-line="TOTAL_WARRIOR" data-occurrence="0" transform="matrix(0.17218543 0 0 0.27600000 1714.5430 540.0000)"/>
+  <use href="#glyph-O" data-line="TOTAL_WARRIOR" data-occurrence="1" transform="matrix(0.17218543 0 0 0.27600000 1796.1589 540.0000)"/>
+  <use href="#glyph-R" data-line="TOTAL_WARRIOR" data-occurrence="2" transform="matrix(0.17218543 0 0 0.27600000 1963.8675 540.0000)"/>
+  <use href="#glyph-T" data-line="TM" data-occurrence="0" transform="matrix(0.09036145 0 0 0.12000000 2100.0000 72.0000)"/>
+  <use href="#glyph-M" data-line="TM" data-occurrence="0" transform="matrix(0.09036145 0 0 0.12000000 2182.4096 72.0000)"/>
+</svg>

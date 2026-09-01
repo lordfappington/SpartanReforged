@@ -2,7 +2,7 @@
 
 ## Status
 
-Three production candidates share one custom outline reconstruction. Variant A is the current **TECHNICAL PREFERENCE ONLY — PENDING HUMAN ART REVIEW**. No candidate is human-approved, and no other menu artwork was changed.
+Pass 1 and Pass 2 typography/geometry failed human review and remain retained as rejected Reforged experiments. The supplied 2172×724 raster is now the **HUMAN-APPROVED REFORGED ARTWORK** and the active Reforged menu asset. No other menu artwork was changed.
 
 The work is additive beneath `assets/reforged/frontend/main-menu/logo`. The original TIM2, decoded design-kit references, preservation renderer, and FE data remain untouched and independently reproducible.
 
@@ -122,3 +122,100 @@ It contains original-versus-Reforged, three-variant, 100/75/50% scale, transpare
 5. Should the flare/glint warmth retain more of the original cool-blue centre?
 
 Do not begin the next main-menu art asset until these candidates are approved or revised.
+
+## Pass 2 — clean geometry and reconstructed bevel
+
+### Why Pass 1 failed review
+
+Human review rejected Pass 1 because its alpha iso-contour made source-pixel staircase, curve, antialiasing, and sampling irregularities permanent vector geometry. Its material also read mainly as colour variation over a flat face instead of the source's bright edge, bevel slope, raised face, opposing dark edge, and recessed perimeter. Pass 1 remains in its original paths and metadata; Pass 2 is entirely separate beneath `logo/pass2`.
+
+### Geometry reconstruction
+
+Pass 2 does **not** trace any raster contour. The 192×64 source provides composition, stroke/proportion evidence, line boxes, baselines, and glyph identity only. The builder defines a reusable custom glyph library for S/P/A/R/T/N/O/L/W/I/M:
+
+- intended stems, crossbars, diagonals, serif edges, and terminals are exact line segments;
+- S, P/R bowls, and O/counter geometry use deliberate cubic Bézier curves;
+- A uses mirrored straight diagonals, a symmetric apex/counter, one crossbar, and matched foot serifs;
+- T uses a horizontal crown, straight central stem, and symmetric crown/foot serifs;
+- N uses parallel stems and one mathematically straight diagonal;
+- repeated A, R, T, and O instances reference one shared glyph definition rather than independent sampled outlines;
+- the title, compressed subtitle, and TM apply separate transforms to the same definitions and retain the measured source boxes.
+
+The availability survey found Georgia, Times New Roman, and Informal Roman on the workstation. They were rejected as production inputs because none establishes the original identity closely enough and their use would introduce either licensing or proportion questions. No reference font supplies Pass 2 geometry and there is no font runtime dependency.
+
+### Downsample validation
+
+The 2520×840 clean mask is Lanczos-downsampled to 192×64 and compared against the decoded original base. The diagnostic shows source coverage, rejected Pass 1, full Pass 2, the downsampled Pass 2, an original-red/Pass-2-cyan edge overlay, and enlarged S/P/R/A/N panels.
+
+The downsample preserves the 192×64 composition, two-line hierarchy, widths, alignment, glyph identities, subtitle compression, TM hierarchy, and approximate stroke locations. It intentionally does not reproduce source staircase edges or irregular edge coverage. A thresholded-interior IoU of approximately 0.266 is recorded for reproducibility but is not treated as the objective function: forcing pixel equality would recreate the failure Pass 2 is intended to remove.
+
+The remaining uncertainty is typographic rather than raster: no pre-raster source vectors exist, so precise original serif profiles and curve tensions remain inferred and require human art review.
+
+### Original bevel/light study
+
+Representative high-alpha source samples yielded:
+
+- deepest shadow P02: approximately `(40,31,22)`;
+- dark bevel P15: approximately `(69,70,75)`;
+- main face median: approximately `(164,142,96)`;
+- light bevel P85: approximately `(253,202,122)`;
+- bright highlight P99: approximately `(255,254,187)`;
+- brightest original flare sample: approximately `(248,248,249)`.
+
+Repeated bright upper/left edges and dark lower/right edges imply an upper-left/front light direction. The bright bands are narrow and orientation-dependent, while dark bronze edges recur opposite them and around counters. This supports a raised face bounded by a shallow directional bevel, not a vertical fill gradient.
+
+### Pass 2 bevel model
+
+Pass 2 builds material in the required order: clean mask, signed-distance bevel, face gold, dark bronze edge, directional light, restrained variation, specular, then separate glow/glint/flare.
+
+The bevel rises over 20 master pixels from every outer or counter edge to the raised face, equivalent to about five pixels at the nominal 1080p display size. Gradients of the distance field produce surface orientation. A normalized light vector `(-0.48,-0.72,0.50)` shades each slope; a half-vector response adds controlled bevel-only specular. The face retains Pass-1A restraint with a subtle upper-left illumination gradient. Seeded wear is added last at very low amplitude and cannot alter silhouette or conceal construction problems.
+
+### Pass 2 candidates
+
+All candidates use byte-identical geometry and alpha:
+
+| Candidate | Difference |
+|---|---|
+| Pass 2A | faithful bevel; restrained A-family gold and source-like light/dark edge separation |
+| Pass 2B | same bevel geometry with smoother modern bronze/gold response and tighter specular |
+| Pass 2C | same geometry and material family with stronger controlled cinematic edge illumination |
+
+Pass 2A is the technical preference because its bevel is evident at 630×210 without overpowering the face, its subtitle remains legible at smaller scales, and its contrast is closest to the measured source structure. This is not human approval.
+
+### Blue-white flare
+
+Pass 2 replaces Pass 1's warm flare with a separate 2520×252 blue-white component. It has a white-blue core, narrow horizontal beam, soft blue bloom, and bounded 150/255 maximum alpha. The deterministic review state composites it between the title and subtitle at the recovered vertical relationship. Runtime logo PNGs do not bake it in; the independent flare file and glint mask preserve future animation/reduced-motion control.
+
+### Quality-gate result
+
+- High-resolution vector edges contain no source-pixel staircase segments.
+- Straight strokes are exact; curves are smooth cubics; repeated glyphs share definitions.
+- No accidental Pass-1-style wobbly contour is present.
+- Serif/counter geometry is deliberate and A's counter is explicitly cut.
+- The directional bevel is clearly perceptible at nominal menu size without large extrusion.
+- The face remains restrained gold with controlled dark-bronze and bright-edge separation.
+- The cool flare is restored as a separate identity layer.
+- SPARTAN, TOTAL WARRIOR, and TM remain readable at 1080p/1440p/4K and the 50% diagnostic scale.
+- 21:9 retains the central-composition anchor.
+
+Pass 2 completed its technical review but was subsequently rejected for final typography/geometry. Its geometry and bevel study remains research history rather than runtime art.
+
+### Pass 2 paths
+
+- Vector source: `assets/reforged/frontend/main-menu/logo/pass2/logo_source/logo_clean_geometry.svg`
+- Runtime candidates: `assets/reforged/frontend/main-menu/logo/pass2/logo_runtime`
+- Masks/flare: `assets/reforged/frontend/main-menu/logo/pass2/logo_masks`
+- Metadata: `assets/reforged/frontend/main-menu/logo/pass2/metadata/logo-pass2.json`
+- Ignored diagnostics/review: `assets/reforged/frontend/review/logo`
+
+## Human-approved raster integration
+
+Human review rejected both procedural reconstruction passes and supplied the final art direction as `spartan-logo-approved.png`. Preservation research still establishes what the original artists were depicting, while Reforged production may reconstruct that intent without inheriting PS2 raster constraints. Automated reconstruction must never override approved art direction.
+
+The approved source is archived byte-for-byte at `assets/reforged/frontend/main-menu/logo/approved/source/spartan-logo-approved.png`. Its SHA-256 is `b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d`; it is a 1,542,636-byte, 2172×724 RGBA PNG with straight alpha and a 3:1 aspect ratio. It contains transparent, partial-coverage, and opaque pixels. Inspection against blue-black showed clean readable gold, preserved dark-bronze relief, a legible TM/divider, and a restrained blue-white flare. No cleanup, colour adjustment, sharpening, denoising, resizing, vectorisation, or redesign was applied.
+
+The runtime asset at `assets/reforged/frontend/main-menu/logo/approved/runtime/spartan-logo-approved.png` is byte-identical to the approved source. The complete raster is used because divider/flare extraction could not be guaranteed without changing approved pixels. Consequently `logoFlare` and `logoGlintMask` are disabled for this asset; future independent flare animation requires a human-approved layered source.
+
+The existing 1920×1080 logical placement remains `(130,90)` in a `650×210` fit box, producing a 630×210 presentation at 1080p, 840×280 at 1440p, and 1260×420 at 4K. The same central 16:9 composition remains anchored on ultrawide displays. ORIGINAL presentation and every original extracted asset remain unchanged.
+
+Machine-readable metadata is at `assets/reforged/frontend/main-menu/logo/approved/metadata/spartan-logo-approved.json`. Ignored review renders are under `assets/reforged/frontend/review/logo/approved`. The next gate is human review of the approved logo in the menu composition, not another automated logo pass.

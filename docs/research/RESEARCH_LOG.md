@@ -1,5 +1,25 @@
 # Research Log
 
+## 2026-09-01 - Human-approved Reforged logo integrated
+
+- Recorded human rejection of Pass 1 and Pass 2 typography/geometry while retaining both experiments and the useful Pass 2 bevel/light research.
+- Verified the supplied approved source as a 1,542,636-byte 2172×724 RGBA PNG with SHA-256 `b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d`.
+- Archived and bound the raster byte-for-byte. No vectorisation, cleanup, resize, colour alteration, sharpening, or redesign was performed.
+- Kept the baked divider and blue-white flare intact because reliable separation could not be guaranteed without changing approved pixels; rejected flare/glint layers are not overlaid.
+- Generated ignored dark-background, 1080p, 1440p, 4K, 21:9, and design-evolution reviews. The established 630×210 1080p presentation remains readable and aspect-safe.
+- Documented the human-directed Reforged art pipeline principle: preservation evidence informs intent, but automated reconstruction cannot override approved art direction.
+
+## 2026-08-31 - Reforged logo Pass 2 clean geometry and bevel prepared
+
+- Recorded Pass 1's failed human review: the traced alpha iso-contour retained PS2 staircase/coverage irregularity, and its surface treatment did not reconstruct the source's dimensional bevel intent. Pass 1 remains intact for comparison.
+- Built a separate Pass 2 reusable glyph library from deliberate line segments and cubic Bézier curves. Straight stems/bars/diagonals are mathematical lines, counters/serifs are intentional, and repeated A/R/T/O occurrences reference shared definitions. No raster contour trace or runtime font is used.
+- Retained the measured 192×64 composition, line boxes, baselines, subtitle compression, and TM hierarchy. Added Lanczos 192×64 downsample comparison, edge overlay, and enlarged S/P/R/A/N diagnostics without optimizing for pixel equality.
+- Measured source highlight/face/dark-edge evidence and inferred upper-left/front lighting. Implemented a 20-master-pixel signed-distance bevel with orientation-derived shading, raised restrained-gold face, dark bronze opposing slopes, bevel specular, and last-stage minimal wear.
+- Produced identical-geometry Pass 2A faithful, 2B modern-metallic, and 2C cinematic-light candidates. Pass 2A is the technical preference pending human review.
+- Restored the blue-white identity flare as a separate deterministic 2520×252 layer with independent glint/glow controls.
+- Generated ignored Pass 2 geometry/bevel/variant/original comparison sheets plus three 1080p and preferred 1440p/4K/21:9 menu integrations. No other menu art changed.
+- Added deterministic Pass 2 construction, path-separation, repeat-consistency, flare, metadata, dimension, hash, and layout tests. No installation, push, original mutation, or preservation modification occurred.
+
 ## 2026-08-31 - First Reforged high-resolution logo candidates produced
 
 - Reverified the frozen `SPARTAN_LOGO.TM2` and design-kit reference hashes, decoded the 192×64 base and 192×16 flare crops in memory, measured alpha/line/TM geometry, and confirmed both sources remained unchanged.

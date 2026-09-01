@@ -42,4 +42,17 @@ The original supplies behavioral truth: menu order, selected state, contextual m
 
 ## Human approval gates
 
-Final logo, typeface, background composition, foreground composition, ornamental motif, prompt glyphs, marker, padlock, and motion language each require design review. The first production gate is the high-resolution logo because it anchors identity, scale, and the upper-left composition without requiring final background art.
+The supplied high-resolution raster logo is human-approved and integrated; its in-menu presentation remains the immediate review gate. Typeface, background composition, foreground composition, ornamental motif, prompt glyphs, marker, padlock, and motion language each still require design review.
+
+## Reforged art pipeline principle
+
+Original assets are evidence of artistic intent, not mandatory modern rendering constraints.
+
+1. Recover original geometry, material, texture, and animation evidence.
+2. Determine the intended visual design.
+3. Produce modern concept/reference artwork where appropriate.
+4. Human-review the artistic direction.
+5. Only after approval, convert and integrate it into the runtime pipeline.
+6. Never allow automated reconstruction to override approved art direction.
+
+This applies to future characters, armour, weapons, environments, foliage, architecture, props, and UI. Preservation sources and interpretations remain immutable alongside Reforged production work.

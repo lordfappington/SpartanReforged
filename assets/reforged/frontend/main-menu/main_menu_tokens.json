@@ -73,13 +73,13 @@
     "reducedMotionFallback": "instant-state-change"
   },
   "assets": {
-    "logo": "logo/logo_runtime/logo-preferred.png",
-    "logoFlare": "logo/logo_masks/logo-flare.png",
+    "logo": "logo/approved/runtime/spartan-logo-approved.png",
+    "logoFlare": null,
     "background": null,
     "foregroundEnvironment": null,
     "topFrieze": null,
     "bottomFrieze": null,
-    "logoGlintMask": "logo/logo_masks/logo-glint-mask.png",
+    "logoGlintMask": null,
     "selectionMarker": null,
     "padlock": null,
     "glyphCross": null,

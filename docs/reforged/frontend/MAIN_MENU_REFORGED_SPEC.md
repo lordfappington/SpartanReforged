@@ -91,7 +91,7 @@ UI is never baked into the background. Foreground environment is independently h
 
 ### Logo
 
-`Logo` accepts an independent transparent logo and optional glint/flare layer. The first production candidates now use a custom-path 2520×840 master; Variant A is the technical default pending human review. Runtime scaling preserves aspect ratio, respects `maxWidth`, and never enlarges beyond the available safe zone. Missing or rejected candidates still fall back to a labelled rectangle rather than original copyrighted imagery. Source and review details live in `MAIN_MENU_LOGO.md` and the asset contract.
+`Logo` accepts an independent transparent logo and optional glint/flare layer. Rejected Pass 1/Pass 2 experiments remain retained, while the human-approved 2172×724 straight-alpha raster is the Reforged runtime binding. Its baked divider/flare are preserved intact and no rejected experimental overlay is applied. Runtime scaling preserves aspect ratio, respects `maxWidth`, and never enlarges beyond the available safe zone. Missing assets still fall back to a labelled rectangle rather than original copyrighted imagery. Source and review details live in `MAIN_MENU_LOGO.md` and the asset contract.
 
 ### Menu navigation and SelectionMarker
 

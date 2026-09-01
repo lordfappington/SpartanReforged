@@ -33,7 +33,11 @@
 - [x] Additive 1920×1080 Reforged `main_start` semantic, input, layout, token, fallback, and wireframe foundation established
 - [x] Reforged main-menu art direction and replacement-asset contract documented without producing final artwork
 - [x] First Reforged production-art candidates created: custom-vector high-resolution main-menu logo with separate glow/glint/flare layers
-- [ ] Reforged main-menu logo human review and approval
+- [x] Reforged logo Pass 1 human review completed and geometry/bevel deficiencies recorded
+- [x] Reforged logo Pass 2 clean geometry, directional bevel, and blue-white flare prepared
+- [x] Reforged logo Pass 2 rejected as final typography/geometry; research retained
+- [x] Human-approved raster logo archived and integrated without visual alteration
+- [ ] Human review of approved logo in the main-menu composition
 - [x] Animation formats investigated
 - [ ] Audio formats identified
 - [x] Level/scene data investigated

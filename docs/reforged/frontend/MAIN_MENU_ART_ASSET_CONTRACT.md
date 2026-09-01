@@ -25,7 +25,7 @@ Critical UI content must remain separate from background/foreground environment 
 
 ## Current logo implementation
 
-The first contract implementation now exists under `assets/reforged/frontend/main-menu/logo`: a custom-path SVG, three 2520×840 straight-alpha sRGB material candidates, separate base/glow/glint/flare layers, and machine-readable metadata. Variant A is wired as a technical default pending human review; this is not approval of final art.
+Pass 1 and Pass 2 remain under `assets/reforged/frontend/main-menu/logo` as rejected experimental/research history. The human-approved 2172×724 RGBA artwork is archived and bound from `logo/approved`; its runtime PNG is byte-identical to the supplied source. It remains a complete static raster because destructive divider/flare separation was not justified.
 
 ## Logo-specific acceptance criteria
 

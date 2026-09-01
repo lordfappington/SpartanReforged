@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 2,
+  "pass": "Pass 2",
+  "approval": "PENDING HUMAN APPROVAL",
+  "pass1Retained": true,
+  "source": {
+    "tm2Sha256": "755e4dd82ec2d29c1dbc45136f9cbf92a25628a4e6859888ad7c7971b6a3e84c",
+    "measuredComposition": {
+      "source_size": [
+        192,
+        64
+      ],
+      "visible_alpha_bounds": [
+        2,
+        1,
+        184,
+        64
+      ],
+      "spartan_bounds": [
+        2,
+        1,
+        170,
+        36
+      ],
+      "subtitle_bounds": [
+        2,
+        41,
+        171,
+        64
+      ],
+      "trademark_bounds": [
+        169,
+        2,
+        184,
+        12
+      ],
+      "spartan_baseline": 33,
+      "subtitle_baseline": 61,
+      "line_gap": 9,
+      "spartan_width": 168,
+      "subtitle_width": 169
+    }
+  },
+  "geometry": {
+    "method": "intentional reusable line/cubic-Bezier glyph construction; no raster contour tracing",
+    "masterDimensions": [
+      2520,
+      840
+    ],
+    "glyphUses": {
+      "S": 1,
+      "P": 1,
+      "A": 4,
+      "R": 4,
+      "T": 4,
+      "N": 1,
+      "O": 2,
+      "L": 1,
+      "W": 1,
+      "I": 1,
+      "M": 1
+    },
+    "placements": [
+      {
+        "glyph": "S",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 2,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "P",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 25.34026745913819,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "A",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 48.43090638930164,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "R",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 73.01931649331353,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "T",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 97.60772659732541,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "A",
+        "occurrence": 1,
+        "line": "SPARTAN",
+        "tx": 121.44725111441308,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "N",
+        "occurrence": 0,
+        "line": "SPARTAN",
+        "tx": 146.03566121842496,
+        "ty": 1,
+        "sx": 0.024962852897474,
+        "sy": 0.035
+      },
+      {
+        "glyph": "T",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 2,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "O",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 15.688741721854305,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "T",
+        "occurrence": 1,
+        "line": "TOTAL_WARRIOR",
+        "tx": 29.664459161147903,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "A",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 43.35320088300221,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "L",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 57.47240618101546,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "W",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 77.67549668874173,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "A",
+        "occurrence": 1,
+        "line": "TOTAL_WARRIOR",
+        "tx": 94.52097130242826,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "R",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 108.6401766004415,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "R",
+        "occurrence": 1,
+        "line": "TOTAL_WARRIOR",
+        "tx": 122.75938189845475,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "I",
+        "occurrence": 0,
+        "line": "TOTAL_WARRIOR",
+        "tx": 136.878587196468,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "O",
+        "occurrence": 1,
+        "line": "TOTAL_WARRIOR",
+        "tx": 143.67991169977927,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "R",
+        "occurrence": 2,
+        "line": "TOTAL_WARRIOR",
+        "tx": 157.65562913907286,
+        "ty": 41,
+        "sx": 0.01434878587196468,
+        "sy": 0.023
+      },
+      {
+        "glyph": "T",
+        "occurrence": 0,
+        "line": "TM",
+        "tx": 169,
+        "ty": 2,
+        "sx": 0.007530120481927711,
+        "sy": 0.01
+      },
+      {
+        "glyph": "M",
+        "occurrence": 0,
+        "line": "TM",
+        "tx": 175.86746987951807,
+        "ty": 2,
+        "sx": 0.007530120481927711,
+        "sy": 0.01
+      }
+    ],
+    "glyphConstruction": {
+      "S": [
+        "deliberate cubic spine",
+        "smooth opposing curves",
+        "tapered terminals"
+      ],
+      "P": [
+        "straight vertical stem",
+        "cubic symmetric bowl",
+        "consistent wedge serifs"
+      ],
+      "A": [
+        "mirrored straight diagonals",
+        "horizontal crossbar",
+        "symmetric apex/counter",
+        "consistent foot serifs"
+      ],
+      "R": [
+        "shared P stem and cubic bowl",
+        "straight diagonal leg",
+        "consistent wedge serifs"
+      ],
+      "T": [
+        "mathematically horizontal crown",
+        "straight central stem",
+        "symmetric crown/foot serifs"
+      ],
+      "N": [
+        "parallel straight stems",
+        "straight diagonal",
+        "matched four stem serifs"
+      ],
+      "O": [
+        "four deliberate cubic outer arcs",
+        "concentric cubic counter",
+        "vertical stress"
+      ],
+      "L": [
+        "straight stem",
+        "horizontal foot",
+        "wedge terminal"
+      ],
+      "W": [
+        "four straight diagonals",
+        "symmetric central valley",
+        "matched upper serifs"
+      ],
+      "I": [
+        "straight stem",
+        "matched horizontal serifs"
+      ],
+      "M": [
+        "parallel straight stems",
+        "symmetric straight inner diagonals",
+        "matched serifs"
+      ]
+    },
+    "straightStrokePolicy": "all intended stems, bars, diagonals and serif edges use exact line segments",
+    "curvePolicy": "S and bowls/counters use deliberate cubic Bezier segments",
+    "repeatedGlyphPolicy": "every occurrence references the same glyph definition"
+  },
+  "downsample": {
+    "target": [
+      192,
+      64
+    ],
+    "filter": "Lanczos",
+    "objective": "plausible correspondence without reproducing PS2 pixel stair steps",
+    "thresholdedInteriorIou": 0.2656546489563567,
+    "assessment": "composition, line hierarchy and glyph identities correspond; deliberate clean strokes differ from low-resolution bevel/coverage boundaries"
+  },
+  "bevel": {
+    "profile": "20-master-pixel signed-distance rise from outer/counter edge to raised face",
+    "lightDirection": [
+      -0.48,
+      -0.72,
+      0.5
+    ],
+    "inferredDirection": "upper-left/front; repeated bright upper/left edges oppose dark lower/right edges",
+    "widthAt1080pPixels": 5.0,
+    "colourStudy": {
+      "deepestShadowP02": [
+        40,
+        31,
+        22
+      ],
+      "darkBevelP15": [
+        69,
+        70,
+        75
+      ],
+      "mainFaceMedian": [
+        164,
+        142,
+        96
+      ],
+      "lightBevelP85": [
+        253,
+        202,
+        122
+      ],
+      "brightHighlightP99": [
+        255,
+        254,
+        187
+      ],
+      "flareBrightestRgb": [
+        248,
+        248,
+        249
+      ],
+      "inferredLightDirection": "upper-left/front; repeated bright upper/left edges oppose dark lower/right edges"
+    }
+  },
+  "flare": {
+    "separate": true,
+    "path": "../logo_masks/logo-blue-flare.png",
+    "description": "cool blue-white core, restrained horizontal beam and bloom"
+  },
+  "variants": {
+    "2A": {
+      "description": "Faithful bevel: restrained Pass-1A gold with original-like directional edge separation.",
+      "face": [
+        178,
+        129,
+        59
+      ],
+      "bevel_dark": [
+        52,
+        30,
+        15
+      ],
+      "bevel_light": [
+        248,
+        210,
+        126
+      ],
+      "specular": 0.55,
+      "roughness": 0.62,
+      "wear": 0.025,
+      "runtimePath": "../logo_runtime/logo-pass2A.png",
+      "sha256": "de19820193fda72cdc21ab9e9ab894a87b44dc77e3107c624d593891a601ecb1"
+    },
+    "2B": {
+      "description": "Modern metallic: identical geometry/profile with smoother bronze-gold response and tighter specular.",
+      "face": [
+        185,
+        134,
+        62
+      ],
+      "bevel_dark": [
+        47,
+        28,
+        14
+      ],
+      "bevel_light": [
+        245,
+        207,
+        124
+      ],
+      "specular": 0.72,
+      "roughness": 0.48,
+      "wear": 0.018,
+      "runtimePath": "../logo_runtime/logo-pass2B.png",
+      "sha256": "1bcec9bc49b4cb8c50eda38759b99377e0381bcb14b71f3a30d828b3472265c8"
+    },
+    "2C": {
+      "description": "Cinematic: identical geometry/profile with stronger controlled upper-left edge illumination.",
+      "face": [
+        190,
+        139,
+        64
+      ],
+      "bevel_dark": [
+        45,
+        27,
+        13
+      ],
+      "bevel_light": [
+        255,
+        225,
+        148
+      ],
+      "specular": 0.9,
+      "roughness": 0.42,
+      "wear": 0.022,
+      "runtimePath": "../logo_runtime/logo-pass2C.png",
+      "sha256": "ed868c4cd4d9dd52a4445efd4ef4194b77c3cd757b06bc8302ab84ae50f437d6"
+    }
+  },
+  "preferred": "2A",
+  "preferenceStatus": "TECHNICAL PREFERENCE ONLY \u2014 PENDING HUMAN ART REVIEW",
+  "runtime": {
+    "format": "straight-alpha sRGB PNG",
+    "dimensions": [
+      2520,
+      840
+    ],
+    "nominal1080p": [
+      630,
+      210
+    ],
+    "nominal1440p": [
+      840,
+      280
+    ],
+    "nominal4k": [
+      1260,
+      420
+    ]
+  }
+}
