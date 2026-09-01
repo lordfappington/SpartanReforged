@@ -42,7 +42,9 @@ The original supplies behavioral truth: menu order, selected state, contextual m
 
 ## Human approval gates
 
-The supplied high-resolution raster logo is human-approved and integrated; its in-menu presentation remains the immediate review gate. Typeface, background composition, foreground composition, ornamental motif, prompt glyphs, marker, padlock, and motion language each still require design review.
+The supplied high-resolution raster logo is human-approved and integrated. Typeface, prompt glyphs, marker, padlock, and motion language still require design review.
+
+The main-menu background plate is now also human-approved. The supplied 1280×720 RGB JPEG is archived and used byte-for-byte; runtime presentation scales the complete 16:9 plate into the central composition without cropping. Its ornamental top and bottom bands are baked into the approved artwork, so the procedural placeholder bands are suppressed whenever this plate is active. Logo, navigation, selection, context, padlock, and controller prompts remain independent UI layers.
 
 ## Reforged art pipeline principle
 

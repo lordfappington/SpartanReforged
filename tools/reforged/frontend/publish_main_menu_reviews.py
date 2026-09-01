@@ -20,10 +20,13 @@ from PIL import Image
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 OUTPUT_ROOT = ROOT / "assets/reforged/frontend/review/main-menu/current"
 LOGO_PATH = ROOT / "assets/reforged/frontend/main-menu/logo/approved/runtime/spartan-logo-approved.png"
+BACKGROUND_PATH = ROOT / "assets/reforged/frontend/main-menu/background/approved/runtime/spartan-background-approved.jpg"
 TOKENS_PATH = ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json"
 LOCALE_PATH = ROOT / "assets/reforged/frontend/main-menu/locales/en.json"
 EXPECTED_LOGO_SHA256 = "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d"
 EXPECTED_LOGO_SIZE = (2172, 724)
+EXPECTED_BACKGROUND_SHA256 = "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802cc531a14c7fad5"
+EXPECTED_BACKGROUND_SIZE = (1280, 720)
 TARGETS = {
     "main-menu-1080p.png": (1920, 1080),
     "main-menu-1440p.png": (2560, 1440),
@@ -66,12 +69,31 @@ def validate_logo() -> Image.Image:
         return source.copy()
 
 
+def validate_background() -> None:
+    if not BACKGROUND_PATH.is_file():
+        raise FileNotFoundError(f"approved runtime background is missing: {BACKGROUND_PATH}")
+    digest = sha256_path(BACKGROUND_PATH)
+    if digest != EXPECTED_BACKGROUND_SHA256:
+        raise ValueError(f"approved runtime background hash mismatch: {digest}")
+    with Image.open(BACKGROUND_PATH) as source:
+        source.load()
+        if source.format != "JPEG" or source.mode != "RGB" or source.size != EXPECTED_BACKGROUND_SIZE:
+            raise ValueError(
+                f"unexpected approved runtime background: {source.format}/{source.mode}/{source.size}"
+            )
+
+
 def render_reviews() -> dict[str, dict[str, object]]:
     ui = load_ui_module()
     logo = validate_logo()
+    validate_background()
     tokens = ui.load_json(TOKENS_PATH)
     if tokens["assets"]["logo"] != "logo/approved/runtime/spartan-logo-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime logo")
+    if tokens["assets"]["background"] != "background/approved/runtime/spartan-background-approved.jpg":
+        raise ValueError("menu tokens are not bound to the approved runtime background")
+    if not tokens["background"].get("approvedPlateIncludesOrnamentBands"):
+        raise ValueError("approved background must suppress duplicate ornament overlays")
     strings = ui.load_json(LOCALE_PATH)["strings"]
     state = ui.MenuState(ui.build_main_start(maxlevel=0), "new_game")
 
@@ -89,7 +111,8 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "sha256": sha256_path(output),
             "bytes": output.stat().st_size,
             "approvedLogo": str(LOGO_PATH.relative_to(ROOT)).replace("\\", "/"),
-            "provenance": "project-created Reforged menu renderer and approved Reforged logo",
+            "approvedBackground": str(BACKGROUND_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "provenance": "project-created Reforged menu renderer, approved background, and approved logo",
         }
     return manifest
 

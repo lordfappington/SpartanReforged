@@ -287,26 +287,35 @@ def render_wireframe(
     image = Image.new("RGB", (width, height), _colour(tokens, "backgroundDark"))
     draw = ImageDraw.Draw(image, "RGBA")
 
-    # Environment-only side extensions and labelled composition zones.
-    if layout.background_extension_left:
-        draw.rectangle((0, 0, round(layout.composition_x), height), fill=(10, 20, 31, 255))
-        draw.rectangle((round(layout.composition_x + layout.composition_width), 0, width, height), fill=(10, 20, 31, 255))
-    draw.rectangle(_scaled_box(layout, (0, 0, 1920, 1080)), fill=_colour(tokens, "backgroundMid"))
-    draw.rectangle(_scaled_box(layout, (960, 0, 1920, 1080)), fill=_colour(tokens, "environmentGuide"))
-    draw.polygon([
-        layout.point(1260, 1080), layout.point(1510, 360), layout.point(1920, 250), layout.point(1920, 1080)
-    ], fill=(*ImageColor_getrgb(_colour(tokens, "foregroundGuide")), 220))
-
-    safe = tuple(round(v) for v in layout.safe_rect)
-    draw.rectangle(safe, outline=_colour(tokens, "safeAreaGuide"), width=max(1, round(2 * layout.scale)))
+    background_path = resolve_asset_path("background", tokens)
+    if background_path:
+        with Image.open(background_path) as background_source:
+            background = background_source.convert("RGB")
+        composition_size = (round(layout.composition_width), round(layout.composition_height))
+        rendered_background = background.resize(composition_size, Image.Resampling.LANCZOS)
+        image.paste(rendered_background, (round(layout.composition_x), round(layout.composition_y)))
+    else:
+        # Project-created fallback zones remain available when approved artwork is absent.
+        if layout.background_extension_left:
+            draw.rectangle((0, 0, round(layout.composition_x), height), fill=(10, 20, 31, 255))
+            draw.rectangle((round(layout.composition_x + layout.composition_width), 0, width, height), fill=(10, 20, 31, 255))
+        draw.rectangle(_scaled_box(layout, (0, 0, 1920, 1080)), fill=_colour(tokens, "backgroundMid"))
+        draw.rectangle(_scaled_box(layout, (960, 0, 1920, 1080)), fill=_colour(tokens, "environmentGuide"))
+        draw.polygon([
+            layout.point(1260, 1080), layout.point(1510, 360), layout.point(1920, 250), layout.point(1920, 1080)
+        ], fill=(*ImageColor_getrgb(_colour(tokens, "foregroundGuide")), 220))
+        safe = tuple(round(v) for v in layout.safe_rect)
+        draw.rectangle(safe, outline=_colour(tokens, "safeAreaGuide"), width=max(1, round(2 * layout.scale)))
 
     ornament_h = tokens["ornament"]["height"]
-    for y in (0, 1080 - ornament_h):
-        box = _scaled_box(layout, (0, y, 1920, y + ornament_h))
-        draw.rectangle(box, fill=(*ImageColor_getrgb(_colour(tokens, "ornamentNeutral")), 180))
-        step = max(8, round(tokens["ornament"]["tileWidth"] * layout.scale))
-        for x in range(box[0], box[2], step):
-            draw.line((x, box[1], min(box[2], x + step // 2), box[3]), fill=(195, 172, 112, 140), width=2)
+    bands_baked_in = bool(tokens["background"].get("approvedPlateIncludesOrnamentBands"))
+    if not (background_path and bands_baked_in):
+        for y in (0, 1080 - ornament_h):
+            box = _scaled_box(layout, (0, y, 1920, y + ornament_h))
+            draw.rectangle(box, fill=(*ImageColor_getrgb(_colour(tokens, "ornamentNeutral")), 180))
+            step = max(8, round(tokens["ornament"]["tileWidth"] * layout.scale))
+            for x in range(box[0], box[2], step):
+                draw.line((x, box[1], min(box[2], x + step // 2), box[3]), fill=(195, 172, 112, 140), width=2)
 
     # Replaceable logo component. A missing asset remains a labelled fallback.
     lx, ly = tokens["logo"]["position"]
@@ -380,11 +389,12 @@ def render_wireframe(
         draw.text(layout.point(cursor + tokens["prompt"]["glyphSize"] + 12, py - 12), label, font=prompt_font, fill=_colour(tokens, "textPrimary"))
         cursor -= tokens["prompt"]["itemGap"]
 
-    # Development labels make clear that no final artwork is present.
-    note_font = _font(round(15 * layout.scale))
-    draw.text(layout.point(1040, 100), "BACKGROUND ENVIRONMENT / ATMOSPHERE", font=note_font, fill=(175, 195, 211, 210))
-    draw.text(layout.point(1360, 720), "FOREGROUND ENVIRONMENT", font=note_font, fill=(175, 195, 211, 210))
-    draw.text(layout.point(1040, 130), "wireframe only — no final art", font=note_font, fill=(155, 101, 119, 240))
+    if not background_path:
+        # Development labels apply only to the project-created fallback treatment.
+        note_font = _font(round(15 * layout.scale))
+        draw.text(layout.point(1040, 100), "BACKGROUND ENVIRONMENT / ATMOSPHERE", font=note_font, fill=(175, 195, 211, 210))
+        draw.text(layout.point(1360, 720), "FOREGROUND ENVIRONMENT", font=note_font, fill=(175, 195, 211, 210))
+        draw.text(layout.point(1040, 130), "wireframe only — no final art", font=note_font, fill=(155, 101, 119, 240))
     return image
 
 

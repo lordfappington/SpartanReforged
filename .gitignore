@@ -24,6 +24,7 @@ SLES_*
 
 # Generated and temporary output
 temp/*
+.codex-remote-attachments/
 recomp/generated/*
 logs/analysis/*
 logs/ghidra/*

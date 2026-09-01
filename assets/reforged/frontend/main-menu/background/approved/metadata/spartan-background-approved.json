@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "approvalStatus": "HUMAN APPROVED",
+  "source": {
+    "suppliedFilename": "1-Photo-1.jpg",
+    "sha256": "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802cc531a14c7fad5",
+    "fileSize": 131535,
+    "format": "JPEG",
+    "mode": "RGB",
+    "dimensions": [
+      1280,
+      720
+    ],
+    "path": "assets/reforged/frontend/main-menu/background/approved/source/spartan-background-approved.jpg"
+  },
+  "runtime": {
+    "path": "assets/reforged/frontend/main-menu/background/approved/runtime/spartan-background-approved.jpg",
+    "sha256": "76ceaa4eb1a68f85824205e70df86b068196d6b378b8eee802cc531a14c7fad5",
+    "sourceAndRuntimeByteIdentical": true,
+    "viewportPolicy": "scale complete 16:9 plate into central composition without crop"
+  },
+  "processing": {
+    "visualDesignAltered": false,
+    "colourGradePerformed": false,
+    "sharpeningPerformed": false,
+    "cropPerformed": false,
+    "sourceFileReencoded": false
+  },
+  "ornamentalBands": {
+    "bakedIntoApprovedPlate": true,
+    "placeholderOverlayEnabled": false
+  },
+  "provenance": "human-supplied and human-approved SpartanReforged project artwork"
+}

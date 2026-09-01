@@ -41,7 +41,8 @@
   "background": {
     "parallaxStrength": 0.018,
     "centralCompositionWidth": 1920,
-    "ultrawideExtension": "environment-only"
+    "ultrawideExtension": "environment-only",
+    "approvedPlateIncludesOrnamentBands": true
   },
   "typography": {
     "developmentFont": "DejaVu Sans",
@@ -75,7 +76,7 @@
   "assets": {
     "logo": "logo/approved/runtime/spartan-logo-approved.png",
     "logoFlare": null,
-    "background": null,
+    "background": "background/approved/runtime/spartan-background-approved.jpg",
     "foregroundEnvironment": null,
     "topFrieze": null,
     "bottomFrieze": null,
