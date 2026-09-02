@@ -62,8 +62,8 @@ def _largest_component(mask: bytearray, width: int, height: int) -> bytearray:
     return result
 
 
-def _fill_enclosed_regions(core: bytearray, width: int, height: int) -> bytearray:
-    """Keep every region enclosed by the silhouette opaque, regardless of RGB."""
+def _classify_enclosed_regions(core: bytearray, width: int, height: int) -> tuple[bytearray, tuple[int, int, int, int]]:
+    """Keep object cavities opaque except the large upper shackle opening."""
     outside = bytearray(width * height)
     queue: deque[int] = deque()
     for x in range(width):
@@ -87,7 +87,43 @@ def _fill_enclosed_regions(core: bytearray, width: int, height: int) -> bytearra
                 continue
             outside[neighbour] = 1
             queue.append(neighbour)
-    return bytearray(255 if core[i] or not outside[i] else 0 for i in range(width * height))
+    enclosed = bytearray(1 if not core[i] and not outside[i] else 0 for i in range(width * height))
+    visited = bytearray(width * height)
+    candidates: list[tuple[int, list[int], tuple[int, int, int, int]]] = []
+    object_rows = [i // width for i, value in enumerate(core) if value]
+    object_mid_y = (min(object_rows) + max(object_rows)) / 2
+    for start, enabled in enumerate(enclosed):
+        if not enabled or visited[start]:
+            continue
+        visited[start] = 1
+        queue = deque([start])
+        component: list[int] = []
+        while queue:
+            index = queue.popleft()
+            component.append(index)
+            x, y = index % width, index // width
+            for neighbour in (index - 1, index + 1, index - width, index + width):
+                if neighbour < 0 or neighbour >= width * height or visited[neighbour] or not enclosed[neighbour]:
+                    continue
+                nx, ny = neighbour % width, neighbour // width
+                if abs(nx - x) + abs(ny - y) != 1:
+                    continue
+                visited[neighbour] = 1
+                queue.append(neighbour)
+        xs = [i % width for i in component]
+        ys = [i // width for i in component]
+        bounds = (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
+        if bounds[3] < object_mid_y and len(component) > width * height * .005:
+            candidates.append((len(component), component, bounds))
+    if not candidates:
+        raise RuntimeError("could not identify the enclosed shackle opening")
+    _, shackle_opening, shackle_bounds = max(candidates, key=lambda candidate: candidate[0])
+    shackle_set = set(shackle_opening)
+    matte = bytearray(
+        255 if core[i] or (enclosed[i] and i not in shackle_set) else 0
+        for i in range(width * height)
+    )
+    return matte, shackle_bounds
 
 
 def build_runtime() -> dict[str, object]:
@@ -103,7 +139,9 @@ def build_runtime() -> dict[str, object]:
     pixels = list(source.getdata())
     signal = bytearray(max(pixel) for pixel in pixels)
     candidate = bytearray(value > CORE_THRESHOLD for value in signal)
-    matte = _fill_enclosed_regions(_largest_component(candidate, width, height), width, height)
+    matte, shackle_bounds = _classify_enclosed_regions(
+        _largest_component(candidate, width, height), width, height
+    )
     full = Image.new("RGBA", source.size)
     full.putdata([(*rgb, alpha) if alpha else (0, 0, 0, 0) for rgb, alpha in zip(pixels, matte)])
     source_bounds = full.getchannel("A").getbbox()
@@ -127,12 +165,13 @@ def build_runtime() -> dict[str, object]:
             "format": "PNG", "dimensions": list(runtime.size), "mode": "RGBA",
             "sha256": sha256_path(RUNTIME), "sourceVisibleBounds": list(source_bounds),
             "alphaBounds": list(runtime.getchannel("A").getbbox() or ()),
+            "transparentShackleOpeningSourceBounds": list(shackle_bounds),
         },
         "matte": {
             "required": True,
             "reason": "approved JPEG contains a black presentation field and no alpha channel",
             "coreThreshold": CORE_THRESHOLD,
-            "method": "largest connected silhouette plus border flood/hole fill; enclosed dark keyhole and shackle regions remain opaque",
+            "method": "largest connected silhouette plus border flood; the largest enclosed cavity wholly above the silhouette midpoint is classified as the open shackle hole, while lower enclosed cavities such as the keyhole remain opaque",
             "visualRedesign": False,
         },
     }

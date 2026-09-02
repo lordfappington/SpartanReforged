@@ -42,7 +42,7 @@ EXPECTED_PROMPT_RUNTIME_SHA256 = {
     "SQUARE": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342",
 }
 EXPECTED_PADLOCK_SOURCE_SHA256 = "5cd5b57030d9f37eaec89b3fabddbf5a6e746eea7dc1dd58d002d302e013a04a"
-EXPECTED_PADLOCK_RUNTIME_SHA256 = "bfa98d9838ba6e15a5b72a7456ebbe4d0f02de3a03f372b1800e16c4a769933f"
+EXPECTED_PADLOCK_RUNTIME_SHA256 = "c3cc7c533883bbbf11f44d5bb525b0321312b8247752a5c32b315cf976023c24"
 FONT_FILES = {
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Regular.ttf": "af0031129f27dc752e8629a80b793d27abea94027faa27cc660c3fc33f607a1f",
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Bold.ttf": "0c23ec565db45c5508ee95889c60ad87debd167ca07167a43a5d68572b4e2eac",
@@ -324,23 +324,33 @@ def render_reviews() -> dict[str, dict[str, object]]:
     padlock_draw.text((40, 28), "HUMAN-APPROVED LOCKED-STATE PADLOCK", font=padlock_heading, fill=(240, 233, 217))
     padlock_draw.text((40, 60), f"source 1280x1260 JPEG  {EXPECTED_PADLOCK_SOURCE_SHA256}", font=padlock_heading, fill=(176, 179, 178))
     padlock_draw.text((40, 92), f"runtime 520x724 RGBA  {EXPECTED_PADLOCK_RUNTIME_SHA256}", font=padlock_heading, fill=(176, 179, 178))
-    enlarged = ui.render_locked_padlock(padlock_diagnostic, (165, 375), 420, PADLOCK_RUNTIME_PATH)
+    checker_box = (40, 140, 570, 630)
+    checker_size = 28
+    for y in range(checker_box[1], checker_box[3], checker_size):
+        for x in range(checker_box[0], checker_box[2], checker_size):
+            value = 214 if ((x - checker_box[0]) // checker_size + (y - checker_box[1]) // checker_size) % 2 else 126
+            padlock_draw.rectangle((x, y, min(x + checker_size, checker_box[2]), min(y + checker_size, checker_box[3])), fill=(value, value, value))
+    padlock_draw.rectangle((650, 140, 1180, 630), fill=(199, 225, 246))
+    checker_sample = ui.render_locked_padlock(padlock_diagnostic, (175, 385), 390, PADLOCK_RUNTIME_PATH)
+    bright_sample = ui.render_locked_padlock(padlock_diagnostic, (785, 385), 390, PADLOCK_RUNTIME_PATH)
+    padlock_draw.text((55, 150), "CHECKERBOARD TRANSPARENCY", font=padlock_heading, fill=(20, 25, 31))
+    padlock_draw.text((665, 150), "BRIGHT CONTRAST BACKGROUND", font=padlock_heading, fill=(20, 25, 31))
     locked_font = ui._font(52, tokens, "regular")
-    label_position = (680.0, 330.0)
+    label_position = (680.0, 650.0)
     ui.render_material_text(padlock_diagnostic, label_position, "SINGLE MISSION REPLAY", locked_font, "locked")
     layout = ui.layout_for_viewport(1920, 1080, tokens)
     anchor, text_bounds = ui.locked_padlock_placement(layout, label_position, "SINGLE MISSION REPLAY", locked_font, tokens)
     menu_scale = ui.render_locked_padlock(padlock_diagnostic, anchor, tokens["padlock"]["visibleHeight"], PADLOCK_RUNTIME_PATH)
     padlock_draw.rectangle(text_bounds, outline=(92, 148, 178), width=1)
     padlock_draw.rectangle((menu_scale["pasteX"], menu_scale["pasteY"], menu_scale["pasteX"] + menu_scale["renderedWidth"], menu_scale["pasteY"] + menu_scale["renderedHeight"]), outline=(92, 148, 178), width=1)
-    padlock_draw.text((40, 720), "Runtime alpha bounds: 520x724. UI visible size: 22x30 px. Label gap: 12 px.", font=padlock_heading, fill=(216, 212, 200))
+    padlock_draw.text((40, 720), "Runtime alpha bounds: 520x724. Shackle opening transparent; keyhole opaque. UI: 22x30 px; gap: 12 px.", font=padlock_heading, fill=(216, 212, 200))
     padlock_diagnostic_path = OUTPUT_ROOT / PADLOCK_DIAGNOSTIC_NAME
     padlock_diagnostic.save(padlock_diagnostic_path, "PNG", optimize=False, compress_level=9)
     manifest[PADLOCK_DIAGNOSTIC_NAME] = {
         "dimensions": list(PADLOCK_DIAGNOSTIC_SIZE), "mode": padlock_diagnostic.mode,
         "sha256": sha256_path(padlock_diagnostic_path), "bytes": padlock_diagnostic_path.stat().st_size,
         "sourceSha256": EXPECTED_PADLOCK_SOURCE_SHA256, "runtimeSha256": EXPECTED_PADLOCK_RUNTIME_SHA256,
-        "samples": {"enlarged": enlarged, "menuScale": menu_scale, "textBounds": list(text_bounds)},
+        "samples": {"checkerboard": checker_sample, "brightContrast": bright_sample, "menuScale": menu_scale, "textBounds": list(text_bounds)},
         "provenance": "public-safe project diagnostic using locked approved Reforged padlock artwork",
     }
     return manifest

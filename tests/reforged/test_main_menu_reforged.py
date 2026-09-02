@@ -38,7 +38,7 @@ PROMPT_HASHES = {
 PADLOCK_SOURCE = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/source/spartan-padlock-approved.jpg"
 PADLOCK_RUNTIME = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/runtime/spartan-padlock-approved.png"
 PADLOCK_SOURCE_SHA256 = "5cd5b57030d9f37eaec89b3fabddbf5a6e746eea7dc1dd58d002d302e013a04a"
-PADLOCK_RUNTIME_SHA256 = "bfa98d9838ba6e15a5b72a7456ebbe4d0f02de3a03f372b1800e16c4a769933f"
+PADLOCK_RUNTIME_SHA256 = "c3cc7c533883bbbf11f44d5bb525b0321312b8247752a5c32b315cf976023c24"
 
 
 class MainMenuReforgedTests(unittest.TestCase):
@@ -90,7 +90,8 @@ class MainMenuReforgedTests(unittest.TestCase):
             alpha = padlock.getchannel("A")
             self.assertEqual(alpha.getbbox(), (0, 0, 520, 724))
             self.assertEqual(alpha.getpixel((0, 0)), 0)
-            self.assertEqual(alpha.getpixel((260, 410)), 255)  # approved dark keyhole region
+            self.assertEqual(alpha.getpixel((260, 200)), 0)  # genuine opening inside the shackle
+            self.assertEqual(alpha.getpixel((260, 511)), 255)  # approved dark keyhole region
 
     def test_padlock_uses_measured_label_bounds_and_resolution_scaling(self) -> None:
         font = UI._font(52, TOKENS, "regular")

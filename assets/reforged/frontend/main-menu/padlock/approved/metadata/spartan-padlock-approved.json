@@ -21,7 +21,7 @@
       724
     ],
     "mode": "RGBA",
-    "sha256": "bfa98d9838ba6e15a5b72a7456ebbe4d0f02de3a03f372b1800e16c4a769933f",
+    "sha256": "c3cc7c533883bbbf11f44d5bb525b0321312b8247752a5c32b315cf976023c24",
     "sourceVisibleBounds": [
       378,
       244,
@@ -33,13 +33,19 @@
       0,
       520,
       724
+    ],
+    "transparentShackleOpeningSourceBounds": [
+      513,
+      323,
+      761,
+      548
     ]
   },
   "matte": {
     "required": true,
     "reason": "approved JPEG contains a black presentation field and no alpha channel",
     "coreThreshold": 8,
-    "method": "largest connected silhouette plus border flood/hole fill; enclosed dark keyhole and shackle regions remain opaque",
+    "method": "largest connected silhouette plus border flood; the largest enclosed cavity wholly above the silhouette midpoint is classified as the open shackle hole, while lower enclosed cavities such as the keyhole remain opaque",
     "visualRedesign": false
   }
 }
