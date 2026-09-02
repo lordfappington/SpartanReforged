@@ -53,6 +53,8 @@ TARGETS = {
     "main-menu-4k.png": (3840, 2160),
     "main-menu-21x9.png": (2560, 1080),
 }
+EFFECT_SNAPSHOT_TIME = 1.75
+OPTIONS_REVIEW_NAME = "main-menu-options-1080p.png"
 DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
 DIAGNOSTIC_SIZE = (1920, 1080)
 POINTER_DIAGNOSTIC_NAME = "selection-pointer-diagnostic.png"
@@ -182,7 +184,10 @@ def render_reviews() -> dict[str, dict[str, object]]:
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, dict[str, object]] = {}
     for filename, dimensions in TARGETS.items():
-        image = ui.render_wireframe(*dimensions, state, tokens, strings, logo_image=logo)
+        image = ui.render_wireframe(
+            *dimensions, state, tokens, strings, logo_image=logo,
+            selected_effect_time=EFFECT_SNAPSHOT_TIME,
+        )
         if image.mode != "RGB" or image.size != dimensions:
             raise RuntimeError(f"unexpected review render metadata: {filename}")
         output = OUTPUT_ROOT / filename
@@ -200,6 +205,19 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "approvedPadlock": str(PADLOCK_RUNTIME_PATH.relative_to(ROOT)).replace("\\", "/"),
             "provenance": "project-created Reforged menu renderer with approved background, logo, selection pointer, PlayStation prompts, and padlock",
         }
+    options_state = ui.MenuState(ui.build_main_start(maxlevel=0), "options")
+    options_image = ui.render_wireframe(
+        1920, 1080, options_state, tokens, strings, logo_image=logo,
+        selected_effect_time=EFFECT_SNAPSHOT_TIME,
+    )
+    options_path = OUTPUT_ROOT / OPTIONS_REVIEW_NAME
+    options_image.save(options_path, "PNG", optimize=False, compress_level=9)
+    manifest[OPTIONS_REVIEW_NAME] = {
+        "dimensions": [1920, 1080], "mode": options_image.mode,
+        "sha256": sha256_path(options_path), "bytes": options_path.stat().st_size,
+        "selectedItem": "options", "effectSnapshotSeconds": EFFECT_SNAPSHOT_TIME,
+        "provenance": "project-created deterministic animated-effect still from the Reforged menu renderer",
+    }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
     regular_normal = ui._font(52, tokens, "regular")
     bold_normal = ui._font(56, tokens, "bold")

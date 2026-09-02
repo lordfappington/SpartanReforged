@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import argparse
+from collections import OrderedDict
 import json
+import math
 import os
 import pathlib
+import random
 import sys
 import time
 from dataclasses import dataclass, field
@@ -171,8 +174,261 @@ def _scaled_destination(source_size: tuple[int, int], target_size: tuple[int, in
     return pygame.Rect((target_size[0] - width) // 2, (target_size[1] - height) // 2, width, height)
 
 
+def ease_out_cubic(progress: float) -> float:
+    clamped = max(0.0, min(1.0, progress))
+    return 1.0 - (1.0 - clamped) ** 3
+
+
+def particle_emission_bounds(selected_index: int, tokens: dict) -> tuple[float, float, float, float]:
+    """Return the soft selected-row concentration region in design pixels."""
+    effects = tokens["selectionEffects"]
+    menu_x, menu_y = tokens["menu"]["position"]
+    centre_x = menu_x + 165
+    centre_y = menu_y + selected_index * tokens["menu"]["itemSpacing"] + 34
+    return (
+        centre_x - effects["particleHorizontalRadius"],
+        centre_y - effects["particleVerticalRadius"],
+        centre_x + effects["particleHorizontalRadius"],
+        centre_y + effects["particleVerticalRadius"],
+    )
+
+
+@dataclass
+class SelectionParticle:
+    x: float
+    y: float
+    vx: float
+    vy: float
+    radius: float
+    age: float
+    lifetime: float
+    peak_alpha: int
+    colour: tuple[int, int, int]
+
+
+class AnimatedSelectionEffects:
+    """Small dynamic overlay; the expensive menu composition remains cached."""
+
+    def __init__(self, tokens: dict, strings: dict[str, str], reduced_motion: bool = False) -> None:
+        self.tokens = tokens
+        self.strings = strings
+        self.reduced_motion = reduced_motion
+        self.rng = random.Random(0x53504152)
+        self.particles: list[SelectionParticle] = []
+        self.spawn_accumulator = 0.0
+        self.last_update: float | None = None
+        self.transition_start = 0.0
+        self.pointer_from: tuple[float, float] | None = None
+        self.pointer_to: tuple[float, float] | None = None
+        self.previous_selected_id: str | None = None
+        self.text_cache: OrderedDict[tuple, tuple[pygame.Surface, tuple[int, int]]] = OrderedDict()
+        self.pointer_cache: dict[tuple[int, int], pygame.Surface] = {}
+        self.last_frame_ms = 0.0
+
+    def clear_resolution_cache(self) -> None:
+        self.text_cache.clear()
+        self.pointer_cache.clear()
+
+    def _layout(self, virtual_size: tuple[int, int]) -> ui.ViewportLayout:
+        return ui.layout_for_viewport(*virtual_size, self.tokens)
+
+    def _tip_for_id(self, selected_id: str, virtual_size: tuple[int, int], screen: ui.MenuScreen) -> tuple[float, float]:
+        state = ui.MenuState(screen, selected_id)
+        return ui.selected_pointer_tip_for_state(self._layout(virtual_size), state, self.tokens)
+
+    def pointer_tip(self, now: float) -> tuple[float, float] | None:
+        if self.pointer_to is None:
+            return None
+        if self.reduced_motion or self.pointer_from is None:
+            return self.pointer_to
+        duration = self.tokens["menu"]["transitionDurationMs"] / 1000.0
+        progress = ease_out_cubic((now - self.transition_start) / duration)
+        return (
+            self.pointer_from[0] + (self.pointer_to[0] - self.pointer_from[0]) * progress,
+            self.pointer_from[1] + (self.pointer_to[1] - self.pointer_from[1]) * progress,
+        )
+
+    def set_initial_selection(self, state: ui.MenuState, virtual_size: tuple[int, int], now: float) -> None:
+        self.pointer_to = self._tip_for_id(state.selected_id, virtual_size, state.screen)
+        self.pointer_from = self.pointer_to
+        self.transition_start = now
+
+    def selection_changed(
+        self, previous_id: str, state: ui.MenuState, virtual_size: tuple[int, int], now: float
+    ) -> None:
+        current = self.pointer_tip(now)
+        self.pointer_from = current or self._tip_for_id(previous_id, virtual_size, state.screen)
+        self.pointer_to = self._tip_for_id(state.selected_id, virtual_size, state.screen)
+        self.transition_start = now
+        self.previous_selected_id = previous_id
+
+    def _spawn_particle(self, state: ui.MenuState) -> None:
+        index = next(i for i, item in enumerate(state.screen.items) if item.semantic_id == state.selected_id)
+        left, top, right, bottom = particle_emission_bounds(index, self.tokens)
+        effects = self.tokens["selectionEffects"]
+        # Triangular distributions naturally concentrate the cloud at the row.
+        x = self.rng.triangular(left, right, (left + right) / 2)
+        y = self.rng.triangular(top, bottom, (top + bottom) / 2)
+        life_min, life_max = effects["particleLifetimeSeconds"]
+        drift_min, drift_max = effects["particleDriftPerSecond"]
+        rise_min, rise_max = effects["particleRisePerSecond"]
+        radius_min, radius_max = effects["particleRadius"]
+        alpha_min, alpha_max = effects["particleAlpha"]
+        warmth = self.rng.random()
+        self.particles.append(SelectionParticle(
+            x=x, y=y,
+            vx=self.rng.uniform(drift_min, drift_max),
+            vy=-self.rng.uniform(rise_min, rise_max),
+            radius=self.rng.uniform(radius_min, radius_max),
+            age=0.0, lifetime=self.rng.uniform(life_min, life_max),
+            peak_alpha=round(self.rng.uniform(alpha_min, alpha_max)),
+            colour=(255, round(188 + warmth * 49), round(83 + warmth * 91)),
+        ))
+
+    def update(self, state: ui.MenuState, now: float) -> None:
+        if self.last_update is None:
+            self.last_update = now
+            return
+        dt = min(.05, max(0.0, now - self.last_update))
+        self.last_update = now
+        for particle in self.particles:
+            particle.age += dt
+            particle.x += particle.vx * dt
+            particle.y += particle.vy * dt
+        self.particles = [particle for particle in self.particles if particle.age < particle.lifetime]
+        if self.reduced_motion:
+            self.particles.clear()
+            return
+        effects = self.tokens["selectionEffects"]
+        self.spawn_accumulator += dt * effects["particleSpawnRate"]
+        maximum = effects["particleMaximum"]
+        while self.spawn_accumulator >= 1.0 and len(self.particles) < maximum:
+            self._spawn_particle(state)
+            self.spawn_accumulator -= 1.0
+
+    def _text_surface(
+        self, item: ui.MenuItem, virtual_size: tuple[int, int], effect_time: float
+    ) -> tuple[pygame.Surface, tuple[int, int]]:
+        layout = self._layout(virtual_size)
+        fps = self.tokens["selectionEffects"]["textFrameRate"]
+        quantized = 0.0 if self.reduced_motion else math.floor(effect_time * fps) / fps
+        key = (virtual_size, item.semantic_id, quantized, self.reduced_motion)
+        cached = self.text_cache.get(key)
+        if cached is not None:
+            self.text_cache.move_to_end(key)
+            return cached
+        font = ui._font(
+            round(self.tokens["typography"]["MenuPrimarySelected"] * layout.scale),
+            self.tokens, "bold",
+        )
+        tile, offset = ui.render_selected_text_tile(
+            self.strings[item.label_key], font, layout.scale, quantized, self.reduced_motion
+        )
+        surface = pygame.image.frombytes(tile.tobytes(), tile.size, "RGBA").convert_alpha()
+        result = (surface, offset)
+        self.text_cache[key] = result
+        maximum = self.tokens["selectionEffects"]["textCacheFrames"]
+        while len(self.text_cache) > maximum:
+            self.text_cache.popitem(last=False)
+        return result
+
+    def _pointer_surface(self, virtual_size: tuple[int, int]) -> pygame.Surface:
+        cached = self.pointer_cache.get(virtual_size)
+        if cached is not None:
+            return cached
+        layout = self._layout(virtual_size)
+        path = ui.resolve_asset_path("selectionMarker", self.tokens)
+        if path is None:
+            raise FileNotFoundError("approved selection pointer is unavailable")
+        source = pygame.image.load(str(path)).convert_alpha()
+        width, height = self.tokens["menu"]["markerSize"]
+        size = (max(1, round(width * layout.scale)), max(1, round(height * layout.scale)))
+        rendered = pygame.transform.smoothscale(source, size)
+        self.pointer_cache[virtual_size] = rendered
+        return rendered
+
+    @staticmethod
+    def _map_point(point: tuple[float, float], destination: pygame.Rect, virtual_size: tuple[int, int]) -> tuple[float, float]:
+        return (
+            destination.x + point[0] * destination.width / virtual_size[0],
+            destination.y + point[1] * destination.height / virtual_size[1],
+        )
+
+    def draw(
+        self, target: pygame.Surface, destination: pygame.Rect,
+        state: ui.MenuState, virtual_size: tuple[int, int], now: float,
+    ) -> None:
+        started = time.perf_counter()
+        self.update(state, now)
+        layout = self._layout(virtual_size)
+        bounds_top_left = self._map_point(layout.point(35, 270), destination, virtual_size)
+        bounds_bottom_right = self._map_point(layout.point(920, 850), destination, virtual_size)
+        overlay_rect = pygame.Rect(
+            math.floor(bounds_top_left[0]), math.floor(bounds_top_left[1]),
+            max(1, math.ceil(bounds_bottom_right[0] - bounds_top_left[0])),
+            max(1, math.ceil(bounds_bottom_right[1] - bounds_top_left[1])),
+        )
+        overlay = pygame.Surface(overlay_rect.size, pygame.SRCALPHA)
+        for particle in self.particles:
+            progress = particle.age / particle.lifetime
+            alpha = round(particle.peak_alpha * math.sin(math.pi * progress))
+            centre = self._map_point(layout.point(particle.x, particle.y), destination, virtual_size)
+            scale = destination.width / virtual_size[0] * layout.scale
+            radius = max(1, round(particle.radius * scale))
+            pygame.draw.circle(
+                overlay, (*particle.colour, alpha),
+                (round(centre[0] - overlay_rect.x), round(centre[1] - overlay_rect.y)), radius,
+            )
+
+        def blit_selected(item: ui.MenuItem, opacity: float) -> None:
+            if item.locked or opacity <= 0:
+                return
+            tile, offset = self._text_surface(item, virtual_size, now)
+            index = next(i for i, candidate in enumerate(state.screen.items) if candidate.semantic_id == item.semantic_id)
+            menu_x, menu_y = self.tokens["menu"]["position"]
+            virtual_position = layout.point(menu_x, menu_y + index * self.tokens["menu"]["itemSpacing"])
+            virtual_position = (virtual_position[0] + offset[0], virtual_position[1] + offset[1])
+            mapped = self._map_point(virtual_position, destination, virtual_size)
+            ratio = destination.width / virtual_size[0]
+            displayed = tile.copy() if abs(ratio - 1.0) < 1e-6 else pygame.transform.smoothscale(
+                tile, (max(1, round(tile.width * ratio)), max(1, round(tile.height * ratio)))
+            )
+            displayed.set_alpha(round(255 * max(0.0, min(1.0, opacity))))
+            overlay.blit(displayed, (round(mapped[0] - overlay_rect.x), round(mapped[1] - overlay_rect.y)))
+
+        selected = state.selected
+        fade_duration = self.tokens["selectionEffects"]["textFadeInMs"] / 1000.0
+        fade = 1.0 if self.reduced_motion else min(1.0, (now - self.transition_start) / fade_duration)
+        fade = ease_out_cubic(fade)
+        if self.previous_selected_id and fade < 1.0:
+            previous = next(
+                item for item in state.screen.items if item.semantic_id == self.previous_selected_id
+            )
+            blit_selected(previous, 1.0 - fade)
+        blit_selected(selected, fade)
+
+        tip = self.pointer_tip(now)
+        if tip is not None:
+            mapped_tip = self._map_point(tip, destination, virtual_size)
+            pointer = self._pointer_surface(virtual_size)
+            ratio = destination.width / virtual_size[0]
+            displayed_pointer = pointer if abs(ratio - 1.0) < 1e-6 else pygame.transform.smoothscale(
+                pointer, (max(1, round(pointer.width * ratio)), max(1, round(pointer.height * ratio)))
+            )
+            overlay.blit(
+                displayed_pointer,
+                (round(mapped_tip[0] - displayed_pointer.width - overlay_rect.x),
+                 round(mapped_tip[1] - displayed_pointer.height / 2 - overlay_rect.y)),
+            )
+        target.blit(overlay, overlay_rect.topleft)
+        self.last_frame_ms = (time.perf_counter() - started) * 1000.0
+
+
 class MenuHarness:
-    def __init__(self, smoke_test: bool = False, smoke_report: pathlib.Path | None = None) -> None:
+    def __init__(
+        self, smoke_test: bool = False, smoke_report: pathlib.Path | None = None,
+        reduced_motion: bool = False,
+    ) -> None:
         pygame.init()
         pygame.joystick.init()
         self.tokens = ui.load_json(TOKENS_PATH)
@@ -196,14 +452,18 @@ class MenuHarness:
         self.frame_dirty = True
         self.frame_surface: pygame.Surface | None = None
         self.frame_cache: dict[tuple[tuple[int, int], int, str, str], pygame.Surface] = {}
+        self.effects = AnimatedSelectionEffects(self.tokens, self.strings, reduced_motion)
         self.running = True
         self.smoke_test = smoke_test
         self.smoke_report = smoke_report
-        self.smoke_started = time.perf_counter()
-        self.smoke_navigation_sent = False
+        self.smoke_started = 0.0
+        self.smoke_navigation_step = 0
         self.smoke_result = {"windowInitialized": True, "rendererInitialized": False, "assetsLoaded": False, "navigationVerified": False, "cleanShutdown": False}
+        self.effect_frame_samples: list[float] = []
         self._discover_joysticks()
+        self.effects.set_initial_selection(self.state, self.virtual_size, time.perf_counter())
         self._prewarm_current_context()
+        self.smoke_started = time.perf_counter()
 
     def _create_window(self) -> pygame.Surface:
         if self.fullscreen:
@@ -232,6 +492,7 @@ class MenuHarness:
         previous = self.state.selected_id
         self.state = self.state.navigate(action)
         if self.state.selected_id != previous:
+            self.effects.selection_changed(previous, self.state, self.virtual_size, time.perf_counter())
             self._set_notice(f"SELECT: {self.state.selected_id.upper()}")
             self.frame_dirty = True
 
@@ -271,6 +532,8 @@ class MenuHarness:
             self.screen = self._create_window()
         self._set_notice(f"LOGICAL VIEWPORT: {size[0]}x{size[1]}")
         self.frame_dirty = True
+        self.effects.clear_resolution_cache()
+        self.effects.set_initial_selection(self.state, self.virtual_size, time.perf_counter())
         self._prewarm_current_context()
 
     def _keyboard_action(self, key: int) -> ui.InputAction | None:
@@ -387,6 +650,7 @@ class MenuHarness:
         frame = ui.render_wireframe(
             *self.virtual_size, state, self.tokens, self.strings,
             profile=prompt_profile_for_input_profile(self.last_profile),
+            include_selected_effects=False,
         )
         return pygame.image.frombytes(frame.tobytes(), frame.size, "RGB").convert()
 
@@ -424,6 +688,7 @@ class MenuHarness:
                 f"window {self.screen.get_width()}x{self.screen.get_height()} / logical {self.virtual_size[0]}x{self.virtual_size[1]}",
                 f"selected {self.state.selected_id} / action {self.last_action}",
                 f"profile {self.last_profile} / maxlevel {self.maxlevel} / {mode}",
+                f"selection effects {self.effects.last_frame_ms:5.2f} ms / reduced motion {self.effects.reduced_motion}",
             ))
         if not lines:
             return
@@ -447,16 +712,29 @@ class MenuHarness:
         else:
             displayed = pygame.transform.smoothscale(self.frame_surface, destination.size)
         self.screen.blit(displayed, destination)
+        self.effects.draw(self.screen, destination, self.state, self.virtual_size, time.perf_counter())
+        self.effect_frame_samples.append(self.effects.last_frame_ms)
+        if len(self.effect_frame_samples) > 600:
+            del self.effect_frame_samples[:300]
         self._draw_overlay(destination)
         pygame.display.flip()
 
     def _run_smoke_automation(self, now: float) -> None:
         elapsed = now - self.smoke_started
-        if elapsed >= .25 and not self.smoke_navigation_sent:
-            self._navigate(ui.InputAction.DOWN)
-            self.smoke_result["navigationVerified"] = self.state.selected_id == "load_game"
-            self.smoke_navigation_sent = True
-        if elapsed >= .80:
+        sequence = (
+            (.25, ui.InputAction.DOWN, "load_game"),
+            (.42, ui.InputAction.DOWN, "options"),
+            (.59, ui.InputAction.UP, "load_game"),
+            (.76, ui.InputAction.DOWN, "options"),
+        )
+        while self.smoke_navigation_step < len(sequence):
+            due, action, expected = sequence[self.smoke_navigation_step]
+            if elapsed < due:
+                break
+            self._navigate(action)
+            self.smoke_result["navigationVerified"] = self.state.selected_id == expected
+            self.smoke_navigation_step += 1
+        if elapsed >= 1.20:
             self.running = False
 
     def run(self) -> int:
@@ -475,6 +753,15 @@ class MenuHarness:
             return 0
         finally:
             pygame.quit()
+            if self.effect_frame_samples:
+                ordered = sorted(self.effect_frame_samples)
+                self.smoke_result["selectionEffectsAverageMs"] = round(
+                    sum(ordered) / len(ordered), 3
+                )
+                self.smoke_result["selectionEffectsP95Ms"] = round(
+                    ordered[min(len(ordered) - 1, round((len(ordered) - 1) * .95))], 3
+                )
+                self.smoke_result["selectionEffectsMaximumMs"] = round(ordered[-1], 3)
             if self.smoke_report:
                 self.smoke_report.parent.mkdir(parents=True, exist_ok=True)
                 self.smoke_report.write_text(json.dumps(self.smoke_result, indent=2) + "\n", encoding="utf-8")
@@ -484,8 +771,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke-test", action="store_true", help="render, navigate once, then exit")
     parser.add_argument("--smoke-report", type=pathlib.Path)
+    parser.add_argument("--reduced-motion", action="store_true")
     args = parser.parse_args(list(argv) if argv is not None else None)
-    return MenuHarness(args.smoke_test, args.smoke_report).run()
+    return MenuHarness(args.smoke_test, args.smoke_report, args.reduced_motion).run()
 
 
 if __name__ == "__main__":

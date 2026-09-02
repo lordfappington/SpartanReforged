@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import pathlib
 from dataclasses import dataclass, replace
 from enum import Enum, IntEnum
@@ -354,6 +355,9 @@ SELECTED_ILLUMINATION: dict[str, Any] = {
     "primaryNoiseFloor": 88,
     "secondaryNoiseFloor": 138,
     "noiseCeiling": 255,
+    "fieldDriftPeriodSeconds": 4.3,
+    "secondaryDriftPeriodSeconds": 2.9,
+    "hotspotDriftPeriodSeconds": 3.7,
 }
 
 MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
@@ -437,9 +441,13 @@ def _vertical_material_gradient(size: tuple[int, int], palette: dict[str, tuple[
 
 
 def build_selected_illumination_masks(
-    glyph: Image.Image, scale: float, text: str = ""
+    glyph: Image.Image,
+    scale: float,
+    text: str = "",
+    effect_time: float | None = None,
+    reduced_motion: bool = False,
 ) -> dict[str, Image.Image]:
-    """Derive organic, label-stable light contained inside selected glyphs."""
+    """Derive smooth label-stable light contained inside selected glyphs."""
     core = glyph.filter(ImageFilter.MinFilter(3))
     interior = ImageChops.multiply(
         glyph,
@@ -449,24 +457,52 @@ def build_selected_illumination_masks(
 
     seed = hashlib.sha256(("SpartanReforged:selected:" + text).encode("utf-8")).digest()
 
-    def field(label: bytes, cell_x: float, cell_y: float, floor: int) -> Image.Image:
+    def field(
+        label: bytes, cell_x: float, cell_y: float, floor: int,
+        drift_period: float, phase_byte: int,
+    ) -> Image.Image:
         coarse_w = max(3, round(glyph.width / max(1, cell_x * scale)))
         coarse_h = max(3, round(glyph.height / max(1, cell_y * scale)))
+        animated = effect_time is not None and not reduced_motion
+        margin_x = 4 if animated else 0
+        margin_y = 3 if animated else 0
+        source_w, source_h = coarse_w + margin_x * 2, coarse_h + margin_y * 2
         values: list[int] = []
         counter = 0
-        while len(values) < coarse_w * coarse_h:
+        while len(values) < source_w * source_h:
             values.extend(hashlib.sha256(seed + label + counter.to_bytes(4, "little")).digest())
             counter += 1
-        result = Image.new("L", (coarse_w, coarse_h))
+        result = Image.new("L", (source_w, source_h))
         ceiling = SELECTED_ILLUMINATION["noiseCeiling"]
         result.putdata([
             floor + value * (ceiling - floor) // 255
-            for value in values[:coarse_w * coarse_h]
+            for value in values[:source_w * source_h]
         ])
-        return result.resize(glyph.size, Image.Resampling.BICUBIC)
+        if not animated:
+            return result.resize(glyph.size, Image.Resampling.BICUBIC)
+        phase = seed[phase_byte] / 255 * math.tau
+        t = float(effect_time)
+        x = round(margin_x * (1.0 + math.sin(math.tau * t / drift_period + phase)))
+        y = round(margin_y * (1.0 + math.sin(math.tau * t / (drift_period * 1.37) + phase * .61)))
+        expanded = result.resize(
+            (glyph.width + margin_x * 2 * max(2, round(cell_x * scale)),
+             glyph.height + margin_y * 2 * max(2, round(cell_y * scale))),
+            Image.Resampling.BICUBIC,
+        )
+        max_x = expanded.width - glyph.width
+        max_y = expanded.height - glyph.height
+        crop_x = round(x / max(1, margin_x * 2) * max_x)
+        crop_y = round(y / max(1, margin_y * 2) * max_y)
+        return expanded.crop((crop_x, crop_y, crop_x + glyph.width, crop_y + glyph.height))
 
-    primary = field(b"broad", 31, 21, SELECTED_ILLUMINATION["primaryNoiseFloor"])
-    secondary = field(b"medium", 14, 11, SELECTED_ILLUMINATION["secondaryNoiseFloor"])
+    primary = field(
+        b"broad", 31, 21, SELECTED_ILLUMINATION["primaryNoiseFloor"],
+        SELECTED_ILLUMINATION["fieldDriftPeriodSeconds"], 6,
+    )
+    secondary = field(
+        b"medium", 14, 11, SELECTED_ILLUMINATION["secondaryNoiseFloor"],
+        SELECTED_ILLUMINATION["secondaryDriftPeriodSeconds"], 11,
+    )
     noise = Image.blend(primary, secondary, .34).filter(
         ImageFilter.GaussianBlur(max(.75, 1.1 * scale))
     ).point(lambda value: max(42, min(255, round(128 + (value - 128) * 1.72))))
@@ -475,10 +511,17 @@ def build_selected_illumination_masks(
     hotspot_field = Image.new("L", glyph.size)
     hotspot_draw = ImageDraw.Draw(hotspot_field)
     count = 3 + seed[0] % 3
+    animated_hotspots = effect_time is not None and not reduced_motion
+    t = 0.0 if not animated_hotspots else float(effect_time)
     for index in range(count):
         base = 1 + index * 5
+        phase = seed[base + 4] / 255 * math.tau
+        drift = math.tau * t / SELECTED_ILLUMINATION["hotspotDriftPeriodSeconds"]
         centre_x = glyph.width * (.10 + seed[base] / 255 * .80)
         centre_y = glyph.height * (.22 + seed[base + 1] / 255 * .56)
+        if animated_hotspots:
+            centre_x += glyph.width * .035 * math.sin(drift + phase)
+            centre_y += glyph.height * .055 * math.sin(drift * .73 + phase * 1.31)
         radius_x = glyph.width * (.055 + seed[base + 2] / 255 * .095)
         radius_y = glyph.height * (.14 + seed[base + 3] / 255 * .19)
         intensity = 190 + seed[base + 4] % 66
@@ -502,9 +545,14 @@ def _composite_selected_illumination(
     layers: dict[str, Image.Image],
     scale: float,
     text: str,
+    effect_time: float | None = None,
+    reduced_motion: bool = False,
 ) -> dict[str, Image.Image]:
     settings = SELECTED_ILLUMINATION
-    illumination = build_selected_illumination_masks(layers["glyph"], scale, text=text)
+    illumination = build_selected_illumination_masks(
+        layers["glyph"], scale, text=text,
+        effect_time=effect_time, reduced_motion=reduced_motion,
+    )
     light_source = ImageChops.lighter(
         illumination["internal_light"], illumination["hotspots"]
     )
@@ -548,6 +596,8 @@ def render_material_text(
     font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
     state: str,
     scale: float = 1.0,
+    effect_time: float | None = None,
+    reduced_motion: bool = False,
 ) -> dict[str, int]:
     """Composite internally bevelled Cinzel text and return layer statistics."""
     layers, offset = build_material_text_layers(text, font, state, scale)
@@ -557,7 +607,9 @@ def render_material_text(
     shadow.putalpha(_scaled_alpha(_shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76))
     tile.alpha_composite(shadow)
     if state == "selected":
-        illumination = _composite_selected_illumination(tile, layers, scale, text)
+        illumination = _composite_selected_illumination(
+            tile, layers, scale, text, effect_time, reduced_motion
+        )
         paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
         target.paste(tile, paste_at, tile)
         combined = {
@@ -582,6 +634,62 @@ def render_material_text(
     paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
     target.paste(tile, paste_at, tile)
     return {name: sum(1 for value in layer.getdata() if value) for name, layer in layers.items()}
+
+
+def render_selected_text_tile(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    scale: float,
+    effect_time: float,
+    reduced_motion: bool = False,
+) -> tuple[Image.Image, tuple[int, int]]:
+    """Render only the animated selected run for the interactive overlay."""
+    layers, offset = build_material_text_layers(text, font, "selected", scale)
+    tile = Image.new("RGBA", layers["glyph"].size)
+    shadow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(.65, 1.0 * scale)))
+    shadow = Image.new("RGBA", tile.size, (2, 5, 9, 0))
+    shadow.putalpha(_scaled_alpha(
+        _shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76
+    ))
+    tile.alpha_composite(shadow)
+    _composite_selected_illumination(
+        tile, layers, scale, text,
+        effect_time=effect_time, reduced_motion=reduced_motion,
+    )
+    return tile, offset
+
+
+def deterministic_selection_particles(
+    state: MenuState,
+    tokens: dict[str, Any],
+    effect_time: float,
+    reduced_motion: bool = False,
+) -> list[dict[str, float | tuple[int, int, int]]]:
+    """Return a bounded deterministic still snapshot of selected-row motes."""
+    if reduced_motion:
+        return []
+    index = next(i for i, item in enumerate(state.screen.items) if item.semantic_id == state.selected_id)
+    menu_x, menu_y = tokens["menu"]["position"]
+    centre_y = menu_y + index * tokens["menu"]["itemSpacing"] + 34
+    seed = hashlib.sha256(("SpartanReforged:particles:" + state.selected_id).encode()).digest()
+    particles: list[dict[str, float | tuple[int, int, int]]] = []
+    for i in range(24):
+        h = hashlib.sha256(seed + i.to_bytes(2, "little")).digest()
+        phase = h[0] / 255
+        life = 1.4 + h[1] / 255 * 2.2
+        age = (effect_time + phase * life) % life
+        progress = age / life
+        fade = math.sin(math.pi * progress)
+        lateral = (h[2] / 255 - .5) * 540
+        vertical = (h[3] / 255 - .5) * 76 - progress * (9 + h[4] / 255 * 19)
+        particles.append({
+            "x": menu_x + 165 + lateral + math.sin(effect_time * .8 + phase * math.tau) * 8,
+            "y": centre_y + vertical,
+            "radius": .7 + h[5] / 255 * 1.45,
+            "alpha": round((22 + h[6] / 255 * 92) * fade),
+            "colour": (255, 194 + h[7] % 42, 92 + h[8] % 86),
+        })
+    return particles
 
 
 def selected_pointer_tip(
@@ -700,6 +808,9 @@ def render_wireframe(
     strings: dict[str, str],
     profile: str = "playstation",
     logo_image: Image.Image | None = None,
+    include_selected_effects: bool = True,
+    selected_effect_time: float | None = None,
+    reduced_motion: bool = False,
 ) -> Image.Image:
     if state.presentation is not PresentationMode.REFORGED:
         raise ValueError("wireframe renderer accepts only Reforged presentation state")
@@ -763,6 +874,22 @@ def render_wireframe(
     marker_gap = tokens["menu"]["markerGap"]
     pointer_path = resolve_asset_path("selectionMarker", tokens)
     padlock_path = resolve_asset_path("padlock", tokens)
+    if include_selected_effects and selected_effect_time is not None and not reduced_motion:
+        particle_layer = Image.new("RGBA", image.size)
+        particle_draw = ImageDraw.Draw(particle_layer, "RGBA")
+        for particle in deterministic_selection_particles(
+            state, tokens, selected_effect_time, reduced_motion
+        ):
+            x, y = layout.point(float(particle["x"]), float(particle["y"]))
+            radius = max(.5, float(particle["radius"]) * layout.scale)
+            colour = particle["colour"]
+            alpha = int(particle["alpha"])
+            particle_draw.ellipse(
+                (x - radius, y - radius, x + radius, y + radius),
+                fill=(*colour, alpha),
+            )
+        particle_layer = particle_layer.filter(ImageFilter.GaussianBlur(max(.35, .55 * layout.scale)))
+        image.paste(particle_layer, (0, 0), particle_layer)
     for index, item in enumerate(state.screen.items):
         y = my + index * spacing
         selected = item.semantic_id == state.selected_id
@@ -772,7 +899,7 @@ def render_wireframe(
             tokens,
             "bold" if selected else "regular",
         )
-        if selected:
+        if selected and include_selected_effects:
             tip = selected_pointer_tip_for_state(layout, state, tokens)
             render_selection_pointer(
                 image, tip, marker_w * layout.scale, marker_h * layout.scale,
@@ -780,7 +907,12 @@ def render_wireframe(
             )
         text_position = layout.point(mx, y)
         material_state = "locked" if item.locked else ("selected" if selected else "unselected")
-        render_material_text(image, text_position, strings[item.label_key], font, material_state, layout.scale)
+        if not selected or include_selected_effects or item.locked:
+            render_material_text(
+                image, text_position, strings[item.label_key], font, material_state, layout.scale,
+                effect_time=selected_effect_time if selected else None,
+                reduced_motion=reduced_motion,
+            )
         if item.locked:
             padlock_anchor, _ = locked_padlock_placement(
                 layout, text_position, strings[item.label_key], font, tokens

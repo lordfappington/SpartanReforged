@@ -84,6 +84,22 @@
     "confirm": ["warm-flare", "marker-impulse"],
     "reducedMotionFallback": "instant-state-change"
   },
+  "selectionEffects": {
+    "textFrameRate": 24,
+    "textCacheFrames": 96,
+    "textFadeInMs": 120,
+    "pointerEase": "cubic-out",
+    "particleSpawnRate": 13.0,
+    "particleMaximum": 34,
+    "particleLifetimeSeconds": [1.4, 3.6],
+    "particleHorizontalRadius": 290,
+    "particleVerticalRadius": 48,
+    "particleRisePerSecond": [8, 28],
+    "particleDriftPerSecond": [-13, 13],
+    "particleRadius": [0.7, 2.15],
+    "particleAlpha": [22, 114],
+    "reducedMotionParticles": 0
+  },
   "assets": {
     "logo": "logo/approved/runtime/spartan-logo-approved.png",
     "logoFlare": null,

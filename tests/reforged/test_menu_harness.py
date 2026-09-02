@@ -140,6 +140,34 @@ class MenuHarnessTests(unittest.TestCase):
         self.assertLessEqual(fitted[1], round(1080 * .86))
         self.assertAlmostEqual(fitted[0] / fitted[1], 16 / 9, places=2)
 
+    def test_pointer_transition_is_cubic_out_and_reaches_exact_destination(self) -> None:
+        effects = HARNESS.AnimatedSelectionEffects(UI.load_json(HARNESS.TOKENS_PATH), {}, False)
+        effects.pointer_from = (155.0, 375.0)
+        effects.pointer_to = (155.0, 457.0)
+        effects.transition_start = 10.0
+        midpoint = effects.pointer_tip(10.08)
+        self.assertIsNotNone(midpoint)
+        self.assertGreater(midpoint[1], 416.0)
+        self.assertEqual(effects.pointer_tip(10.16), (155.0, 457.0))
+
+    def test_rapid_navigation_keeps_valid_immediate_state(self) -> None:
+        state = UI.MenuState(UI.build_main_start(), "new_game")
+        for action in (UI.InputAction.DOWN, UI.InputAction.DOWN, UI.InputAction.UP, UI.InputAction.DOWN):
+            state = state.navigate(action)
+            self.assertIn(state.selected_id, {item.semantic_id for item in state.screen.items})
+        self.assertEqual(state.selected_id, "options")
+
+    def test_particle_region_and_reduced_motion_runtime_policy(self) -> None:
+        tokens = UI.load_json(HARNESS.TOKENS_PATH)
+        bounds = HARNESS.particle_emission_bounds(2, tokens)
+        centre_y = tokens["menu"]["position"][1] + 2 * tokens["menu"]["itemSpacing"] + 34
+        self.assertEqual((bounds[1] + bounds[3]) / 2, centre_y)
+        effects = HARNESS.AnimatedSelectionEffects(tokens, {}, True)
+        state = UI.MenuState(UI.build_main_start(), "new_game")
+        effects.last_update = 1.0
+        effects.update(state, 2.0)
+        self.assertEqual(effects.particles, [])
+
 
 if __name__ == "__main__":
     unittest.main()

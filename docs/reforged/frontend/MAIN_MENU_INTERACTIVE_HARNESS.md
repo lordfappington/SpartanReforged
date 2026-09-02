@@ -16,6 +16,21 @@ The six selection states for the active logical viewport, lock state, and input
 profile are pre-rendered as a bounded cache. This adds a short initial warm-up
 but keeps ordinary navigation responsive without replacing the shared renderer.
 
+The cached frames contain the approved background, logo, unselected/locked
+navigation, context, padlock, and prompts. A small real-time overlay supplies
+only the selected Cinzel run, selected-row motes, and approved pointer. The
+selected text combines a stable aged-gold container with two independently
+drifting low-frequency fields and slowly moving cream-hot regions clipped to
+the glyph mask. It does not rasterize or special-case any localized label.
+
+Selected-row particles use a bounded 34-instance pool, soft triangular spatial
+distribution, independent lifetimes, and gentle upward/lateral drift. Existing
+particles decay naturally after selection changes. The approved pointer raster
+moves between exact row anchors over 160 ms with cubic ease-out; its destination
+size and 17 px text gap are unchanged. `--reduced-motion` freezes the internal
+light, disables particles, and makes the pointer transition immediate while
+retaining the static selected treatment.
+
 The repeatable Windows build uses pinned pygame-ce 2.5.8, Pillow 11.3.0, and
 PyInstaller 6.22.2 in an ignored local virtual environment. PyInstaller creates a self-contained
 one-folder distribution; Python does not need to be installed on the machine
@@ -71,7 +86,7 @@ logical sizes, selection, action, device profile, `maxlevel`, and window mode.
 - Controller mappings use SDL/pygame joystick conventions and require physical
   hardware testing across specific controller/driver combinations.
 - Campaign screens and gameplay actions are intentionally not connected.
-- The existing 160 ms transition token has no executable animation path yet;
-  selection state and the approved pointer update immediately.
+- Selection effects are an initial tuning pass and require human visual review.
 - Keyboard prompt artwork remains development-grade.
-- This harness deliberately adds no audio, particles, parallax, or new effects.
+- This harness deliberately adds no audio, smoke, parallax, logo glints, or
+  background motion.

@@ -305,6 +305,41 @@ class MainMenuReforgedTests(unittest.TestCase):
             fields.append(hashlib.sha256(illumination["internal_light"].tobytes()).hexdigest())
         self.assertNotEqual(fields[0], fields[1])
 
+    def test_animated_selected_light_moves_inside_unchanged_glyph_coverage(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        layers, _ = UI.build_material_text_layers("NEW GAME", font, "selected")
+        first = UI.build_selected_illumination_masks(
+            layers["glyph"], 1.0, "NEW GAME", effect_time=.5
+        )
+        later = UI.build_selected_illumination_masks(
+            layers["glyph"], 1.0, "NEW GAME", effect_time=2.1
+        )
+        self.assertNotEqual(first["internal_light"].tobytes(), later["internal_light"].tobytes())
+        for masks in (first, later):
+            self.assertIsNone(UI.ImageChops.subtract(masks["internal_light"], layers["glyph"]).getbbox())
+
+    def test_reduced_motion_selected_light_is_static_and_particles_are_disabled(self) -> None:
+        font = UI._font(56, TOKENS, "bold")
+        layers, _ = UI.build_material_text_layers("NEW GAME", font, "selected")
+        first = UI.build_selected_illumination_masks(
+            layers["glyph"], 1.0, "NEW GAME", effect_time=.5, reduced_motion=True
+        )
+        later = UI.build_selected_illumination_masks(
+            layers["glyph"], 1.0, "NEW GAME", effect_time=9.5, reduced_motion=True
+        )
+        self.assertEqual(first["internal_light"].tobytes(), later["internal_light"].tobytes())
+        state = UI.MenuState(UI.build_main_start(), "new_game")
+        self.assertEqual(UI.deterministic_selection_particles(state, TOKENS, 1.0, True), [])
+
+    def test_deterministic_particles_remain_concentrated_near_selected_row(self) -> None:
+        state = UI.MenuState(UI.build_main_start(), "options")
+        particles = UI.deterministic_selection_particles(state, TOKENS, 1.75)
+        centre_y = TOKENS["menu"]["position"][1] + 2 * TOKENS["menu"]["itemSpacing"] + 34
+        radius = TOKENS["selectionEffects"]["particleVerticalRadius"]
+        self.assertEqual(len(particles), 24)
+        self.assertTrue(all(abs(float(particle["y"]) - centre_y) <= radius + 28 for particle in particles))
+        self.assertTrue(all(0 <= int(particle["alpha"]) <= TOKENS["selectionEffects"]["particleAlpha"][1] for particle in particles))
+
 
 if __name__ == "__main__":
     unittest.main()
