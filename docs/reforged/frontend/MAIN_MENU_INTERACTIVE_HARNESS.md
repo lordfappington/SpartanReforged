@@ -18,14 +18,21 @@ but keeps ordinary navigation responsive without replacing the shared renderer.
 
 The cached frames contain the approved background, logo, unselected/locked
 navigation, context, padlock, and prompts. A small real-time overlay supplies
-only the selected Cinzel run, selected-row motes, and approved pointer. The
-selected text combines a stable aged-gold container with two independently
-drifting low-frequency fields and slowly moving cream-hot regions clipped to
-the glyph mask. It does not rasterize or special-case any localized label.
+only the selected Cinzel run, selected-row dust, and approved pointer. The
+selected text combines a stable dark-bronze/gold container with two large
+low-frequency fields and sparse cream-hot regions clipped to the glyph mask.
+Fields advance through 4 Hz keyframes over 7.4–9.2 second cycles and interpolate
+every displayed frame, so the material flows slowly without changing the glyph
+silhouette or visibly stepping. It does not rasterize or special-case any
+localized label.
 
-Selected-row particles use a bounded 34-instance pool, soft triangular spatial
-distribution, independent lifetimes, and gentle upward/lateral drift. Existing
-particles decay naturally after selection changes. The approved pointer raster
+Selected-row dust uses a bounded 46-instance pool distributed anisotropically
+through the actual selected text bounds and a sparse horizontal tail. Most
+particles retain low positive-X momentum with drag; mild upward drift and
+turbulence increase dispersion as their 2.5–6.0 second lifetimes expire. The
+distribution is independent of the pointer position. Existing row dust decays
+in place after selection changes while a bounded fresh wake starts at the new
+row—particles never travel between rows. The approved pointer raster
 moves between exact row anchors over 160 ms with cubic ease-out; its destination
 size and 17 px text gap are unchanged. `--reduced-motion` freezes the internal
 light, disables particles, and makes the pointer transition immediate while

@@ -18,6 +18,7 @@ from typing import Iterable
 
 os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 import pygame
+from PIL import Image
 
 import main_menu_reforged as ui
 
@@ -179,16 +180,17 @@ def ease_out_cubic(progress: float) -> float:
     return 1.0 - (1.0 - clamped) ** 3
 
 
-def particle_emission_bounds(selected_index: int, tokens: dict) -> tuple[float, float, float, float]:
+def particle_emission_bounds(
+    selected_index: int, tokens: dict, label_width: float = 430.0
+) -> tuple[float, float, float, float]:
     """Return the soft selected-row concentration region in design pixels."""
     effects = tokens["selectionEffects"]
     menu_x, menu_y = tokens["menu"]["position"]
-    centre_x = menu_x + 165
     centre_y = menu_y + selected_index * tokens["menu"]["itemSpacing"] + 34
     return (
-        centre_x - effects["particleHorizontalRadius"],
+        menu_x - effects["particleWakeTrail"],
         centre_y - effects["particleVerticalRadius"],
-        centre_x + effects["particleHorizontalRadius"],
+        menu_x + label_width + effects["particleWakeLead"],
         centre_y + effects["particleVerticalRadius"],
     )
 
@@ -204,6 +206,9 @@ class SelectionParticle:
     lifetime: float
     peak_alpha: int
     colour: tuple[int, int, int]
+    drag: float
+    turbulence_phase: float
+    source_id: str
 
 
 class AnimatedSelectionEffects:
@@ -221,13 +226,23 @@ class AnimatedSelectionEffects:
         self.pointer_from: tuple[float, float] | None = None
         self.pointer_to: tuple[float, float] | None = None
         self.previous_selected_id: str | None = None
-        self.text_cache: OrderedDict[tuple, tuple[pygame.Surface, tuple[int, int]]] = OrderedDict()
+        self.text_cache: OrderedDict[tuple, tuple[Image.Image, tuple[int, int]]] = OrderedDict()
         self.pointer_cache: dict[tuple[int, int], pygame.Surface] = {}
         self.last_frame_ms = 0.0
+        self.animation_epoch = time.perf_counter()
 
     def clear_resolution_cache(self) -> None:
         self.text_cache.clear()
         self.pointer_cache.clear()
+
+    def prewarm_dynamic_assets(self, screen: ui.MenuScreen, virtual_size: tuple[int, int]) -> None:
+        """Move one-time font/filter/asset costs outside the live frame loop."""
+        rate = self.tokens["selectionEffects"]["moltenKeyframeRate"]
+        for item in screen.items:
+            if not item.locked:
+                self._text_keyframe(item, virtual_size, 0.0)
+                self._text_keyframe(item, virtual_size, 1.0 / rate)
+        self._pointer_surface(virtual_size)
 
     def _layout(self, virtual_size: tuple[int, int]) -> ui.ViewportLayout:
         return ui.layout_for_viewport(*virtual_size, self.tokens)
@@ -261,28 +276,48 @@ class AnimatedSelectionEffects:
         self.pointer_to = self._tip_for_id(state.selected_id, virtual_size, state.screen)
         self.transition_start = now
         self.previous_selected_id = previous_id
+        # Retain a bounded remnant of the old row, then seed a fresh wake at
+        # the new row without moving particles vertically between selections.
+        self.particles = sorted(
+            self.particles, key=lambda particle: particle.age / particle.lifetime
+        )[:24]
+        if not self.reduced_motion:
+            for _ in range(self.tokens["selectionEffects"]["selectionWakeBurst"]):
+                self._spawn_particle(state, initial_age=self.rng.uniform(0.0, .18))
 
-    def _spawn_particle(self, state: ui.MenuState) -> None:
+    def _spawn_particle(self, state: ui.MenuState, initial_age: float = 0.0) -> None:
         index = next(i for i, item in enumerate(state.screen.items) if item.semantic_id == state.selected_id)
-        left, top, right, bottom = particle_emission_bounds(index, self.tokens)
+        font = ui._font(self.tokens["typography"]["MenuPrimarySelected"], self.tokens, "bold")
+        label_width = float(font.getlength(self.strings[state.selected.label_key]))
+        left, top, right, bottom = particle_emission_bounds(index, self.tokens, label_width)
         effects = self.tokens["selectionEffects"]
-        # Triangular distributions naturally concentrate the cloud at the row.
-        x = self.rng.triangular(left, right, (left + right) / 2)
+        text_left = self.tokens["menu"]["position"][0]
+        text_right = text_left + label_width
+        if self.rng.random() < .82:
+            x = self.rng.triangular(text_left - 18, text_right + 36, text_left + label_width * .62)
+        else:
+            x = self.rng.uniform(left, right)
         y = self.rng.triangular(top, bottom, (top + bottom) / 2)
         life_min, life_max = effects["particleLifetimeSeconds"]
         drift_min, drift_max = effects["particleDriftPerSecond"]
         rise_min, rise_max = effects["particleRisePerSecond"]
         radius_min, radius_max = effects["particleRadius"]
         alpha_min, alpha_max = effects["particleAlpha"]
+        drag_min, drag_max = effects["particleDragPerSecond"]
         warmth = self.rng.random()
+        bright = self.rng.random() < effects["brightMoteProbability"]
+        vx = self.rng.uniform(drift_min, drift_max) if self.rng.random() > .22 else self.rng.uniform(-2, 6)
         self.particles.append(SelectionParticle(
             x=x, y=y,
-            vx=self.rng.uniform(drift_min, drift_max),
+            vx=vx,
             vy=-self.rng.uniform(rise_min, rise_max),
-            radius=self.rng.uniform(radius_min, radius_max),
-            age=0.0, lifetime=self.rng.uniform(life_min, life_max),
-            peak_alpha=round(self.rng.uniform(alpha_min, alpha_max)),
+            radius=self.rng.uniform(radius_min, 2.15 if bright else radius_max),
+            age=initial_age, lifetime=self.rng.uniform(life_min, life_max),
+            peak_alpha=round(self.rng.uniform(105, 142) if bright else self.rng.uniform(alpha_min, alpha_max)),
             colour=(255, round(188 + warmth * 49), round(83 + warmth * 91)),
+            drag=self.rng.uniform(drag_min, drag_max),
+            turbulence_phase=self.rng.random() * math.tau,
+            source_id=state.selected_id,
         ))
 
     def update(self, state: ui.MenuState, now: float) -> None:
@@ -293,6 +328,9 @@ class AnimatedSelectionEffects:
         self.last_update = now
         for particle in self.particles:
             particle.age += dt
+            particle.vx *= math.exp(-particle.drag * dt)
+            turbulence = math.sin(particle.age * 1.35 + particle.turbulence_phase)
+            particle.vx += turbulence * self.tokens["selectionEffects"]["particleTurbulence"] * dt
             particle.x += particle.vx * dt
             particle.y += particle.vy * dt
         self.particles = [particle for particle in self.particles if particle.age < particle.lifetime]
@@ -306,13 +344,11 @@ class AnimatedSelectionEffects:
             self._spawn_particle(state)
             self.spawn_accumulator -= 1.0
 
-    def _text_surface(
+    def _text_keyframe(
         self, item: ui.MenuItem, virtual_size: tuple[int, int], effect_time: float
-    ) -> tuple[pygame.Surface, tuple[int, int]]:
+    ) -> tuple[Image.Image, tuple[int, int]]:
         layout = self._layout(virtual_size)
-        fps = self.tokens["selectionEffects"]["textFrameRate"]
-        quantized = 0.0 if self.reduced_motion else math.floor(effect_time * fps) / fps
-        key = (virtual_size, item.semantic_id, quantized, self.reduced_motion)
+        key = (virtual_size, item.semantic_id, effect_time, self.reduced_motion)
         cached = self.text_cache.get(key)
         if cached is not None:
             self.text_cache.move_to_end(key)
@@ -322,15 +358,32 @@ class AnimatedSelectionEffects:
             self.tokens, "bold",
         )
         tile, offset = ui.render_selected_text_tile(
-            self.strings[item.label_key], font, layout.scale, quantized, self.reduced_motion
+            self.strings[item.label_key], font, layout.scale, effect_time, self.reduced_motion
         )
-        surface = pygame.image.frombytes(tile.tobytes(), tile.size, "RGBA").convert_alpha()
-        result = (surface, offset)
+        result = (tile, offset)
         self.text_cache[key] = result
-        maximum = self.tokens["selectionEffects"]["textCacheFrames"]
+        maximum = self.tokens["selectionEffects"]["moltenCacheKeyframes"]
         while len(self.text_cache) > maximum:
             self.text_cache.popitem(last=False)
         return result
+
+    def _text_surface(
+        self, item: ui.MenuItem, virtual_size: tuple[int, int], effect_time: float
+    ) -> tuple[pygame.Surface, tuple[int, int]]:
+        rate = self.tokens["selectionEffects"]["moltenKeyframeRate"]
+        position = 0.0 if self.reduced_motion else effect_time * rate
+        lower_index = math.floor(position)
+        fraction = 0.0 if self.reduced_motion else position - lower_index
+        lower_time = 0.0 if self.reduced_motion else lower_index / rate
+        upper_time = lower_time if self.reduced_motion else (lower_index + 1) / rate
+        lower, offset = self._text_keyframe(item, virtual_size, lower_time)
+        if fraction <= 0:
+            blended = lower
+        else:
+            upper, _ = self._text_keyframe(item, virtual_size, upper_time)
+            blended = Image.blend(lower, upper, fraction)
+        surface = pygame.image.frombytes(blended.tobytes(), blended.size, "RGBA").convert_alpha()
+        return surface, offset
 
     def _pointer_surface(self, virtual_size: tuple[int, int]) -> pygame.Surface:
         cached = self.pointer_cache.get(virtual_size)
@@ -371,7 +424,9 @@ class AnimatedSelectionEffects:
         overlay = pygame.Surface(overlay_rect.size, pygame.SRCALPHA)
         for particle in self.particles:
             progress = particle.age / particle.lifetime
-            alpha = round(particle.peak_alpha * math.sin(math.pi * progress))
+            fade_in = min(1.0, progress / .12)
+            fade_out = max(0.0, 1.0 - progress) ** 1.65
+            alpha = round(particle.peak_alpha * fade_in * fade_out)
             centre = self._map_point(layout.point(particle.x, particle.y), destination, virtual_size)
             scale = destination.width / virtual_size[0] * layout.scale
             radius = max(1, round(particle.radius * scale))
@@ -383,7 +438,8 @@ class AnimatedSelectionEffects:
         def blit_selected(item: ui.MenuItem, opacity: float) -> None:
             if item.locked or opacity <= 0:
                 return
-            tile, offset = self._text_surface(item, virtual_size, now)
+            effect_time = 0.0 if self.reduced_motion else max(0.0, now - self.animation_epoch)
+            tile, offset = self._text_surface(item, virtual_size, effect_time)
             index = next(i for i, candidate in enumerate(state.screen.items) if candidate.semantic_id == item.semantic_id)
             menu_x, menu_y = self.tokens["menu"]["position"]
             virtual_position = layout.point(menu_x, menu_y + index * self.tokens["menu"]["itemSpacing"])
@@ -463,6 +519,7 @@ class MenuHarness:
         self._discover_joysticks()
         self.effects.set_initial_selection(self.state, self.virtual_size, time.perf_counter())
         self._prewarm_current_context()
+        self.effects.prewarm_dynamic_assets(self.state.screen, self.virtual_size)
         self.smoke_started = time.perf_counter()
 
     def _create_window(self) -> pygame.Surface:
@@ -533,8 +590,10 @@ class MenuHarness:
         self._set_notice(f"LOGICAL VIEWPORT: {size[0]}x{size[1]}")
         self.frame_dirty = True
         self.effects.clear_resolution_cache()
+        self.effects.animation_epoch = time.perf_counter()
         self.effects.set_initial_selection(self.state, self.virtual_size, time.perf_counter())
         self._prewarm_current_context()
+        self.effects.prewarm_dynamic_assets(self.state.screen, self.virtual_size)
 
     def _keyboard_action(self, key: int) -> ui.InputAction | None:
         if key in (pygame.K_UP, pygame.K_w):
@@ -762,6 +821,7 @@ class MenuHarness:
                     ordered[min(len(ordered) - 1, round((len(ordered) - 1) * .95))], 3
                 )
                 self.smoke_result["selectionEffectsMaximumMs"] = round(ordered[-1], 3)
+                self.smoke_result["selectionEffectsSampleCount"] = len(ordered)
             if self.smoke_report:
                 self.smoke_report.parent.mkdir(parents=True, exist_ok=True)
                 self.smoke_report.write_text(json.dumps(self.smoke_result, indent=2) + "\n", encoding="utf-8")

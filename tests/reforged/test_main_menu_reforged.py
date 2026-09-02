@@ -257,10 +257,10 @@ class MainMenuReforgedTests(unittest.TestCase):
             "2ec52ee699316366116dec1803d859230936b7c6201584b50ab115192b7d6fa7",
         )
 
-    def test_selected_and_locked_typography_baselines_are_preserved(self) -> None:
+    def test_selected_snapshot_and_locked_typography_baselines_are_deterministic(self) -> None:
         selected = Image.new("RGB", (500, 100), (7, 13, 23))
         UI.render_material_text(selected, (20, 10), "NEW GAME", UI._font(56, TOKENS, "bold"), "selected")
-        self.assertEqual(hashlib.sha256(selected.tobytes()).hexdigest(), "9ae1d673a299412f8b7d827435fcf1bbd3ec4e920ecb8456d2ccb7d0f1da61c1")
+        self.assertEqual(hashlib.sha256(selected.tobytes()).hexdigest(), "571a5b90ed50f5074e53113eb5d063476ddcefc3ba91ce284143f7bbb99206e8")
         locked = Image.new("RGB", (700, 100), (7, 13, 23))
         UI.render_material_text(locked, (20, 10), "SINGLE MISSION REPLAY", UI._font(52, TOKENS, "regular"), "locked")
         self.assertEqual(hashlib.sha256(locked.tobytes()).hexdigest(), "686906c1a92ee647371de644df4e80a0c8de29f648a5fde76eff8dc4d1883e01")
@@ -336,9 +336,12 @@ class MainMenuReforgedTests(unittest.TestCase):
         particles = UI.deterministic_selection_particles(state, TOKENS, 1.75)
         centre_y = TOKENS["menu"]["position"][1] + 2 * TOKENS["menu"]["itemSpacing"] + 34
         radius = TOKENS["selectionEffects"]["particleVerticalRadius"]
-        self.assertEqual(len(particles), 24)
+        self.assertEqual(len(particles), 30)
         self.assertTrue(all(abs(float(particle["y"]) - centre_y) <= radius + 28 for particle in particles))
         self.assertTrue(all(0 <= int(particle["alpha"]) <= TOKENS["selectionEffects"]["particleAlpha"][1] for particle in particles))
+        xs = [float(particle["x"]) for particle in particles]
+        ys = [float(particle["y"]) for particle in particles]
+        self.assertGreater(max(xs) - min(xs), (max(ys) - min(ys)) * 5)
 
 
 if __name__ == "__main__":

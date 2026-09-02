@@ -336,28 +336,31 @@ def _scaled_box(layout: ViewportLayout, xyxy: tuple[float, float, float, float])
 
 
 SELECTED_ILLUMINATION: dict[str, Any] = {
-    "container": (103, 45, 5),
-    "amberTransition": (231, 151, 32),
-    "amberTransitionOpacity": 158,
-    "internalLight": (255, 247, 221),
-    "internalLightOpacity": 255,
-    "hotspot": (255, 253, 235),
-    "hotspotOpacity": 255,
-    "thinRim": (255, 226, 143),
-    "thinRimOpacity": 82,
-    "opposingEdge": (92, 38, 4),
-    "opposingEdgeOpacity": 24,
-    "halo": (239, 157, 39),
-    "haloOpacity": 68,
-    "haloRadius": 4.0,
-    "broadHaloOpacity": 16,
-    "broadHaloRadius": 9.5,
-    "primaryNoiseFloor": 88,
-    "secondaryNoiseFloor": 138,
+    "container": (61, 24, 4),
+    "amberTransition": (217, 119, 17),
+    "amberTransitionOpacity": 122,
+    "internalLight": (255, 224, 142),
+    "internalLightOpacity": 218,
+    "hotspot": (255, 250, 221),
+    "hotspotOpacity": 238,
+    "thinRim": (255, 211, 116),
+    "thinRimOpacity": 72,
+    "opposingEdge": (48, 18, 3),
+    "opposingEdgeOpacity": 56,
+    "halo": (235, 131, 24),
+    "haloOpacity": 48,
+    "haloRadius": 4.4,
+    "broadHaloOpacity": 10,
+    "broadHaloRadius": 10.5,
+    "primaryNoiseFloor": 18,
+    "secondaryNoiseFloor": 52,
     "noiseCeiling": 255,
-    "fieldDriftPeriodSeconds": 4.3,
-    "secondaryDriftPeriodSeconds": 2.9,
-    "hotspotDriftPeriodSeconds": 3.7,
+    "fieldContrast": 1.92,
+    "primaryCellSize": (58, 38),
+    "secondaryCellSize": (33, 24),
+    "fieldDriftPeriodSeconds": 9.2,
+    "secondaryDriftPeriodSeconds": 7.4,
+    "hotspotDriftPeriodSeconds": 8.3,
 }
 
 MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
@@ -495,17 +498,19 @@ def build_selected_illumination_masks(
         crop_y = round(y / max(1, margin_y * 2) * max_y)
         return expanded.crop((crop_x, crop_y, crop_x + glyph.width, crop_y + glyph.height))
 
+    primary_cell = SELECTED_ILLUMINATION["primaryCellSize"]
+    secondary_cell = SELECTED_ILLUMINATION["secondaryCellSize"]
     primary = field(
-        b"broad", 31, 21, SELECTED_ILLUMINATION["primaryNoiseFloor"],
+        b"broad", primary_cell[0], primary_cell[1], SELECTED_ILLUMINATION["primaryNoiseFloor"],
         SELECTED_ILLUMINATION["fieldDriftPeriodSeconds"], 6,
     )
     secondary = field(
-        b"medium", 14, 11, SELECTED_ILLUMINATION["secondaryNoiseFloor"],
+        b"medium", secondary_cell[0], secondary_cell[1], SELECTED_ILLUMINATION["secondaryNoiseFloor"],
         SELECTED_ILLUMINATION["secondaryDriftPeriodSeconds"], 11,
     )
     noise = Image.blend(primary, secondary, .34).filter(
         ImageFilter.GaussianBlur(max(.75, 1.1 * scale))
-    ).point(lambda value: max(42, min(255, round(128 + (value - 128) * 1.72))))
+    ).point(lambda value: max(8, min(255, round(128 + (value - 128) * SELECTED_ILLUMINATION["fieldContrast"]))))
     internal = ImageChops.multiply(interior, noise)
 
     hotspot_field = Image.new("L", glyph.size)
@@ -673,20 +678,23 @@ def deterministic_selection_particles(
     centre_y = menu_y + index * tokens["menu"]["itemSpacing"] + 34
     seed = hashlib.sha256(("SpartanReforged:particles:" + state.selected_id).encode()).digest()
     particles: list[dict[str, float | tuple[int, int, int]]] = []
-    for i in range(24):
+    for i in range(30):
         h = hashlib.sha256(seed + i.to_bytes(2, "little")).digest()
         phase = h[0] / 255
-        life = 1.4 + h[1] / 255 * 2.2
+        life = 2.5 + h[1] / 255 * 3.5
         age = (effect_time + phase * life) % life
         progress = age / life
         fade = math.sin(math.pi * progress)
-        lateral = (h[2] / 255 - .5) * 540
-        vertical = (h[3] / 255 - .5) * 76 - progress * (9 + h[4] / 255 * 19)
+        # Long, asymmetric text wake: dense through the word with a sparse
+        # positive-X tail. It is deliberately unrelated to pointer position.
+        longitudinal = (h[2] / 255) ** .72
+        lateral = -62 + longitudinal * 610 + progress * (8 + h[4] / 255 * 24)
+        vertical = (h[3] / 255 - .5) * 52 - progress * (2 + h[4] / 255 * 9)
         particles.append({
-            "x": menu_x + 165 + lateral + math.sin(effect_time * .8 + phase * math.tau) * 8,
+            "x": menu_x + lateral + math.sin(effect_time * .38 + phase * math.tau) * 5,
             "y": centre_y + vertical,
-            "radius": .7 + h[5] / 255 * 1.45,
-            "alpha": round((22 + h[6] / 255 * 92) * fade),
+            "radius": .45 + h[5] / 255 * 1.25,
+            "alpha": round((18 + h[6] / 255 * 78) * fade),
             "colour": (255, 194 + h[7] % 42, 92 + h[8] % 86),
         })
     return particles

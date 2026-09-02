@@ -168,6 +168,36 @@ class MenuHarnessTests(unittest.TestCase):
         effects.update(state, 2.0)
         self.assertEqual(effects.particles, [])
 
+    def test_dust_wake_is_text_bounded_and_not_pointer_emitted(self) -> None:
+        tokens = UI.load_json(HARNESS.TOKENS_PATH)
+        original = HARNESS.particle_emission_bounds(0, tokens, 260)
+        changed_gap = {**tokens, "menu": {**tokens["menu"], "markerGap": 200}}
+        self.assertEqual(original, HARNESS.particle_emission_bounds(0, changed_gap, 260))
+        self.assertGreater(original[2] - original[0], (original[3] - original[1]) * 5)
+
+    def test_old_wake_stays_on_old_row_then_decays_and_population_is_bounded(self) -> None:
+        tokens = UI.load_json(HARNESS.TOKENS_PATH)
+        strings = UI.load_json(HARNESS.LOCALE_PATH)["strings"]
+        effects = HARNESS.AnimatedSelectionEffects(tokens, strings, False)
+        old_state = UI.MenuState(UI.build_main_start(), "new_game")
+        new_state = UI.MenuState(old_state.screen, "load_game")
+        effects.set_initial_selection(old_state, HARNESS.DESIGN_SIZE, 1.0)
+        for _ in range(16):
+            effects._spawn_particle(old_state)
+        old_positions = {id(particle): particle.y for particle in effects.particles}
+        effects.selection_changed("new_game", new_state, HARNESS.DESIGN_SIZE, 1.1)
+        self.assertTrue(any(particle.source_id == "new_game" for particle in effects.particles))
+        self.assertTrue(any(particle.source_id == "load_game" for particle in effects.particles))
+        self.assertTrue(all(
+            particle.y == old_positions[id(particle)]
+            for particle in effects.particles
+            if particle.source_id == "new_game"
+        ))
+        for index in range(150):
+            effects.update(new_state, 1.1 + index * .05)
+            self.assertLessEqual(len(effects.particles), tokens["selectionEffects"]["particleMaximum"])
+        self.assertFalse(any(particle.source_id == "new_game" for particle in effects.particles))
+
 
 if __name__ == "__main__":
     unittest.main()
