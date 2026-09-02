@@ -60,15 +60,63 @@ class MenuHarnessTests(unittest.TestCase):
         harness._handle_keydown(escape, 1.2)
         harness._apply_action.assert_called_once_with(UI.InputAction.BACK)
 
-    def test_device_profiles_and_controller_semantics(self) -> None:
+    def test_device_profiles_are_diagnostic_not_semantic(self) -> None:
         self.assertEqual(HARNESS.controller_profile("Sony DualSense Wireless Controller"), "playstation")
         self.assertEqual(HARNESS.controller_profile("Xbox Wireless Controller"), "xbox")
-        self.assertEqual(HARNESS.controller_button_action("playstation", 0), UI.InputAction.CONFIRM)
-        self.assertEqual(HARNESS.controller_button_action("playstation", 3), UI.InputAction.BACK)
-        self.assertEqual(HARNESS.controller_button_action("xbox", 0), UI.InputAction.CONFIRM)
-        self.assertEqual(HARNESS.controller_button_action("xbox", 1), UI.InputAction.BACK)
+        self.assertEqual(HARNESS.controller_profile("8BitDo USB Gamepad"), "generic")
+
+    def test_face_buttons_map_by_position_to_playstation_equivalents(self) -> None:
+        expected = {
+            0: (HARNESS.FacePosition.SOUTH, HARNESS.PlayStationFace.CROSS, UI.InputAction.CONFIRM),
+            1: (HARNESS.FacePosition.EAST, HARNESS.PlayStationFace.CIRCLE, None),
+            2: (HARNESS.FacePosition.WEST, HARNESS.PlayStationFace.SQUARE, None),
+            3: (HARNESS.FacePosition.NORTH, HARNESS.PlayStationFace.TRIANGLE, UI.InputAction.BACK),
+        }
+        for button, values in expected.items():
+            mapping = HARNESS.controller_face_mapping(button)
+            self.assertIsNotNone(mapping)
+            self.assertEqual((mapping.position, mapping.playstation_face, mapping.menu_action), values)
+
+    def test_xbox_playstation_and_generic_share_positional_menu_actions(self) -> None:
+        for profile in ("xbox", "playstation", "generic"):
+            self.assertEqual(HARNESS.controller_button_action(profile, 0), UI.InputAction.CONFIRM)
+            self.assertIsNone(HARNESS.controller_button_action(profile, 1))
+            self.assertIsNone(HARNESS.controller_button_action(profile, 2))
+            self.assertEqual(HARNESS.controller_button_action(profile, 3), UI.InputAction.BACK)
+
+    def test_all_controllers_use_playstation_prompts_and_keyboard_stays_textual(self) -> None:
+        for profile in ("xbox", "playstation", "generic"):
+            self.assertEqual(HARNESS.prompt_profile_for_input_profile(profile), "playstation")
+        self.assertEqual(HARNESS.prompt_profile_for_input_profile("keyboard"), "keyboard")
+        self.assertEqual(UI.resolve_prompt("playstation", UI.InputAction.CONFIRM), "CROSS")
+        self.assertEqual(UI.resolve_prompt("playstation", UI.InputAction.BACK), "TRIANGLE")
         self.assertEqual(UI.development_prompt_symbol("keyboard", "ENTER"), "ENT")
         self.assertEqual(UI.development_prompt_symbol("keyboard", "ESCAPE"), "ESC")
+
+    def test_input_device_switches_prompt_policy_without_making_xbox_b_back(self) -> None:
+        harness = object.__new__(HARNESS.MenuHarness)
+        harness.joysticks = {7: mock.Mock(get_name=mock.Mock(return_value="Xbox Wireless Controller"))}
+        harness.repeater = HARNESS.InputRepeater()
+        harness.controller_direction = None
+        harness.last_profile = "keyboard"
+        harness.frame_dirty = False
+        harness._apply_action = mock.Mock()
+        xbox_b = type("JoyButton", (), {
+            "type": HARNESS.pygame.JOYBUTTONDOWN, "instance_id": 7, "button": 1,
+        })()
+        with mock.patch.object(HARNESS.pygame.event, "get", return_value=[xbox_b]):
+            harness._process_events(1.0)
+        self.assertEqual(harness.last_profile, "xbox")
+        self.assertEqual(HARNESS.prompt_profile_for_input_profile(harness.last_profile), "playstation")
+        harness._apply_action.assert_not_called()
+
+        harness._keyboard_action = mock.Mock(return_value=UI.InputAction.CONFIRM)
+        keyboard = type("Key", (), {
+            "key": HARNESS.pygame.K_RETURN, "mod": 0, "repeat": False,
+        })()
+        harness._handle_keydown(keyboard, 1.1)
+        self.assertEqual(harness.last_profile, "keyboard")
+        self.assertEqual(HARNESS.prompt_profile_for_input_profile(harness.last_profile), "keyboard")
 
     def test_maxlevel_debug_toggle_rebuilds_shared_screen(self) -> None:
         harness = object.__new__(HARNESS.MenuHarness)

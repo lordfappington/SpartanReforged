@@ -10,6 +10,7 @@ import pathlib
 import sys
 import time
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Iterable
 
 os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
@@ -37,6 +38,49 @@ RESOLUTION_PRESETS = {
     pygame.K_F2: (2560, 1440),
     pygame.K_F3: (3840, 2160),
     pygame.K_F4: (2560, 1080),
+}
+
+
+class FacePosition(str, Enum):
+    """SDL face-button positions, independent of controller branding."""
+
+    SOUTH = "south"
+    EAST = "east"
+    WEST = "west"
+    NORTH = "north"
+
+
+class PlayStationFace(str, Enum):
+    """PlayStation-equivalent symbols used by Reforged semantics and art."""
+
+    CROSS = "CROSS"
+    CIRCLE = "CIRCLE"
+    SQUARE = "SQUARE"
+    TRIANGLE = "TRIANGLE"
+
+
+@dataclass(frozen=True)
+class FaceButtonMapping:
+    position: FacePosition
+    playstation_face: PlayStationFace
+    menu_action: ui.InputAction | None
+
+
+FACE_BUTTON_POSITIONS = {
+    0: FacePosition.SOUTH,
+    1: FacePosition.EAST,
+    2: FacePosition.WEST,
+    3: FacePosition.NORTH,
+}
+PLAYSTATION_EQUIVALENTS = {
+    FacePosition.SOUTH: PlayStationFace.CROSS,
+    FacePosition.EAST: PlayStationFace.CIRCLE,
+    FacePosition.WEST: PlayStationFace.SQUARE,
+    FacePosition.NORTH: PlayStationFace.TRIANGLE,
+}
+CURRENT_MENU_FACE_ACTIONS = {
+    FacePosition.SOUTH: ui.InputAction.CONFIRM,
+    FacePosition.NORTH: ui.InputAction.BACK,
 }
 
 
@@ -77,16 +121,36 @@ def controller_profile(name: str) -> str:
     is_playstation = normalized.strip() == "wireless controller" or any(
         term in normalized for term in playstation_terms
     )
-    return "playstation" if is_playstation else "xbox"
+    if is_playstation:
+        return "playstation"
+    xbox_terms = ("xbox", "xinput")
+    return "xbox" if any(term in normalized for term in xbox_terms) else "generic"
+
+
+def controller_face_mapping(button: int) -> FaceButtonMapping | None:
+    """Map an SDL face-button index through position, glyph, and menu meaning."""
+    position = FACE_BUTTON_POSITIONS.get(button)
+    if position is None:
+        return None
+    return FaceButtonMapping(
+        position,
+        PLAYSTATION_EQUIVALENTS[position],
+        CURRENT_MENU_FACE_ACTIONS.get(position),
+    )
+
+
+def prompt_profile_for_input_profile(profile: str) -> str:
+    """All controllers use approved PlayStation shield presentation."""
+    return "keyboard" if profile == "keyboard" else "playstation"
 
 
 def controller_button_action(profile: str, button: int) -> ui.InputAction | None:
-    if button == 0:
-        return ui.InputAction.CONFIRM
-    if profile == "playstation" and button == 3:
-        return ui.InputAction.BACK
-    if profile != "playstation" and button == 1:
-        return ui.InputAction.BACK
+    # The profile is deliberately presentation/diagnostic metadata only. Face
+    # semantics follow physical position identically across controller brands.
+    del profile
+    face = controller_face_mapping(button)
+    if face is not None:
+        return face.menu_action
     if button == 11:
         return ui.InputAction.UP
     if button == 12:
@@ -306,20 +370,23 @@ class MenuHarness:
                 self.controller_direction = None
             elif event.type == pygame.JOYBUTTONDOWN:
                 joystick = self.joysticks.get(event.instance_id)
-                profile = controller_profile(joystick.get_name()) if joystick else "xbox"
+                profile = controller_profile(joystick.get_name()) if joystick else "generic"
+                face = controller_face_mapping(event.button)
                 action = controller_button_action(profile, event.button)
-                if action in (ui.InputAction.CONFIRM, ui.InputAction.BACK):
+                if face is not None or action in (ui.InputAction.UP, ui.InputAction.DOWN):
                     self.last_profile = profile
                     self.frame_dirty = True
+                if action in (ui.InputAction.CONFIRM, ui.InputAction.BACK):
                     self._apply_action(action)
 
     def _frame_key(self, state: ui.MenuState) -> tuple[tuple[int, int], int, str, str]:
-        return self.virtual_size, self.maxlevel, self.last_profile, state.selected_id
+        prompt_profile = prompt_profile_for_input_profile(self.last_profile)
+        return self.virtual_size, self.maxlevel, prompt_profile, state.selected_id
 
     def _render_state_surface(self, state: ui.MenuState) -> pygame.Surface:
         frame = ui.render_wireframe(
             *self.virtual_size, state, self.tokens, self.strings,
-            profile=self.last_profile,
+            profile=prompt_profile_for_input_profile(self.last_profile),
         )
         return pygame.image.frombytes(frame.tobytes(), frame.size, "RGB").convert()
 

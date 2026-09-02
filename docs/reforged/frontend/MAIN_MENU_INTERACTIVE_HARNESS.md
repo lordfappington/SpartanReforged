@@ -48,11 +48,17 @@ Double-click:
 - F4: 2560×1080 logical viewport
 
 Controllers use SDL joystick hot-plugging. D-pad and left-stick vertical input
-navigate. A south/primary button confirms. Recognized DualSense, DualShock,
-Sony, or PlayStation-named devices use the PlayStation profile (Cross confirms,
-Triangle backs); other controllers use the generic/XInput profile (A confirms,
-B backs). Keyboard remains available at all times. Prompt presentation follows
-the last meaningful input profile.
+navigate. SpartanReforged preserves PlayStation positional face-button semantics
+across controller brands: south is Cross, east is Circle, west is Square, and
+north is Triangle. Consequently Xbox A maps to Cross, B to Circle, X to Square,
+and Y to Triangle. On the current main menu south/Cross/Xbox A confirms and
+north/Triangle/Xbox Y backs; Xbox B is not Back.
+
+Physical controller identity is kept separate from semantic mapping and prompt
+presentation. Any controller (PlayStation, Xbox/XInput, or generic SDL) displays
+the approved Cross and Triangle Spartan shield prompts. Keyboard remains
+available at all times and displays the temporary `ENT` and `ESC` development
+prompts. The visible prompt set switches with the last meaningful input device.
 
 Navigation moves immediately, repeats after 320 ms, and then repeats every
 115 ms. Confirm and Back are edge-triggered. The standalone harness reports
@@ -67,5 +73,5 @@ logical sizes, selection, action, device profile, `maxlevel`, and window mode.
 - Campaign screens and gameplay actions are intentionally not connected.
 - The existing 160 ms transition token has no executable animation path yet;
   selection state and the approved pointer update immediately.
-- Non-PlayStation prompt artwork remains development-grade.
+- Keyboard prompt artwork remains development-grade.
 - This harness deliberately adds no audio, particles, parallax, or new effects.
