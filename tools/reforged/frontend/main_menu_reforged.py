@@ -634,6 +634,57 @@ def render_selection_pointer(
     }
 
 
+def locked_padlock_placement(
+    layout: ViewportLayout,
+    text_position: tuple[float, float],
+    label: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    tokens: dict[str, Any],
+) -> tuple[tuple[float, float], tuple[int, int, int, int]]:
+    """Anchor the approved padlock to the visible bounds of the locked label."""
+    probe = ImageDraw.Draw(Image.new("L", (1, 1)))
+    bounds = probe.textbbox(text_position, label, font=font)
+    gap = float(tokens["padlock"]["labelGap"]) * layout.scale
+    offset_y = float(tokens["padlock"]["opticalOffsetY"]) * layout.scale
+    return (
+        (bounds[2] + gap, (bounds[1] + bounds[3]) / 2 + offset_y),
+        bounds,
+    )
+
+
+def render_locked_padlock(
+    target: Image.Image,
+    left_center: tuple[float, float],
+    visible_height: float,
+    padlock_path: pathlib.Path | None = None,
+) -> dict[str, int | str]:
+    """Render the approved raster by alpha-visible bounds with no added effects."""
+    if padlock_path is None:
+        padlock_path = resolve_asset_path("padlock", load_json(DEFAULT_TOKENS))
+    if padlock_path is None:
+        raise FileNotFoundError("approved Reforged padlock is not configured")
+    with Image.open(padlock_path) as opened:
+        opened.load()
+        if opened.format != "PNG" or opened.mode != "RGBA":
+            raise ValueError(f"unexpected approved padlock runtime: {opened.format}/{opened.mode}")
+        source = opened.copy()
+    alpha_bounds = source.getchannel("A").getbbox()
+    if alpha_bounds is None:
+        raise ValueError("approved padlock runtime has no visible pixels")
+    visible = source.crop(alpha_bounds)
+    ratio = max(1.0 / visible.height, visible_height / visible.height)
+    size = (max(1, round(visible.width * ratio)), max(1, round(visible.height * ratio)))
+    rendered = visible.resize(size, Image.Resampling.LANCZOS)
+    paste_at = (round(left_center[0]), round(left_center[1] - size[1] / 2))
+    target.paste(rendered, paste_at, rendered)
+    return {
+        "asset": str(padlock_path.relative_to(ROOT)).replace("\\", "/"),
+        "sourceWidth": visible.width, "sourceHeight": visible.height,
+        "renderedWidth": size[0], "renderedHeight": size[1],
+        "pasteX": paste_at[0], "pasteY": paste_at[1],
+    }
+
+
 def render_wireframe(
     width: int,
     height: int,
@@ -704,6 +755,7 @@ def render_wireframe(
     marker_w, marker_h = tokens["menu"]["markerSize"]
     marker_gap = tokens["menu"]["markerGap"]
     pointer_path = resolve_asset_path("selectionMarker", tokens)
+    padlock_path = resolve_asset_path("padlock", tokens)
     for index, item in enumerate(state.screen.items):
         y = my + index * spacing
         selected = item.semantic_id == state.selected_id
@@ -723,12 +775,14 @@ def render_wireframe(
         material_state = "locked" if item.locked else ("selected" if selected else "unselected")
         render_material_text(image, text_position, strings[item.label_key], font, material_state, layout.scale)
         if item.locked:
-            label_width = draw.textlength(strings[item.label_key], font=font)
-            px = text_position[0] + label_width + round(14 * layout.scale)
-            py = text_position[1] + round(9 * layout.scale)
-            s = max(12, round(20 * layout.scale))
-            draw.rectangle((px, py + s * .45, px + s, py + s * 1.35), outline=_colour(tokens, "lockedText"), width=max(1, round(2 * layout.scale)))
-            draw.arc((px + s * .15, py, px + s * .85, py + s), 180, 360, fill=_colour(tokens, "lockedText"), width=max(1, round(2 * layout.scale)))
+            padlock_anchor, _ = locked_padlock_placement(
+                layout, text_position, strings[item.label_key], font, tokens
+            )
+            render_locked_padlock(
+                image, padlock_anchor,
+                tokens["padlock"]["visibleHeight"] * layout.scale,
+                padlock_path=padlock_path,
+            )
 
     selected = state.selected
     cx, cy = tokens["context"]["position"]

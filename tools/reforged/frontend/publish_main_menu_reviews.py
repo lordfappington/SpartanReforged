@@ -24,6 +24,8 @@ BACKGROUND_PATH = ROOT / "assets/reforged/frontend/main-menu/background/approved
 POINTER_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/source/spartan-selection-pointer-approved.jpg"
 POINTER_RUNTIME_PATH = ROOT / "assets/reforged/frontend/main-menu/pointer/approved/runtime/spartan-selection-pointer-approved.png"
 PROMPT_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/prompts/playstation/approved/source/spartan-playstation-shields-approved.jpg"
+PADLOCK_SOURCE_PATH = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/source/spartan-padlock-approved.jpg"
+PADLOCK_RUNTIME_PATH = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/runtime/spartan-padlock-approved.png"
 TOKENS_PATH = ROOT / "assets/reforged/frontend/main-menu/main_menu_tokens.json"
 LOCALE_PATH = ROOT / "assets/reforged/frontend/main-menu/locales/en.json"
 EXPECTED_LOGO_SHA256 = "b57304192c2b811a8f49b3b235617082ab8b5d4319a2867d08b2df671cd1d42d"
@@ -39,6 +41,8 @@ EXPECTED_PROMPT_RUNTIME_SHA256 = {
     "CROSS": "6cb1178304bc5e027fc0c3f1c8ec4ae9719af904f3d7ab59cd659bd2dfa1d97e",
     "SQUARE": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342",
 }
+EXPECTED_PADLOCK_SOURCE_SHA256 = "5cd5b57030d9f37eaec89b3fabddbf5a6e746eea7dc1dd58d002d302e013a04a"
+EXPECTED_PADLOCK_RUNTIME_SHA256 = "bfa98d9838ba6e15a5b72a7456ebbe4d0f02de3a03f372b1800e16c4a769933f"
 FONT_FILES = {
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Regular.ttf": "af0031129f27dc752e8629a80b793d27abea94027faa27cc660c3fc33f607a1f",
     ROOT / "assets/reforged/frontend/main-menu/fonts/cinzel/Cinzel-Bold.ttf": "0c23ec565db45c5508ee95889c60ad87debd167ca07167a43a5d68572b4e2eac",
@@ -55,6 +59,8 @@ POINTER_DIAGNOSTIC_NAME = "selection-pointer-diagnostic.png"
 POINTER_DIAGNOSTIC_SIZE = (1600, 700)
 PROMPT_DIAGNOSTIC_NAME = "playstation-shield-prompts-diagnostic.png"
 PROMPT_DIAGNOSTIC_SIZE = (1600, 900)
+PADLOCK_DIAGNOSTIC_NAME = "locked-padlock-diagnostic.png"
+PADLOCK_DIAGNOSTIC_SIZE = (1400, 800)
 
 
 def sha256_path(path: pathlib.Path) -> str:
@@ -132,6 +138,19 @@ def validate_playstation_prompts(tokens: dict[str, object]) -> None:
                 raise ValueError(f"unexpected approved PlayStation prompt metadata: {glyph}")
 
 
+def validate_padlock() -> None:
+    if sha256_path(PADLOCK_SOURCE_PATH) != EXPECTED_PADLOCK_SOURCE_SHA256:
+        raise ValueError("approved padlock source hash mismatch")
+    if sha256_path(PADLOCK_RUNTIME_PATH) != EXPECTED_PADLOCK_RUNTIME_SHA256:
+        raise ValueError("approved padlock runtime hash mismatch")
+    with Image.open(PADLOCK_SOURCE_PATH) as source:
+        if source.format != "JPEG" or source.mode != "RGB" or source.size != (1280, 1260):
+            raise ValueError("unexpected approved padlock source metadata")
+    with Image.open(PADLOCK_RUNTIME_PATH) as runtime:
+        if runtime.format != "PNG" or runtime.mode != "RGBA" or runtime.size != (520, 724):
+            raise ValueError("unexpected approved padlock runtime metadata")
+
+
 def validate_fonts() -> None:
     for path, expected in FONT_FILES.items():
         if not path.is_file() or sha256_path(path) != expected:
@@ -146,12 +165,15 @@ def render_reviews() -> dict[str, dict[str, object]]:
     validate_fonts()
     tokens = ui.load_json(TOKENS_PATH)
     validate_playstation_prompts(tokens)
+    validate_padlock()
     if tokens["assets"]["logo"] != "logo/approved/runtime/spartan-logo-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime logo")
     if tokens["assets"]["background"] != "background/approved/runtime/spartan-background-approved.jpg":
         raise ValueError("menu tokens are not bound to the approved runtime background")
     if tokens["assets"]["selectionMarker"] != "pointer/approved/runtime/spartan-selection-pointer-approved.png":
         raise ValueError("menu tokens are not bound to the approved runtime pointer")
+    if tokens["assets"]["padlock"] != "padlock/approved/runtime/spartan-padlock-approved.png":
+        raise ValueError("menu tokens are not bound to the approved runtime padlock")
     if not tokens["background"].get("approvedPlateIncludesOrnamentBands"):
         raise ValueError("approved background must suppress duplicate ornament overlays")
     strings = ui.load_json(LOCALE_PATH)["strings"]
@@ -175,7 +197,8 @@ def render_reviews() -> dict[str, dict[str, object]]:
             "fontFamily": "Cinzel",
             "approvedPointer": str(POINTER_RUNTIME_PATH.relative_to(ROOT)).replace("\\", "/"),
             "approvedPromptSheet": str(PROMPT_SOURCE_PATH.relative_to(ROOT)).replace("\\", "/"),
-            "provenance": "project-created Reforged menu renderer with approved background, logo, selection pointer, and PlayStation prompts",
+            "approvedPadlock": str(PADLOCK_RUNTIME_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "provenance": "project-created Reforged menu renderer with approved background, logo, selection pointer, PlayStation prompts, and padlock",
         }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
     regular_normal = ui._font(52, tokens, "regular")
@@ -293,6 +316,32 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "runtimeSha256": EXPECTED_PROMPT_RUNTIME_SHA256,
         "samples": prompt_stats,
         "provenance": "public-safe project diagnostic using locked approved Reforged PlayStation shield artwork",
+    }
+
+    padlock_diagnostic = Image.new("RGB", PADLOCK_DIAGNOSTIC_SIZE, (7, 13, 23))
+    padlock_draw = ImageDraw.Draw(padlock_diagnostic)
+    padlock_heading = ui._font(22, tokens, "regular")
+    padlock_draw.text((40, 28), "HUMAN-APPROVED LOCKED-STATE PADLOCK", font=padlock_heading, fill=(240, 233, 217))
+    padlock_draw.text((40, 60), f"source 1280x1260 JPEG  {EXPECTED_PADLOCK_SOURCE_SHA256}", font=padlock_heading, fill=(176, 179, 178))
+    padlock_draw.text((40, 92), f"runtime 520x724 RGBA  {EXPECTED_PADLOCK_RUNTIME_SHA256}", font=padlock_heading, fill=(176, 179, 178))
+    enlarged = ui.render_locked_padlock(padlock_diagnostic, (165, 375), 420, PADLOCK_RUNTIME_PATH)
+    locked_font = ui._font(52, tokens, "regular")
+    label_position = (680.0, 330.0)
+    ui.render_material_text(padlock_diagnostic, label_position, "SINGLE MISSION REPLAY", locked_font, "locked")
+    layout = ui.layout_for_viewport(1920, 1080, tokens)
+    anchor, text_bounds = ui.locked_padlock_placement(layout, label_position, "SINGLE MISSION REPLAY", locked_font, tokens)
+    menu_scale = ui.render_locked_padlock(padlock_diagnostic, anchor, tokens["padlock"]["visibleHeight"], PADLOCK_RUNTIME_PATH)
+    padlock_draw.rectangle(text_bounds, outline=(92, 148, 178), width=1)
+    padlock_draw.rectangle((menu_scale["pasteX"], menu_scale["pasteY"], menu_scale["pasteX"] + menu_scale["renderedWidth"], menu_scale["pasteY"] + menu_scale["renderedHeight"]), outline=(92, 148, 178), width=1)
+    padlock_draw.text((40, 720), "Runtime alpha bounds: 520x724. UI visible size: 22x30 px. Label gap: 12 px.", font=padlock_heading, fill=(216, 212, 200))
+    padlock_diagnostic_path = OUTPUT_ROOT / PADLOCK_DIAGNOSTIC_NAME
+    padlock_diagnostic.save(padlock_diagnostic_path, "PNG", optimize=False, compress_level=9)
+    manifest[PADLOCK_DIAGNOSTIC_NAME] = {
+        "dimensions": list(PADLOCK_DIAGNOSTIC_SIZE), "mode": padlock_diagnostic.mode,
+        "sha256": sha256_path(padlock_diagnostic_path), "bytes": padlock_diagnostic_path.stat().st_size,
+        "sourceSha256": EXPECTED_PADLOCK_SOURCE_SHA256, "runtimeSha256": EXPECTED_PADLOCK_RUNTIME_SHA256,
+        "samples": {"enlarged": enlarged, "menuScale": menu_scale, "textBounds": list(text_bounds)},
+        "provenance": "public-safe project diagnostic using locked approved Reforged padlock artwork",
     }
     return manifest
 

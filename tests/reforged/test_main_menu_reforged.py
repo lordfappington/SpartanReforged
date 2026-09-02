@@ -7,6 +7,7 @@ import hashlib
 import pathlib
 import sys
 import unittest
+from unittest import mock
 
 from PIL import Image
 
@@ -34,6 +35,10 @@ PROMPT_HASHES = {
     "CROSS": "6cb1178304bc5e027fc0c3f1c8ec4ae9719af904f3d7ab59cd659bd2dfa1d97e",
     "SQUARE": "f3760801744438327e3bda04e828ba4eca062c2c98435636628b8599363ed342",
 }
+PADLOCK_SOURCE = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/source/spartan-padlock-approved.jpg"
+PADLOCK_RUNTIME = ROOT / "assets/reforged/frontend/main-menu/padlock/approved/runtime/spartan-padlock-approved.png"
+PADLOCK_SOURCE_SHA256 = "5cd5b57030d9f37eaec89b3fabddbf5a6e746eea7dc1dd58d002d302e013a04a"
+PADLOCK_RUNTIME_SHA256 = "bfa98d9838ba6e15a5b72a7456ebbe4d0f02de3a03f372b1800e16c4a769933f"
 
 
 class MainMenuReforgedTests(unittest.TestCase):
@@ -75,6 +80,44 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertEqual(locked.selected.lock_condition, "maxlevel == 0")
         self.assertIsNone(locked.confirm())
         self.assertEqual(unlocked.confirm(), UI.MenuAction.SINGLE_MISSION_REPLAY)
+
+    def test_approved_padlock_assets_are_locked_and_transparent(self) -> None:
+        self.assertEqual(hashlib.sha256(PADLOCK_SOURCE.read_bytes()).hexdigest(), PADLOCK_SOURCE_SHA256)
+        self.assertEqual(hashlib.sha256(PADLOCK_RUNTIME.read_bytes()).hexdigest(), PADLOCK_RUNTIME_SHA256)
+        self.assertEqual(TOKENS["assets"]["padlock"], "padlock/approved/runtime/spartan-padlock-approved.png")
+        with Image.open(PADLOCK_RUNTIME) as padlock:
+            self.assertEqual((padlock.format, padlock.mode, padlock.size), ("PNG", "RGBA", (520, 724)))
+            alpha = padlock.getchannel("A")
+            self.assertEqual(alpha.getbbox(), (0, 0, 520, 724))
+            self.assertEqual(alpha.getpixel((0, 0)), 0)
+            self.assertEqual(alpha.getpixel((260, 410)), 255)  # approved dark keyhole region
+
+    def test_padlock_uses_measured_label_bounds_and_resolution_scaling(self) -> None:
+        font = UI._font(52, TOKENS, "regular")
+        layout = UI.layout_for_viewport(1920, 1080, TOKENS)
+        anchor, bounds = UI.locked_padlock_placement(layout, (172.0, 668.0), "SINGLE MISSION REPLAY", font, TOKENS)
+        self.assertEqual(anchor[0], bounds[2] + 12)
+        self.assertEqual(anchor[1], (bounds[1] + bounds[3]) / 2)
+        canvas = Image.new("RGB", (100, 100), (7, 13, 23))
+        stats = UI.render_locked_padlock(canvas, (10, 50), 30, PADLOCK_RUNTIME)
+        self.assertEqual((stats["renderedWidth"], stats["renderedHeight"]), (22, 30))
+        layout_4k = UI.layout_for_viewport(3840, 2160, TOKENS)
+        anchor_4k, bounds_4k = UI.locked_padlock_placement(layout_4k, (344.0, 1336.0), "SINGLE MISSION REPLAY", UI._font(104, TOKENS, "regular"), TOKENS)
+        self.assertEqual(anchor_4k[0] - bounds_4k[2], 24)
+        self.assertEqual(anchor_4k[1], (bounds_4k[1] + bounds_4k[3]) / 2)
+        stats_4k = UI.render_locked_padlock(canvas, (10, 50), 60, PADLOCK_RUNTIME)
+        self.assertEqual((stats_4k["renderedWidth"], stats_4k["renderedHeight"]), (43, 60))
+
+    def test_padlock_follows_locked_state_and_placeholder_is_inactive(self) -> None:
+        strings = UI.load_json(UI.DEFAULT_LOCALE)["strings"]
+        original = UI.render_locked_padlock
+        with mock.patch.object(UI, "render_locked_padlock", wraps=original) as rendered:
+            UI.render_wireframe(1920, 1080, UI.MenuState(UI.build_main_start(maxlevel=0), "new_game"), TOKENS, strings)
+            self.assertEqual(rendered.call_count, 1)
+        with mock.patch.object(UI, "render_locked_padlock", wraps=original) as rendered:
+            UI.render_wireframe(1920, 1080, UI.MenuState(UI.build_main_start(maxlevel=1), "new_game"), TOKENS, strings)
+            self.assertEqual(rendered.call_count, 0)
+        self.assertNotIn("arc", UI.render_wireframe.__code__.co_names)
 
     def test_semantic_prompt_mapping(self) -> None:
         self.assertEqual(UI.resolve_prompt("playstation", UI.InputAction.CONFIRM), "CROSS")

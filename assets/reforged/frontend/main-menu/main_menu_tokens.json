@@ -38,6 +38,11 @@
     "glyphSize": 52,
     "glyphLabelGap": 12
   },
+  "padlock": {
+    "visibleHeight": 30,
+    "labelGap": 12,
+    "opticalOffsetY": 0
+  },
   "ornament": { "height": 34, "endCapWidth": 82, "tileWidth": 96 },
   "background": {
     "parallaxStrength": 0.018,
@@ -88,7 +93,7 @@
     "bottomFrieze": null,
     "logoGlintMask": null,
     "selectionMarker": "pointer/approved/runtime/spartan-selection-pointer-approved.png",
-    "padlock": null,
+    "padlock": "padlock/approved/runtime/spartan-padlock-approved.png",
     "glyphCross": "prompts/playstation/approved/runtime/spartan-prompt-cross-approved.png",
     "glyphTriangle": "prompts/playstation/approved/runtime/spartan-prompt-triangle-approved.png",
     "glyphCircle": "prompts/playstation/approved/runtime/spartan-prompt-circle-approved.png",

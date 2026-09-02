@@ -101,7 +101,7 @@ Selection-change timing starts at 160 ms: marker slide/fade, neutral-to-gold int
 
 ### Locked state
 
-`StatusLock` is shown for locked items and uses replaceable scalable artwork. The current procedural-outline padlock is **NOT APPROVED / AWAITING PRODUCTION ART**. It remains only as a functional placement placeholder beside Single Mission Replay and must not be mistaken for final Reforged artwork. Locked labels reduce emphasis. Confirmation produces restrained feedback, returns no action, and never changes screens. Unlock logic is not duplicated in presentation code beyond consuming `maxlevel == 0` state.
+`StatusLock` is shown for locked items and uses the locked human-approved raster under `padlock/approved/`. The active Reforged path contains no procedural outline or added glow. The derived RGBA runtime copy preserves the source RGB inside an object-aware, border-connected matte and is rendered at 30 design pixels high, 12 design pixels after the measured visible label bounds. The lock remains driven solely by the existing `maxlevel == 0` semantic condition; unlocked items do not render it. Locked labels reduce emphasis. Confirmation produces restrained feedback, returns no action, and never changes screens.
 
 ### Context description
 
