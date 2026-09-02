@@ -235,6 +235,13 @@ def resolve_playstation_prompt_asset(glyph: str, tokens: dict[str, Any]) -> path
     return resolve_asset_path(asset_id, tokens) if asset_id else None
 
 
+def development_prompt_symbol(profile: str, glyph: str) -> str:
+    """Return compact temporary text for non-PlayStation prompt housings."""
+    if profile == "keyboard":
+        return {"ENTER": "ENT", "ESCAPE": "ESC"}.get(glyph, glyph[:3])
+    return glyph[:1]
+
+
 def render_playstation_prompt_shield(
     target: Image.Image,
     center: tuple[float, float],
@@ -830,8 +837,14 @@ def render_wireframe(
             )
         else:
             draw.ellipse((center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius), fill=(20, 23, 29, 255), outline=_colour(tokens, "ornamentNeutral"), width=max(1, round(3 * layout.scale)))
-            symbol_font = _font(round(20 * layout.scale))
-            draw.text((center[0] - radius * .32, center[1] - radius * .62), glyph[:1], font=symbol_font, fill=_colour(tokens, "textPrimary"))
+            symbol = development_prompt_symbol(profile, glyph)
+            symbol_font = _font(round((13 if profile == "keyboard" else 20) * layout.scale))
+            symbol_bounds = draw.textbbox((0, 0), symbol, font=symbol_font)
+            symbol_position = (
+                center[0] - (symbol_bounds[2] - symbol_bounds[0]) / 2 - symbol_bounds[0],
+                center[1] - (symbol_bounds[3] - symbol_bounds[1]) / 2 - symbol_bounds[1],
+            )
+            draw.text(symbol_position, symbol, font=symbol_font, fill=_colour(tokens, "textPrimary"))
         prompt_position = layout.point(cursor + tokens["prompt"]["glyphSize"] + glyph_label_gap, py - 13)
         draw.text(
             prompt_position,
