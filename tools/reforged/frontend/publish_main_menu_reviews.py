@@ -55,6 +55,7 @@ TARGETS = {
 }
 EFFECT_SNAPSHOT_TIME = 1.75
 OPTIONS_REVIEW_NAME = "main-menu-options-1080p.png"
+BASE_ONLY_REVIEW_NAME = "main-menu-base-only-1080p.png"
 DIAGNOSTIC_NAME = "menu-typography-material-diagnostic.png"
 DIAGNOSTIC_SIZE = (1920, 1080)
 POINTER_DIAGNOSTIC_NAME = "selection-pointer-diagnostic.png"
@@ -217,6 +218,18 @@ def render_reviews() -> dict[str, dict[str, object]]:
         "sha256": sha256_path(options_path), "bytes": options_path.stat().st_size,
         "selectedItem": "options", "effectSnapshotSeconds": EFFECT_SNAPSHOT_TIME,
         "provenance": "project-created deterministic animated-effect still from the Reforged menu renderer",
+    }
+    base_only = ui.render_wireframe(
+        1920, 1080, state, tokens, strings, logo_image=logo,
+        include_selected_effects=False,
+    )
+    base_only_path = OUTPUT_ROOT / BASE_ONLY_REVIEW_NAME
+    base_only.save(base_only_path, "PNG", optimize=False, compress_level=9)
+    manifest[BASE_ONLY_REVIEW_NAME] = {
+        "dimensions": [1920, 1080], "mode": base_only.mode,
+        "sha256": sha256_path(base_only_path), "bytes": base_only_path.stat().st_size,
+        "selectedItem": "new_game", "selectionEffects": False,
+        "provenance": "project-created plain-gold selected-base review from the Reforged menu renderer",
     }
     diagnostic = Image.new("RGB", DIAGNOSTIC_SIZE, (7, 13, 23))
     regular_normal = ui._font(52, tokens, "regular")

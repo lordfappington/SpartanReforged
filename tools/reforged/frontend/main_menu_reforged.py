@@ -363,6 +363,10 @@ SELECTED_ILLUMINATION: dict[str, Any] = {
     "hotspotDriftPeriodSeconds": 8.3,
 }
 
+# Always-readable selected-state base. Animated material is an independent
+# overlay rendered by render_selected_text_tile.
+SELECTED_BASE_COLOUR = (210, 174, 99)  # #D2AE63
+
 MATERIAL_PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
     "unselected": {
         "top": (255, 252, 237), "upper": (225, 219, 199),
@@ -594,6 +598,18 @@ def _composite_selected_illumination(
     return illumination
 
 
+def render_selected_base_tile(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    scale: float = 1.0,
+) -> tuple[Image.Image, tuple[int, int]]:
+    """Render the clean solid-gold selected Cinzel base without effects."""
+    layers, offset = build_material_text_layers(text, font, "selected", scale)
+    tile = Image.new("RGBA", layers["glyph"].size, (*SELECTED_BASE_COLOUR, 0))
+    tile.putalpha(layers["glyph"])
+    return tile, offset
+
+
 def render_material_text(
     target: Image.Image,
     position: tuple[float, float],
@@ -604,25 +620,19 @@ def render_material_text(
     effect_time: float | None = None,
     reduced_motion: bool = False,
 ) -> dict[str, int]:
-    """Composite internally bevelled Cinzel text and return layer statistics."""
+    """Composite a state-driven Cinzel base and return layer statistics."""
+    if state == "selected":
+        tile, offset = render_selected_base_tile(text, font, scale)
+        paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
+        target.paste(tile, paste_at, tile)
+        coverage = sum(1 for value in tile.getchannel("A").getdata() if value)
+        return {"glyph": coverage, "selected_base": coverage}
     layers, offset = build_material_text_layers(text, font, state, scale)
     tile = Image.new("RGBA", layers["glyph"].size)
     shadow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(.65, 1.0 * scale)))
     shadow = Image.new("RGBA", tile.size, (2, 5, 9, 0))
     shadow.putalpha(_scaled_alpha(_shift_mask(shadow_mask, max(1, round(scale)), max(1, round(2 * scale))), 76))
     tile.alpha_composite(shadow)
-    if state == "selected":
-        illumination = _composite_selected_illumination(
-            tile, layers, scale, text, effect_time, reduced_motion
-        )
-        paste_at = (round(position[0] + offset[0]), round(position[1] + offset[1]))
-        target.paste(tile, paste_at, tile)
-        combined = {
-            "glyph": layers["glyph"],
-            "opposing_bevel": layers["opposing_bevel"],
-            **illumination,
-        }
-        return {name: sum(1 for value in layer.getdata() if value) for name, layer in combined.items()}
     palette = MATERIAL_PALETTES[state]
     base = _vertical_material_gradient(tile.size, palette)
     base.putalpha(layers["glyph"])
@@ -648,7 +658,7 @@ def render_selected_text_tile(
     effect_time: float,
     reduced_motion: bool = False,
 ) -> tuple[Image.Image, tuple[int, int]]:
-    """Render only the animated selected run for the interactive overlay."""
+    """Render only the optional animated selected-effect overlay."""
     layers, offset = build_material_text_layers(text, font, "selected", scale)
     tile = Image.new("RGBA", layers["glyph"].size)
     shadow_mask = layers["glyph"].filter(ImageFilter.GaussianBlur(max(.65, 1.0 * scale)))
@@ -817,6 +827,7 @@ def render_wireframe(
     profile: str = "playstation",
     logo_image: Image.Image | None = None,
     include_selected_effects: bool = True,
+    include_selection_pointer: bool = True,
     selected_effect_time: float | None = None,
     reduced_motion: bool = False,
 ) -> Image.Image:
@@ -907,7 +918,7 @@ def render_wireframe(
             tokens,
             "bold" if selected else "regular",
         )
-        if selected and include_selected_effects:
+        if selected and include_selection_pointer:
             tip = selected_pointer_tip_for_state(layout, state, tokens)
             render_selection_pointer(
                 image, tip, marker_w * layout.scale, marker_h * layout.scale,
@@ -915,11 +926,19 @@ def render_wireframe(
             )
         text_position = layout.point(mx, y)
         material_state = "locked" if item.locked else ("selected" if selected else "unselected")
-        if not selected or include_selected_effects or item.locked:
-            render_material_text(
-                image, text_position, strings[item.label_key], font, material_state, layout.scale,
-                effect_time=selected_effect_time if selected else None,
-                reduced_motion=reduced_motion,
+        render_material_text(
+            image, text_position, strings[item.label_key], font, material_state, layout.scale,
+            reduced_motion=reduced_motion,
+        )
+        if selected and not item.locked and include_selected_effects:
+            effect_tile, effect_offset = render_selected_text_tile(
+                strings[item.label_key], font, layout.scale,
+                selected_effect_time or 0.0, reduced_motion,
+            )
+            image.paste(
+                effect_tile,
+                (round(text_position[0] + effect_offset[0]), round(text_position[1] + effect_offset[1])),
+                effect_tile,
             )
         if item.locked:
             padlock_anchor, _ = locked_padlock_placement(

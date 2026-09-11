@@ -16,10 +16,11 @@ The six selection states for the active logical viewport, lock state, and input
 profile are pre-rendered as a bounded cache. This adds a short initial warm-up
 but keeps ordinary navigation responsive without replacing the shared renderer.
 
-The cached frames contain the approved background, logo, unselected/locked
-navigation, context, padlock, and prompts. A small real-time overlay supplies
-only the selected Cinzel run, selected-row dust, and approved pointer. The
-selected text combines a stable dark-bronze/gold container with two large
+The cached frames contain the approved background, logo, clean plain-gold
+selected Cinzel base, unselected/locked navigation, context, padlock, and
+prompts. A small real-time overlay supplies only the optional selected material
+pass, selected-row dust, and approved pointer. The optional material pass
+combines a stable dark-bronze/gold container with two large
 low-frequency fields and sparse cream-hot regions clipped to the glyph mask.
 Fields advance through 4 Hz keyframes over 7.4–9.2 second cycles and interpolate
 every displayed frame, so the material flows slowly without changing the glyph
@@ -61,6 +62,7 @@ Double-click:
 - Enter or Space: confirm
 - Escape: semantic Back (does not immediately exit)
 - F6: development-only `maxlevel` 0/1 toggle
+- F7: toggle selection effects (`OFF` shows the plain-gold selected base only)
 - F8: development HUD
 - F10: clean immediate exit
 - F11 or Alt+Enter: windowed/borderless fullscreen
@@ -68,6 +70,11 @@ Double-click:
 - F2: 2560×1440 logical viewport
 - F3: 3840×2160 logical viewport
 - F4: 2560×1080 logical viewport
+
+Launch the executable with `--base-only` to start with the optional selected
+material and dust disabled. The approved selection pointer remains visible and
+functional in both modes. Press F7 at any time to compare the same selected
+Cinzel base with the current effect overlay enabled or disabled.
 
 Controllers use SDL joystick hot-plugging. D-pad and left-stick vertical input
 navigate. SpartanReforged preserves PlayStation positional face-button semantics

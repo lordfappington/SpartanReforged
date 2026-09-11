@@ -191,9 +191,9 @@ class MainMenuReforgedTests(unittest.TestCase):
         self.assertEqual(TOKENS["typography"]["MenuPrimarySelected"], 56)
         self.assertEqual(TOKENS["menu"]["itemSpacing"], 82)
 
-    def test_material_typography_has_real_internal_layers(self) -> None:
+    def test_unselected_and_locked_typography_keep_internal_layers(self) -> None:
         selected_font = UI._font(56, TOKENS, "bold")
-        for state in ("selected", "unselected", "locked"):
+        for state in ("unselected", "locked"):
             layers, _ = UI.build_material_text_layers("NEW GAME", selected_font, state)
             self.assertIsNotNone(layers["face"].getbbox())
             self.assertIsNotNone(layers["light_bevel"].getbbox())
@@ -238,14 +238,20 @@ class MainMenuReforgedTests(unittest.TestCase):
         )
         self.assertGreater(internal_energy, structural_energy)
 
-    def test_selected_state_has_independent_halo_and_no_bronze_inset(self) -> None:
+    def test_selected_base_is_plain_gold_and_effect_overlay_is_independent(self) -> None:
         font = UI._font(56, TOKENS, "bold")
-        canvas = Image.new("RGB", (500, 100), (7, 13, 23))
-        stats = UI.render_material_text(canvas, (20, 10), "NEW GAME", font, "selected")
-        self.assertIn("internal_light", stats)
-        self.assertIn("hotspots", stats)
-        self.assertIn("thin_edge", stats)
-        self.assertNotIn("inset", stats)
+        base, base_offset = UI.render_selected_base_tile("NEW GAME", font)
+        self.assertEqual(UI.SELECTED_BASE_COLOUR, (210, 174, 99))
+        self.assertEqual(UI.SELECTED_BASE_COLOUR, UI.ImageColor_getrgb(TOKENS["colours"]["selectedGold"]))
+        visible_colours = {
+            pixel[:3] for pixel in base.getdata() if pixel[3] > 0
+        }
+        self.assertEqual(visible_colours, {UI.SELECTED_BASE_COLOUR})
+        effect, effect_offset = UI.render_selected_text_tile("NEW GAME", font, 1.0, 1.75)
+        self.assertEqual(base.size, effect.size)
+        self.assertEqual(base_offset, effect_offset)
+        self.assertNotEqual(base.tobytes(), effect.tobytes())
+        self.assertGreater(len({pixel[:3] for pixel in effect.getdata() if pixel[3] > 0}), 1)
         self.assertGreater(UI.SELECTED_ILLUMINATION["haloRadius"], 0)
 
     def test_unselected_pixel_baseline_is_preserved(self) -> None:
@@ -257,10 +263,10 @@ class MainMenuReforgedTests(unittest.TestCase):
             "2ec52ee699316366116dec1803d859230936b7c6201584b50ab115192b7d6fa7",
         )
 
-    def test_selected_snapshot_and_locked_typography_baselines_are_deterministic(self) -> None:
+    def test_plain_selected_and_locked_typography_baselines_are_deterministic(self) -> None:
         selected = Image.new("RGB", (500, 100), (7, 13, 23))
         UI.render_material_text(selected, (20, 10), "NEW GAME", UI._font(56, TOKENS, "bold"), "selected")
-        self.assertEqual(hashlib.sha256(selected.tobytes()).hexdigest(), "571a5b90ed50f5074e53113eb5d063476ddcefc3ba91ce284143f7bbb99206e8")
+        self.assertEqual(hashlib.sha256(selected.tobytes()).hexdigest(), "37673547d8c011cf50f3c2d06567ffad591ec1a5a7dedd4ccd549b7c4e82cf5a")
         locked = Image.new("RGB", (700, 100), (7, 13, 23))
         UI.render_material_text(locked, (20, 10), "SINGLE MISSION REPLAY", UI._font(52, TOKENS, "regular"), "locked")
         self.assertEqual(hashlib.sha256(locked.tobytes()).hexdigest(), "686906c1a92ee647371de644df4e80a0c8de29f648a5fde76eff8dc4d1883e01")

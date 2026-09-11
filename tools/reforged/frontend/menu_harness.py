@@ -214,10 +214,14 @@ class SelectionParticle:
 class AnimatedSelectionEffects:
     """Small dynamic overlay; the expensive menu composition remains cached."""
 
-    def __init__(self, tokens: dict, strings: dict[str, str], reduced_motion: bool = False) -> None:
+    def __init__(
+        self, tokens: dict, strings: dict[str, str], reduced_motion: bool = False,
+        enabled: bool = True,
+    ) -> None:
         self.tokens = tokens
         self.strings = strings
         self.reduced_motion = reduced_motion
+        self.enabled = enabled
         self.rng = random.Random(0x53504152)
         self.particles: list[SelectionParticle] = []
         self.spawn_accumulator = 0.0
@@ -238,11 +242,21 @@ class AnimatedSelectionEffects:
     def prewarm_dynamic_assets(self, screen: ui.MenuScreen, virtual_size: tuple[int, int]) -> None:
         """Move one-time font/filter/asset costs outside the live frame loop."""
         rate = self.tokens["selectionEffects"]["moltenKeyframeRate"]
-        for item in screen.items:
-            if not item.locked:
-                self._text_keyframe(item, virtual_size, 0.0)
-                self._text_keyframe(item, virtual_size, 1.0 / rate)
+        if self.enabled:
+            for item in screen.items:
+                if not item.locked:
+                    self._text_keyframe(item, virtual_size, 0.0)
+                    self._text_keyframe(item, virtual_size, 1.0 / rate)
         self._pointer_surface(virtual_size)
+
+    def set_enabled(self, enabled: bool, now: float) -> None:
+        """Toggle material/wake layers without changing the selected base or pointer."""
+        self.enabled = enabled
+        self.particles.clear()
+        self.spawn_accumulator = 0.0
+        self.last_update = now
+        self.previous_selected_id = None
+        self.animation_epoch = now
 
     def _layout(self, virtual_size: tuple[int, int]) -> ui.ViewportLayout:
         return ui.layout_for_viewport(*virtual_size, self.tokens)
@@ -281,7 +295,7 @@ class AnimatedSelectionEffects:
         self.particles = sorted(
             self.particles, key=lambda particle: particle.age / particle.lifetime
         )[:24]
-        if not self.reduced_motion:
+        if self.enabled and not self.reduced_motion:
             for _ in range(self.tokens["selectionEffects"]["selectionWakeBurst"]):
                 self._spawn_particle(state, initial_age=self.rng.uniform(0.0, .18))
 
@@ -326,7 +340,7 @@ class AnimatedSelectionEffects:
             return
         dt = min(.05, max(0.0, now - self.last_update))
         self.last_update = now
-        for particle in self.particles:
+        for particle in self.particles if self.enabled else ():
             particle.age += dt
             particle.vx *= math.exp(-particle.drag * dt)
             turbulence = math.sin(particle.age * 1.35 + particle.turbulence_phase)
@@ -334,7 +348,7 @@ class AnimatedSelectionEffects:
             particle.x += particle.vx * dt
             particle.y += particle.vy * dt
         self.particles = [particle for particle in self.particles if particle.age < particle.lifetime]
-        if self.reduced_motion:
+        if not self.enabled or self.reduced_motion:
             self.particles.clear()
             return
         effects = self.tokens["selectionEffects"]
@@ -452,16 +466,17 @@ class AnimatedSelectionEffects:
             displayed.set_alpha(round(255 * max(0.0, min(1.0, opacity))))
             overlay.blit(displayed, (round(mapped[0] - overlay_rect.x), round(mapped[1] - overlay_rect.y)))
 
-        selected = state.selected
-        fade_duration = self.tokens["selectionEffects"]["textFadeInMs"] / 1000.0
-        fade = 1.0 if self.reduced_motion else min(1.0, (now - self.transition_start) / fade_duration)
-        fade = ease_out_cubic(fade)
-        if self.previous_selected_id and fade < 1.0:
-            previous = next(
-                item for item in state.screen.items if item.semantic_id == self.previous_selected_id
-            )
-            blit_selected(previous, 1.0 - fade)
-        blit_selected(selected, fade)
+        if self.enabled:
+            selected = state.selected
+            fade_duration = self.tokens["selectionEffects"]["textFadeInMs"] / 1000.0
+            fade = 1.0 if self.reduced_motion else min(1.0, (now - self.transition_start) / fade_duration)
+            fade = ease_out_cubic(fade)
+            if self.previous_selected_id and fade < 1.0:
+                previous = next(
+                    item for item in state.screen.items if item.semantic_id == self.previous_selected_id
+                )
+                blit_selected(previous, 1.0 - fade)
+            blit_selected(selected, fade)
 
         tip = self.pointer_tip(now)
         if tip is not None:
@@ -483,7 +498,7 @@ class AnimatedSelectionEffects:
 class MenuHarness:
     def __init__(
         self, smoke_test: bool = False, smoke_report: pathlib.Path | None = None,
-        reduced_motion: bool = False,
+        reduced_motion: bool = False, selection_effects_enabled: bool = True,
     ) -> None:
         pygame.init()
         pygame.joystick.init()
@@ -508,7 +523,9 @@ class MenuHarness:
         self.frame_dirty = True
         self.frame_surface: pygame.Surface | None = None
         self.frame_cache: dict[tuple[tuple[int, int], int, str, str], pygame.Surface] = {}
-        self.effects = AnimatedSelectionEffects(self.tokens, self.strings, reduced_motion)
+        self.effects = AnimatedSelectionEffects(
+            self.tokens, self.strings, reduced_motion, selection_effects_enabled
+        )
         self.running = True
         self.smoke_test = smoke_test
         self.smoke_report = smoke_report
@@ -583,6 +600,16 @@ class MenuHarness:
         self.screen = self._create_window()
         self._set_notice("BORDERLESS FULLSCREEN" if self.fullscreen else "WINDOWED")
 
+    def _toggle_selection_effects(self) -> None:
+        enabled = not self.effects.enabled
+        self.effects.set_enabled(enabled, time.perf_counter())
+        if enabled:
+            self.effects.prewarm_dynamic_assets(self.state.screen, self.virtual_size)
+        self._set_notice(
+            "SELECTION EFFECTS: ON"
+            if enabled else "SELECTION EFFECTS: OFF — PLAIN GOLD BASE"
+        )
+
     def _set_resolution(self, size: tuple[int, int]) -> None:
         self.virtual_size = size
         if not self.fullscreen:
@@ -615,6 +642,9 @@ class MenuHarness:
             return
         if event.key == pygame.K_F6:
             self._toggle_maxlevel()
+            return
+        if event.key == pygame.K_F7:
+            self._toggle_selection_effects()
             return
         if event.key == pygame.K_F8:
             self.hud_enabled = not self.hud_enabled
@@ -710,6 +740,7 @@ class MenuHarness:
             *self.virtual_size, state, self.tokens, self.strings,
             profile=prompt_profile_for_input_profile(self.last_profile),
             include_selected_effects=False,
+            include_selection_pointer=False,
         )
         return pygame.image.frombytes(frame.tobytes(), frame.size, "RGB").convert()
 
@@ -747,7 +778,7 @@ class MenuHarness:
                 f"window {self.screen.get_width()}x{self.screen.get_height()} / logical {self.virtual_size[0]}x{self.virtual_size[1]}",
                 f"selected {self.state.selected_id} / action {self.last_action}",
                 f"profile {self.last_profile} / maxlevel {self.maxlevel} / {mode}",
-                f"selection effects {self.effects.last_frame_ms:5.2f} ms / reduced motion {self.effects.reduced_motion}",
+                f"selection effects {'ON' if self.effects.enabled else 'OFF'} / {self.effects.last_frame_ms:5.2f} ms / reduced motion {self.effects.reduced_motion}",
             ))
         if not lines:
             return
@@ -832,8 +863,15 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--smoke-test", action="store_true", help="render, navigate once, then exit")
     parser.add_argument("--smoke-report", type=pathlib.Path)
     parser.add_argument("--reduced-motion", action="store_true")
+    parser.add_argument(
+        "--base-only", action="store_true",
+        help="start with the plain-gold selected base and selection effects disabled",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
-    return MenuHarness(args.smoke_test, args.smoke_report, args.reduced_motion).run()
+    return MenuHarness(
+        args.smoke_test, args.smoke_report, args.reduced_motion,
+        selection_effects_enabled=not args.base_only,
+    ).run()
 
 
 if __name__ == "__main__":

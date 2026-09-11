@@ -168,6 +168,47 @@ class MenuHarnessTests(unittest.TestCase):
         effects.update(state, 2.0)
         self.assertEqual(effects.particles, [])
 
+    def test_effect_toggle_preserves_pointer_and_disables_optional_layers(self) -> None:
+        tokens = UI.load_json(HARNESS.TOKENS_PATH)
+        strings = UI.load_json(HARNESS.LOCALE_PATH)["strings"]
+        state = UI.MenuState(UI.build_main_start(), "new_game")
+        effects = HARNESS.AnimatedSelectionEffects(tokens, strings, False, True)
+        effects.set_initial_selection(state, HARNESS.DESIGN_SIZE, 1.0)
+        pointer_before = effects.pointer_to
+        effects._spawn_particle(state)
+        self.assertTrue(effects.particles)
+        effects.set_enabled(False, 1.1)
+        self.assertFalse(effects.enabled)
+        self.assertEqual(effects.particles, [])
+        self.assertEqual(effects.pointer_to, pointer_before)
+        effects.update(state, 2.0)
+        self.assertEqual(effects.particles, [])
+        effects.set_enabled(True, 2.1)
+        self.assertTrue(effects.enabled)
+        self.assertEqual(effects.animation_epoch, 2.1)
+
+    def test_f7_toggle_controls_only_optional_effect_layers(self) -> None:
+        harness = object.__new__(HARNESS.MenuHarness)
+        harness.effects = mock.Mock(enabled=True)
+        harness.state = UI.MenuState(UI.build_main_start(), "new_game")
+        harness.virtual_size = HARNESS.DESIGN_SIZE
+        harness._set_notice = mock.Mock()
+        with mock.patch.object(HARNESS.time, "perf_counter", return_value=4.5):
+            harness._toggle_selection_effects()
+        harness.effects.set_enabled.assert_called_once_with(False, 4.5)
+        harness.effects.prewarm_dynamic_assets.assert_not_called()
+        harness._set_notice.assert_called_once_with(
+            "SELECTION EFFECTS: OFF — PLAIN GOLD BASE"
+        )
+
+    def test_base_only_command_line_flag_starts_with_effects_disabled(self) -> None:
+        with mock.patch.object(HARNESS, "MenuHarness") as harness_type:
+            harness_type.return_value.run.return_value = 0
+            self.assertEqual(HARNESS.main(["--base-only"]), 0)
+        harness_type.assert_called_once_with(
+            False, None, False, selection_effects_enabled=False
+        )
+
     def test_dust_wake_is_text_bounded_and_not_pointer_emitted(self) -> None:
         tokens = UI.load_json(HARNESS.TOKENS_PATH)
         original = HARNESS.particle_emission_bounds(0, tokens, 260)
