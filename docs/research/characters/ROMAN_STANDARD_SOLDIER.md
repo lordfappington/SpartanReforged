@@ -134,9 +134,18 @@ temp/roman-research/turnaround/roman-standard-closeup-weapon.png
 
 These files remain ignored/private and are not suitable for the public repository.
 
-## Existing Reforged concept comparison
+## Reforged concept and human-base workflow
 
-No Roman-soldier Reforged concept or mock-up is tracked in the clean repository. The preserved `assets/Concept/` WIP captured in the pre-research stash is a main-menu concept, not a Roman character design, and was not applied or inspected during this task. Therefore no character-concept comparison is claimed.
+The human-approved Reforged target is tracked at
+`assets/Concept/Characters/Roman-Grunt/roman-grunt-reforged-concept-v1-approved.png`
+(SHA-256 `cf708a857497ab432507b74c8ac074874ff90eb569bb60159a62cd517667dddf`).
+It controls modern visual interpretation; the recovered PS2 evidence in this
+document remains canonical for structural/gameplay identity.
+
+Procedural V1/V2 character experiments were rejected as production anatomical
+foundations. The replacement workflow, candidate licensing audit, selected CC0
+continuous male mesh, anatomy-first gate and private Human Base Build 1 outputs
+are documented in [HUMAN_BASE_MESH_WORKFLOW.md](HUMAN_BASE_MESH_WORKFLOW.md).
 
 ## Future Reforged guidance
 
