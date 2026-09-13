@@ -332,3 +332,13 @@
 - Added nine synthetic tests covering ADC topology/parity, winding reversal, Q4.12 and V flip, coordinate conversion, material grouping, selection, accessor construction/range validation, and malformed descriptor bounds. All pass without copyrighted fixtures.
 - Advanced the phase to `Milestone 0 - First Native Geometry Reconstruction`. LEVEL00 world geometry is reconstructable outside the PS2 runtime, but native rendering, material fidelity, original V4-8 semantics, and final coordinate/front-face/V conventions are not claimed.
 - Generated glTF/binary/report/manifest files remain local and ignored beneath `temp/exports/level00_validation`. No game asset, derived geometry, converted texture, or manifest is tracked. No Ghidra, PS2Recomp, remastering, installation, or push occurred.
+
+## 2026-09-12 - Canonical standard Roman soldier recovered
+
+- Preserved all unrelated menu-animation and concept WIP, including the untracked `assets/Concept/mainmenu.png`, in untouched local `stash@{0}` before beginning from clean `main` at `2a81d2d`.
+- Listed the relevant level and arena archives and compared Roman gameplay definitions, character-type tables, entity strings, model families, and archive recurrence. Identified `ROMAN_GRUNT` type 3 / `RMN_GRNT` as the canonical common infantryman; heavy grunt, centurion, archer, and Praetorian families remain distinct.
+- Decoded the rigid Roman PSQ subset: 12-byte header, 48-byte position/ADC/normal/UV/bone records, alternating triangle-strip winding, five LODs, and a secondary held-equipment range. RGRT0 reconstructs 665 records, 247 unique XYZ values, 472 triangles, and a 36-triangle shield.
+- Decoded the compact 16-bone `bns2` hierarchy as local translation plus parent records. The terminal arm IDs carry the integrated short sword and broad red eagle shield. The skeleton is shared exactly across the four RMN families and LEVEL00 Athenian Archer, but not the Spartan body/Hoplite/Swordsman samples.
+- Decoded the 256×256 PSMT8/RGB5A1 RGRT atlas privately and reconstructed the complete LOD0 rest pose with the source UVs and texture. A neutral five-view turnaround and head/helmet, torso, shield, and weapon close-ups remain ignored under `temp/roman-research`.
+- Validated 28 bounded `anm1` clips: all declare 16 bones. Evidence separates grunt-specific idles/reactions, Roman-family sword attacks, and common locomotion/shield/death clips without claiming the still-undecoded compressed track schema.
+- Added public-safe `psq_character.py`, synthetic tests, a metadata-only manifest, and the canonical character document. No extracted PSQ/BNS/ANM/TM2, decoded texture, OBJ/MTL, or render is tracked.

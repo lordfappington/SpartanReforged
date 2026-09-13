@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Reforged UI - Approved Main Menu Logo Integration Review
+Milestone 0 - Standard Roman Character Preservation Recovery
 
 ## Milestone 0 - Discovery
 
@@ -19,6 +19,8 @@ Canonical build: PlayStation 2 Europe/Australia PAL, serial `SLES-53393`, disc v
 ## Asset Formats
 
 Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers are identified. A strict read-only pipeline reconstructs LEVEL00 outside the PS2 runtime as 1,338 traceable glTF meshes and exactly 46,336 triangles. Its confirmed texture assembly uses 32 textured materials, seven placeholders, and 30 native images. The world asset baseline is classified **LEVEL00 WORLD RECONSTRUCTION COMPLETE**, not native game rendering. Native MTL TEST/ZBUF/ALPHA and CPU ordering are recovered; resident VU1 confirms `PRIM=0x25c` and V4-to-RGBAQ; the texture-loader path confirms CLOUD's RGBA/MODULATE PSMCT32-alpha state. CLOUD is an opaque V4-coloured dome, so the texture-only white shell is explained rather than hidden.
+
+The canonical common Roman infantryman is now identified as gameplay type `ROMAN_GRUNT` (ID 3) and asset family `RMN_GRNT/RGRT`. A bounded parser reconstructs its five PSQ LODs (472 down to 82 triangles), 16-bone rigid hierarchy, one 256² indexed colour atlas, integrated shield and short sword, and representative 16-bone grunt/Roman/common animation families. Derived character geometry, texture, and renders remain private and ignored; only metadata, hashes, tooling, tests, and documentation are public.
 
 ## Executable Analysis
 
@@ -48,7 +50,7 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 - Why does FE_MAIN request `MAP_512.TGA` while packaging `MAP_512.TM2`?
 - How should non-core GS alpha-test failure/blend behavior be represented in future native or modern renderers without weakening the frozen preservation baseline?
 - What do MODELS.BIN header values 15/48/30, descriptor secondary IDs, field 11/0, and AAB leaf trailing words mean?
-- What are the exact schemas for PSQ/PSW/MPH/BNS character data, ANM/SAM tracks, ENT records, and COL/PT2/IND spatial data?
+- What are the remaining PSW/MPH character layouts, BNS trailing-table semantics, ANM/SAM track encodings, ENT records, and COL/PT2/IND spatial data? The rigid Roman PSQ record/topology and 16-bone BNS hierarchy are now operational.
 - What is the proprietary memory-card `.ICO` schema?
 - Where are the `fe_splash` and `level99/testlevel` sections stored?
 - What are the actual codecs and schemas for the `.MIC`, `.MSB`, `.MSH`, `.CMH`, and sound `.BIN` entries?
@@ -56,4 +58,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Human review of the approved logo integrated into the main menu before any other main-menu asset begins.
+Decode the bounded executable/entity pointer from `ROMAN_GRUNT` type 3 to `RMN_GRNT`, then map ANM compressed tracks only when character animation reconstruction becomes the active milestone.

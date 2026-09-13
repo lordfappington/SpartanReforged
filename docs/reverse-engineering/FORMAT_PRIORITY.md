@@ -25,9 +25,9 @@ The bounded, read-only MODELS pipeline is **LEVEL00 WORLD RECONSTRUCTION COMPLET
 | Extension / target | Files | Bytes | Suspected purpose | Confidence | Dependencies and evidence | Recommended order |
 |---|---:|---:|---|---|---|---:|
 | `.ENT` | 1 | 233,812 | entity placement/state/mission graph | **CONFIRMED role** | explicit strings for spawns, cameras, cutscenes, effects, audio, transition; record layout unknown | 5 |
-| `.PSQ` | 39 | 683,940 | character/equipment geometry segments | **LIKELY** | CHR_MDLS-only, render/LOD naming, counts/floats, paired textures | 6 |
+| `.PSQ` | 39 | 683,940 | rigid-skinned character/equipment triangle-strip geometry (validated RMN families) | **CONFIRMED bounded layout** | `psq_character.py` validates 48-byte position/ADC/normal/UV/bone records, LOD topology, and equipment ranges for 25 Roman-family samples | 6 |
 | `.PSW` | 1 | 2,888 | weighted/skinned geometry | **LIKELY** | `MULTIWEIGHTED` filename and enabled display flag | 7 |
-| `.BNS` | 7 | 2,135 | bone/bind/skeleton compatibility data | **LIKELY** | `bns2`, character pairing, five-file identity group, transform-like floats | 8 |
+| `.BNS` | 7 | 2,135 | compact bone hierarchy/rest-translation and compatibility data | **CONFIRMED bounded layout** | `bns2`, bone count, parent IDs, local translations, and trailing index table validated for the 16-bone Roman family; source bone names absent | 8 |
 | `.ANM` | 461 | 3,820,386 | character/action animation clips | **CONFIRMED role** | `anm1`, paths, impact/weapon metadata | 9 |
 | `.MPH` | 4 | 246,368 | facial mesh/morph data | **LIKELY** | all named `FACE.MPH`, character adjacency, counts/floats | 10 |
 | `.SAM` | 2 | 1,245,184 | cutscene animation tracks | **CONFIRMED role** | `sam2`, cutscene metadata and ENT references | 11 |

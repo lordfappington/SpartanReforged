@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "canonical_gameplay_name": "ROMAN_GRUNT",
+    "character_type_id": 3,
+    "asset_family": "RMN_GRNT",
+    "asset_prefix": "RGRT",
+    "identification_confidence": "confirmed",
+    "asset_link_confidence": "high"
+  },
+  "source": {
+    "canonical_archive": "DATA/LEVEL01.PAK",
+    "archive_sha256": "c9c1e2ee59755cd9cde37e5491313cb8251a06e3e141e9e8d4d0de3129fe0f1b",
+    "character_root": "DATA/CHR_MDLS/RMN_GRNT",
+    "gameplay_definition": "DATA/BATTLE.TXT#CHARACTER: ROMAN_GRUNT",
+    "presence_table": "DATA/ENV/LEVEL01/ENTITIES/CHAR_TYPES.BIN"
+  },
+  "evidence_chain": [
+    "BATTLE.TXT enumerates ROMAN_GRUNT as character type 3 and assigns COMMANDER_LEVEL GRUNT",
+    "LEVEL entity CHAR_TYPES.BIN contains type 3 in archives carrying RMN_GRNT",
+    "RMN_GRNT contains the RGRT PSQ/BNS/TM2 family and five stable LODs",
+    "LEVEL01 entity strings describe repeated Roman wave spawners and Roman kill objectives",
+    "private source reconstruction confirms an ordinary shield-and-short-sword Roman infantry silhouette"
+  ],
+  "archive_presence": [
+    "LEVEL01", "LEVEL02", "LEVEL03", "LEVEL06", "LEVEL07", "LEVEL09",
+    "LEVEL10", "LEVEL13", "LEVEL14", "ARENAR", "ARENAX"
+  ],
+  "gameplay_profile": {
+    "mass": 130.0,
+    "max_health": 100,
+    "commander_level": "GRUNT",
+    "breakable_shield": true,
+    "max_shield_strength": 10,
+    "block_skill": 15,
+    "weapon_damage_default": 10,
+    "chosen_attack_probabilities": {"ATTACK1": 50, "ATTACK2": 50}
+  },
+  "lods": [
+    {"lod": 0, "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT0.PSQ", "size": 31932, "sha256": "c71d4f40d4cb915c5b8d1cd1b2db0943c2381ccde11beea91cd94d310a7c6bff", "stream_records": 665, "unique_positions": 247, "triangles": 472, "primary_triangles": 436, "shield_triangles": 36},
+    {"lod": 1, "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT1.PSQ", "size": 25116, "sha256": "44b2f3e38f9e9434916aaf84b8197b948d5370b364709634897d2c4d2df87e71", "stream_records": 523, "unique_positions": 203, "triangles": 384, "primary_triangles": 348, "shield_triangles": 36},
+    {"lod": 2, "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT2.PSQ", "size": 18588, "sha256": "eadc204b7f4160765ac3cbcb673f64f098c8e8ca39a8d4f1ebec374483f946d7", "stream_records": 387, "unique_positions": 145, "triangles": 268, "primary_triangles": 248, "shield_triangles": 20},
+    {"lod": 3, "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT3.PSQ", "size": 9084, "sha256": "e7324c49283a068c16c3ad7fe0c760aba633ae3cbec3ca45fde468f77acda61b", "stream_records": 189, "unique_positions": 86, "triangles": 130, "primary_triangles": 122, "shield_triangles": 8},
+    {"lod": 4, "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT4.PSQ", "size": 5964, "sha256": "1ab70c01c08f1617c7f49f46ddc9e76358f29dbc3f6dc1dbc4f3e870a8d7785f", "stream_records": 124, "unique_positions": 58, "triangles": 82, "primary_triangles": 78, "shield_triangles": 4}
+  ],
+  "lod0_layout": {
+    "record_stride": 48,
+    "fields": ["position_xyz", "adc", "normal_xyz", "reserved", "uv", "bone_matrix_offset", "reserved"],
+    "uv_sets": 1,
+    "material_slots": 1,
+    "primary_range": [0, 621],
+    "shield_range": [621, 665],
+    "rest_pose_bounds": {"min": [-1.352093, -0.982899, -0.272095], "max": [0.916010, 0.876960, 0.637230]},
+    "coordinate_interpretation": "X lateral, Y up, positive Z toward the reconstructed front view",
+    "skinning": "one rigid bone ID per stream record"
+  },
+  "skeleton": {
+    "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT2.BNS",
+    "size": 305,
+    "sha256": "c2061123f8cb42663aef5a9fe900fe3941aa7c3c0958bad0d5246769d36b9f83",
+    "magic": "bns2",
+    "bone_count": 16,
+    "parents": [-1, 0, 1, 2, 0, 4, 5, 5, 7, 8, 5, 10, 11, 0, 13, 14],
+    "bone_names_present": false,
+    "inferred_attachments": {"positive_x_terminal_bone_9": "short sword", "negative_x_terminal_bone_12": "shield"},
+    "exact_shared_families": ["RMN_GRNT", "RMN_HGNT", "RMN_CENT", "RMN_ARCH", "LEVEL00 ATH_ARCH"],
+    "not_exactly_shared_with": ["LEVEL00 SPARTAN/BODY", "LEVEL00 SPT_HOPL", "LEVEL00 SPT_SWRD"]
+  },
+  "texture": {
+    "path": "DATA/CHR_MDLS/RMN_GRNT/RGRT.TM2",
+    "size": 66112,
+    "sha256": "248ba25048e1c45c09f4652fa48841d8d3fe1b6f015641aef5fce87be375ff06",
+    "dimensions": [256, 256],
+    "pixel_format": "PSMT8 / IDTEX8",
+    "clut_format": "RGB5A1, 256 entries",
+    "mip_count": 1,
+    "decoded_alpha_range": [255, 255],
+    "roles": ["face/skin", "helmet and armour", "red-brown cloth/leather", "shield faces and eagle emblem", "weapon and footwear"]
+  },
+  "equipment": {
+    "head_and_helmet": "integrated in the primary PSQ stream",
+    "armour_and_clothing": "integrated in the primary PSQ stream",
+    "shield": {"representation": "secondary PSQ range", "bone_id": 12, "triangles_lod0": 36, "rest_bounds_dimensions_xyz": [0.912788, 0.445367, 0.584032], "visual_identity": "wide red rectangular/curved shield with dark eagle-and-wings motif"},
+    "weapon": {"representation": "primary PSQ stream", "bone_id": 9, "rest_bounds_dimensions_xyz": [0.107413, 0.101897, 0.805816], "visual_identity": "short straight sword/gladius-like blade"},
+    "separate_equipment_models": []
+  },
+  "animations": {
+    "format_magic": "anm1",
+    "validated_bone_count": 16,
+    "bounded_files_checked": 28,
+    "character_specific_namespace": "DATA/ANIMS/ROMAN/GRUNT",
+    "roman_shared_namespace": "DATA/ANIMS/ROMAN",
+    "generic_namespace": "DATA/ANIMS/COMMON",
+    "representative": [
+      {"role": "idle", "path": "DATA/ANIMS/COMMON/IDLE1.ANM", "frames": 47, "sha256": "effc96b845744dd9f05e9f767f3aab35d56b92436275599812e7d7eb1467839b"},
+      {"role": "walk", "path": "DATA/ANIMS/COMMON/WALK.ANM", "frames": 21, "sha256": "0dedf9aa367009a629acce7b618f5750fa14f952dc5579472b7a2b219509548c"},
+      {"role": "run", "path": "DATA/ANIMS/COMMON/RUN.ANM", "frames": 13, "sha256": "8ba4a887e2d57d138368d4450ae204cba2413752af0b54376ee377d7204fe609"},
+      {"role": "attack", "path": "DATA/ANIMS/ROMAN/ATTACK_BASIC_STAB_SHORT.ANM", "frames": 38, "sha256": "7dbf532ec9c48dd06f106afa0396fc6308ff36873c54e87fa6539496f9d548aa"},
+      {"role": "shield impact", "path": "DATA/ANIMS/COMMON/IMPACT_SHIELD.ANM", "frames": 11, "sha256": "e4428f0ad0014b2b82d402005eb73263950d1a47e7f616ad52d634688dce73b1"},
+      {"role": "shield push/block action", "path": "DATA/ANIMS/COMMON/DEFENSIVE_SHIELD_PUSH.ANM", "frames": 24, "sha256": "c7ab3eab3f808d74638da6e9856c522ff24f24d0f6dd57462575460efd74ebf8"},
+      {"role": "death front", "path": "DATA/ANIMS/COMMON/DEATH_FRONT.ANM", "frames": 35, "sha256": "5fe9328faf7ec1726cc871f671194b29cdde18d58d945b5f3216a773f5e8e7cd"},
+      {"role": "death back", "path": "DATA/ANIMS/COMMON/DEATH_BACK.ANM", "frames": 41, "sha256": "dcc52f3f6e484dfb8309044c05b8181c0d8b0ca07d77291ddd334f795e254fb9"}
+    ]
+  },
+  "variants": [
+    {"name": "standard", "geometry": "canonical five LOD hashes", "texture_sha256": "248ba25048e1c45c09f4652fa48841d8d3fe1b6f015641aef5fce87be375ff06"},
+    {"name": "WEAK", "geometry": "byte-identical to standard", "skeleton": "byte-identical to standard", "texture_sha256": "4279da232f58c157fca04d6a575c073b4a39a1743281d0687a32c47f1809a6c3"},
+    {"name": "ZOMBIE", "geometry": "same filenames/sizes; hash equality observed in bounded extraction", "skeleton": "same 305-byte family", "texture_sha256": "2ed57649b3a48c530c94e3a128b6f9e5207b0715207192c317023db26d07b882", "confidence": "high"}
+  ],
+  "rejected_candidates": [
+    {"gameplay_name": "ROMAN_GRUNT_HEAVY", "asset_family": "RMN_HGNT", "reason": "explicit heavy variant; health 200, armour 60, shield strength 65, scale 1.08"},
+    {"gameplay_name": "ROMAN_CENT", "asset_family": "RMN_CENT", "reason": "centurion/officer family"},
+    {"gameplay_name": "ROMAN_ARCHER", "asset_family": "RMN_ARCH", "reason": "ranged specialist"},
+    {"gameplay_name": "PRAE_LEGIONARY and PRAE_*", "asset_family": "PRA_*", "reason": "separate Praetorian elite family"}
+  ],
+  "private_outputs": {
+    "copyright_status": "never commit or redistribute",
+    "obj": "temp/roman-research/reconstruction/roman_standard_soldier_lod0.obj",
+    "texture_png": "temp/roman-research/decoded/rgrt.png",
+    "turnaround": "temp/roman-research/turnaround/roman-standard-turnaround.png",
+    "closeups": "temp/roman-research/turnaround/roman-standard-closeup-*.png"
+  },
+  "uncertainties": [
+    "Exact executable-side ROMAN_GRUNT-to-RMN_GRNT pointer field is not decoded.",
+    "BNS bone names and rotation/bind matrices are absent from this compact file; functional names are inferred from hierarchy and attached geometry.",
+    "ANM track compression and runtime clip-selection tables remain undecoded.",
+    "No standalone character MTL exists in the family; exact runtime character GS/material constants were not traced.",
+    "The ZOMBIE geometry identity should be hash-verified from a canonical extracted copy before treating it as confirmed."
+  ]
+}
