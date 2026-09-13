@@ -53,7 +53,47 @@ Build 1 keeps one multires level for form review: the continuous body evaluates
 to 84,680 triangles (86,856 including two eyes) from the 21,160-triangle source
 base. This is deliberately not a final runtime budget.
 
-## Current assessment
+## Build 2 major-form correction gate
+
+Human visual review rejected Build 1 at the silhouette and art-direction level:
+its narrow proportions, anatomical body-derived cuirass, shoulder shells,
+helmet, frontal board-like pteruges and incomplete footwear presentation were
+not a useful path to polish. Build 1 remains preserved as evidence, not as the
+foundation for further equipment refinement.
+
+Build 2 is generated independently by
+`tools/blender/build_roman_grunt_human_base_build2.py`. It retains the selected
+CC0 continuous human but applies smooth, topology-preserving broad proportion
+adjustments. Its equipment is newly constructed at moderate complexity:
+
+- five overlapping manufactured torso rings plus a separate yoke and belt;
+- separate articulated shoulder plates rather than deltoid extraction;
+- a squat uncrested dome, strong brow, tapered cheek guards and restrained rear
+  neck guard;
+- fourteen varied, curved pteruges distributed around the waist over a muted
+  under-skirt;
+- a broad curved 0.90 x 1.15 m identity shield with a provisional original
+  project-created eagle silhouette, rear braces and grip;
+- a short 0.52 m gladius blade; and
+- complete left and right fitted review footwear assemblies.
+
+All `.blend`, render, gate and triangle-report output remains private under
+`temp/roman-human-base-build2`. The public scripts reproduce the form review
+without loading extracted game data. The private review package includes five
+matched full-body views, five form close-ups, an original/concept/Build 2 board,
+and cropped helmet, torso/shoulder, waist, shield and footwear comparisons.
+
+The deterministic gate records height/shoulder, torso/leg, helmet and shield
+ratios, full waist distribution, bilateral equipment and separately constructed
+armour. Clearance checks describe the authored neutral-pose blockout; they do
+not substitute for human visual inspection.
+
+No rigging, animation, runtime integration, texturing, wear, sculpted detail,
+retopology or LOD work is authorised by this gate.
+
+Build 2 status: **AWAITING HUMAN VISUAL APPROVAL — BUILD 2**.
+
+## Build 1 historical assessment
 
 The anatomy gate passes technically: the foundation reads as a believable adult
 male and exposes credible joints, hands and feet from all required angles. The
