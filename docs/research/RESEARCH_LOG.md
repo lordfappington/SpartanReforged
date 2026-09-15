@@ -342,3 +342,14 @@
 - Decoded the 256×256 PSMT8/RGB5A1 RGRT atlas privately and reconstructed the complete LOD0 rest pose with the source UVs and texture. A neutral five-view turnaround and head/helmet, torso, shield, and weapon close-ups remain ignored under `temp/roman-research`.
 - Validated 28 bounded `anm1` clips: all declare 16 bones. Evidence separates grunt-specific idles/reactions, Roman-family sword attacks, and common locomotion/shield/death clips without claiming the still-undecoded compressed track schema.
 - Added public-safe `psq_character.py`, synthetic tests, a metadata-only manifest, and the canonical character document. No extracted PSQ/BNS/ANM/TM2, decoded texture, OBJ/MTL, or render is tracked.
+
+## 2026-09-15 - Canonical common Spartan allied infantryman recovered
+
+- Compared the player, Hoplite, Swordsman, commander/officer, archer, elite, and sapper identities through the global name table, BATTLE definitions, type tables, entity strings, archive recurrence, model families, and animation namespaces. Selected `SPARTAN_SWORDSMAN` type 11 / `SPT_SWRD/SSWRD`; the type-8 `SPARTAN_HOPLITE` remains a distinct spear grunt.
+- Proved broad/common usage: type 11 and `SPT_SWRD` co-occur in 17 campaign/arena archives, and LEVEL04 contains 114 explicit Swordsman group/patrol/position/reposition strings. LEVEL04 provides the canonical evidence package and the same SSWRD assets are byte-identical in LEVEL00.
+- Reconstructed all five SSWRD PSQ LODs privately: LOD0 has 684 stream records, 251 unique XYZ values, 478 triangles, and a 48-triangle secondary shield range; LOD4 retains 94 triangles. All body, armour, clothing, sword, shield, greaves, and footwear are integrated.
+- Established anatomical ownership from the +Z-facing geometry and terminal bones: the sword is on positive-X bone 9, the character's anatomical left hand; the complete shield range is on negative-X bone 12, the anatomical right arm. Private profile files use character-side rather than screen-side labels.
+- Confirmed the BNS is byte-identical to the Hoplite skeleton and uses the same 16-bone topology as player and Roman rigs, while player/Roman bytes differ slightly. The player remains separate, higher-detail body geometry with modular equipment.
+- Decoded the 256×256 PSMT8/RGB5A1 SSWRD atlas privately. It establishes the bronze crestless full-face helmet and greaves, pale torso/pteruges, dark skirt, broad blue shield, pale lambda-like chevron, patterned rim, and leaf-shaped sword identity.
+- Validated 19 `GREEK/SWORD` and 11 representative `COMMON` ANM headers; all declare 16 bones and positive frame counts. The player's `GREEK/SPARTAN/SWORD1` namespace remains distinct.
+- Added a public-safe metadata manifest, consistency tests, and canonical research document. All PSQ/BNS/TM2/ANM inputs, decoded texture, OBJ/MTL, and source-derived renders remain ignored/private.

@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "canonical_gameplay_name": "SPARTAN_SWORDSMAN",
+    "character_type_id": 11,
+    "asset_family": "SPT_SWRD",
+    "asset_prefix": "SSWRD",
+    "identification_confidence": "confirmed",
+    "asset_link_confidence": "high"
+  },
+  "source": {
+    "canonical_archive": "DATA/LEVEL04.PAK",
+    "archive_sha256": "79b1bd562b831fe358e7d4a742905e71887075ff014bcf53413d85848e3caa39",
+    "character_root": "DATA/CHR_MDLS/SPT_SWRD",
+    "gameplay_definition": "DATA/BATTLE.TXT#CHARACTER: SPARTAN_SWORDSMAN",
+    "presence_table": "DATA/ENV/LEVEL04/ENTITIES/CHAR_TYPES.BIN",
+    "entity_data": "DATA/ENV/LEVEL04/ENTITIES/TEST.ENT"
+  },
+  "evidence_chain": [
+    "NAMES.TXT resolves global character type 11 to CHARACTER_TYPE_SPARTAN_SWORDSMAN",
+    "BATTLE.TXT assigns SPARTAN_SWORDSMAN commander level GRUNT and ordinary allied melee tuning",
+    "LEVEL04 CHAR_TYPES.BIN contains type 11 and the same archive carries the SPT_SWRD/SSWRD model family",
+    "LEVEL04 entity strings contain 114 SPARTAN_SWORDSMAN group, patrol, position, and reposition references",
+    "type 11 and SPT_SWRD co-occur in the same 17 campaign/arena packages",
+    "private source reconstruction confirms the ordinary bronze-armoured shield-and-sword Spartan infantry silhouette"
+  ],
+  "archive_presence": [
+    "ARENAB", "ARENAG", "ARENAP", "ARENAR", "ARENAU", "ARENAX",
+    "LEVEL00", "LEVEL01", "LEVEL02", "LEVEL03", "LEVEL04", "LEVEL05",
+    "LEVEL07", "LEVEL09", "LEVEL10", "LEVEL12", "LEVEL13"
+  ],
+  "gameplay_profile": {
+    "mass": 130.0,
+    "max_health": 100,
+    "armour_value": 30,
+    "commander_level": "GRUNT",
+    "block_skill": 70,
+    "can_bash": true,
+    "weapon_damage_default": 30,
+    "combat_module_set": "MS_ITPM_B"
+  },
+  "candidate_disposition": [
+    {
+      "gameplay_name": "SPARTAN_SWORDSMAN",
+      "type_id": 11,
+      "asset_family": "SPT_SWRD/SSWRD",
+      "disposition": "selected common sword-and-shield allied infantry"
+    },
+    {
+      "gameplay_name": "SPARTAN_HOPLITE",
+      "type_id": 8,
+      "asset_family": "SPT_HOPL/SHOPL",
+      "disposition": "distinct spear/hoplite grunt family; present in 10 packages rather than the selected family's 17"
+    },
+    {
+      "gameplay_name": "THE_SPARTAN",
+      "type_id": 0,
+      "asset_family": "SPARTAN",
+      "disposition": "player character with separate body and modular equipment assets"
+    },
+    {
+      "gameplay_name": "SPARTAN_COMMANDER",
+      "type_id": 19,
+      "disposition": "named commander role with 500 health, not ordinary infantry"
+    },
+    {
+      "gameplay_name": "SPARTAN_SERGEANT",
+      "type_id": 60,
+      "disposition": "centurion-tier officer with 500 health, not ordinary infantry"
+    },
+    {
+      "gameplay_name": "ATHENIAN_ARCHER",
+      "type_id": 12,
+      "disposition": "ranged specialist"
+    },
+    {
+      "gameplay_name": "SPARTAN_ELITE and SPARTAN_SAPPER",
+      "disposition": "explicit elite/specialist roles, not the common target"
+    }
+  ],
+  "lods": [
+    {"lod": 0, "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD0.PSQ", "size": 32844, "sha256": "1fcad107ea7ac29e20bda278b351e6081adbb102350d47d5bd5fc21bf0d516a8", "stream_records": 684, "unique_positions": 251, "triangles": 478, "primary_triangles": 430, "shield_triangles": 48, "secondary_start": 603},
+    {"lod": 1, "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD1.PSQ", "size": 25164, "sha256": "fbf3f9be424b40f2c6d1c3c8e8a19f746d5f02d633e90779b78bc50e7949ac31", "stream_records": 524, "unique_positions": 198, "triangles": 372, "primary_triangles": 324, "shield_triangles": 48, "secondary_start": 443},
+    {"lod": 2, "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD2.PSQ", "size": 18300, "sha256": "82456888794edea78d40c3d98bb5f88687fec736695768919cff032a02f7c8c3", "stream_records": 381, "unique_positions": 137, "triangles": 250, "primary_triangles": 218, "shield_triangles": 32, "secondary_start": 316},
+    {"lod": 3, "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD3.PSQ", "size": 10908, "sha256": "d519218bc712140a643daa33cbc572254032b88e974a2a57a851fbb12d119c0b", "stream_records": 227, "unique_positions": 99, "triangles": 152, "primary_triangles": 136, "shield_triangles": 16, "secondary_start": 196},
+    {"lod": 4, "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD4.PSQ", "size": 7020, "sha256": "e889ae9690942386c365edb59c7d102c6c86b627c1b5a8e4fdc82e487197e09e", "stream_records": 146, "unique_positions": 68, "triangles": 94, "primary_triangles": 78, "shield_triangles": 16, "secondary_start": 115}
+  ],
+  "lod0_layout": {
+    "record_stride": 48,
+    "fields": ["position_xyz", "adc", "normal_xyz", "reserved", "uv", "bone_matrix_offset", "reserved"],
+    "uv_sets": 1,
+    "material_slots": 1,
+    "primary_range": [0, 603],
+    "shield_range": [603, 684],
+    "rest_pose_bounds": {"min": [-1.257584, -0.982900, -0.465855], "max": [0.915999, 0.898171, 0.840777]},
+    "coordinate_interpretation": "X lateral, Y up, positive Z toward the reconstructed front; positive X is anatomical left",
+    "skinning": "one rigid bone ID per stream record"
+  },
+  "skeleton": {
+    "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD2.BNS",
+    "size": 305,
+    "sha256": "0a0fbdbea2eac53a5b6d9c162fab59e316c7c2864793e6d5d8529ca1df8db5a5",
+    "magic": "bns2",
+    "bone_count": 16,
+    "parents": [-1, 0, 1, 2, 0, 4, 5, 5, 7, 8, 5, 10, 11, 0, 13, 14],
+    "bone_names_present": false,
+    "exact_shared_families": ["SPT_SWRD", "SPT_HOPL"],
+    "same_topology_not_byte_identical": {
+      "player_spartan_sha256": "84c62e94f44798e79e1af0b6aa8ed60409868c45f085e2136c7b2fcdec02fc3c",
+      "roman_grunt_sha256": "c2061123f8cb42663aef5a9fe900fe3941aa7c3c0958bad0d5246769d36b9f83"
+    },
+    "inferred_attachments": {
+      "positive_x_terminal_bone_9": "anatomical left hand and integrated sword",
+      "negative_x_terminal_bone_12": "anatomical right hand/arm and integrated shield"
+    }
+  },
+  "texture": {
+    "path": "DATA/CHR_MDLS/SPT_SWRD/SSWRD.TM2",
+    "size": 66112,
+    "sha256": "0a0b1c2952632d4e3dc44cba8e36c1645cfa069558c876aadcc70dcd444328eb",
+    "dimensions": [256, 256],
+    "pixel_format": "PSMT8 / IDTEX8",
+    "clut_format": "RGB5A1, 256 entries",
+    "mip_count": 1,
+    "decoded_alpha_range": [255, 255],
+    "material_slots": 1,
+    "dominant_palette_families": ["black", "charcoal grey", "bronze/brown", "skin tan", "pale cream/silver", "muted blue"],
+    "distinctive_markings": ["broad blue shield face", "large pale lambda-like chevron", "bronze-and-dark patterned shield rim", "geometric bronze waist band"]
+  },
+  "equipment": {
+    "head_face_hair_helmet": "integrated in the primary PSQ stream",
+    "torso_armour_clothing_skirt_footwear": "integrated in the primary PSQ stream",
+    "shield": {
+      "representation": "secondary PSQ range",
+      "bone_id": 12,
+      "triangles_lod0": 48,
+      "rest_bounds_dimensions_xyz": [0.858455, 0.430161, 0.947200],
+      "front_plane_width_height": [0.947200, 0.430161],
+      "front_plane_width_height_ratio": 2.202,
+      "visual_identity": "very broad shallow-curved blue shield with pale lambda-like chevron and patterned bronze/dark rim"
+    },
+    "weapon": {
+      "representation": "integrated in primary PSQ range",
+      "bone_id": 9,
+      "terminal_attachment_bounds_xyz": [0.114252, 0.101897, 1.005533],
+      "visual_identity": "one-handed straight leaf-shaped sword with pointed blade, small guard, wrapped grip, and compact pommel"
+    },
+    "separate_equipment_models": []
+  },
+  "anatomical_equipment": {
+    "character_left_hand": "sword",
+    "character_left_arm": "sword arm; no shield",
+    "character_right_hand": "shield grip",
+    "character_right_arm": "shield",
+    "proof": "the front-facing mesh looks toward positive Z; bone 9 is the positive-X/anatomical-left terminal and contains the sword, while the complete secondary shield range is rigid on negative-X/anatomical-right terminal bone 12"
+  },
+  "animations": {
+    "format_magic": "anm1",
+    "validated_bone_count": 16,
+    "bounded_files_checked": 30,
+    "generic_swordsman_namespace": "DATA/ANIMS/GREEK/SWORD",
+    "generic_swordsman_clip_count_in_level04": 19,
+    "shared_namespace": "DATA/ANIMS/COMMON",
+    "player_only_comparison_namespace": "DATA/ANIMS/GREEK/SPARTAN/SWORD1",
+    "representative": [
+      {"role": "stand", "path": "DATA/ANIMS/GREEK/SWORD/STAND.ANM", "frames": 31, "sha256": "c3b991bf94e59650ae355ee510a0e5deebc135bab553d0a7c38971a9e38070a2"},
+      {"role": "run", "path": "DATA/ANIMS/GREEK/SWORD/RUN.ANM", "frames": 13, "sha256": "c7177918dc569fc321071a99b55312907bf1d9c1003fd28a070cbb8509ae8734"},
+      {"role": "short stab", "path": "DATA/ANIMS/GREEK/SWORD/ATTACK_BASIC_STAB_SHORT.ANM", "frames": 38, "sha256": "74634a3b64680affcba7751bb7440c591b6e2dae6826a3e132883b36a3c38291"},
+      {"role": "combat ready", "path": "DATA/ANIMS/GREEK/SWORD/COMBAT_READY.ANM", "frames": 36, "sha256": "952313bda2f38815ee8f8a3b9bcc465b2aeb1631c8f827989eb0f9806ef570bf"},
+      {"role": "walk", "path": "DATA/ANIMS/COMMON/WALK.ANM", "frames": 21, "sha256": "0dedf9aa367009a629acce7b618f5750fa14f952dc5579472b7a2b219509548c"},
+      {"role": "defence ready", "path": "DATA/ANIMS/COMMON/DEFENCE_READY.ANM", "frames": 20, "sha256": "277e3c0d4247c44335e42468ef78c9a41f49453f6e48a1ec6de52510c40ff05f"},
+      {"role": "shield impact", "path": "DATA/ANIMS/COMMON/IMPACT_SHIELD.ANM", "frames": 11, "sha256": "e4428f0ad0014b2b82d402005eb73263950d1a47e7f616ad52d634688dce73b1"},
+      {"role": "death front", "path": "DATA/ANIMS/COMMON/DEATH_FRONT.ANM", "frames": 35, "sha256": "5fe9328faf7ec1726cc871f671194b29cdde18d58d945b5f3216a773f5e8e7cd"},
+      {"role": "death back", "path": "DATA/ANIMS/COMMON/DEATH_BACK.ANM", "frames": 41, "sha256": "dcc52f3f6e484dfb8309044c05b8181c0d8b0ca07d77291ddd334f795e254fb9"}
+    ]
+  },
+  "player_relationship": {
+    "geometry": "separate; SSWRD is one integrated NPC PSQ family while the player uses a much larger BODY PSQ plus FACE.MPH and modular SWORD/SHIELD/BOW families",
+    "skeleton": "same 16-bone parent topology and numerically near-identical rest translations, but not byte-identical",
+    "animations": "the generic unit is associated with GREEK/SWORD and COMMON; the player has the separate GREEK/SPARTAN/SWORD1 family; exact runtime selection remains untraced",
+    "equipment": "generic sword and shield are integrated; player weapons and shield are modular",
+    "classification": "separate NPC geometry using the shared humanoid rig layout, not the player mesh"
+  },
+  "private_outputs": {
+    "copyright_status": "never commit or redistribute",
+    "root": "temp/character-research/SPARTAN_SWORDSMAN",
+    "obj": "temp/character-research/SPARTAN_SWORDSMAN/reconstruction/spartan_swordsman_lod0.obj",
+    "texture_png": "temp/character-research/SPARTAN_SWORDSMAN/decoded/sswrd.png",
+    "turnaround": "temp/character-research/SPARTAN_SWORDSMAN/turnaround/spartan-swordsman-turnaround.png",
+    "closeups": "temp/character-research/SPARTAN_SWORDSMAN/turnaround/spartan-swordsman-closeup-*.png"
+  },
+  "uncertainties": [
+    "The final executable/entity pointer joining type 11 to SPT_SWRD is not decoded; the archive/type/name/model co-occurrence makes the asset link high confidence rather than confirmed.",
+    "BNS bone names and bind rotations are absent; functional attachment names are inferred from hierarchy and rigid geometry.",
+    "ANM compressed key tracks and the complete runtime clip-selection graph remain undecoded.",
+    "The one-atlas PSQ has no standalone character MTL; exact runtime GS/material constants remain untraced.",
+    "The pale shield marking is visually lambda-like but its exact intended heraldic name is not encoded in the recovered files."
+  ]
+}
