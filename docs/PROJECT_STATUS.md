@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Milestone 0 - Canonical Allied Character Preservation Recovery
+Milestone 0 - Character Production Roster Established
 
 ## Milestone 0 - Discovery
 
-The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. GENERAL, FE_LANG, FE_TV, FE_MAIN, and LEVEL00 have been extracted into separate ignored directories after list-only safety audits. The evidenced path GENERAL → FE_LANG → FE_TV → FE_MAIN → LEVEL00 now reaches the first mapped gameplay section; LEVEL00's entity graph explicitly transitions to LEVEL01. The other 25 PAKs have not been extracted.
+The canonical PS2 ISO has an independently verified matching backup and a complete ignored filesystem extraction. GENERAL, FE_LANG, FE_TV, FE_MAIN, and LEVEL00 were extracted into separate ignored directories after list-only safety audits. For the private character-roster audit, all 22 campaign and arena PAKs were additionally extracted under `temp/character-roster-audit`; source archives remained read-only and no extracted content is tracked.
 
 ## Environment
 
@@ -23,6 +23,8 @@ Disc-level ELF, IRX, ROMDIR-style IMG, text configuration, and PAK1 containers a
 The canonical common Roman infantryman is now identified as gameplay type `ROMAN_GRUNT` (ID 3) and asset family `RMN_GRNT/RGRT`. A bounded parser reconstructs its five PSQ LODs (472 down to 82 triangles), 16-bone rigid hierarchy, one 256² indexed colour atlas, integrated shield and short sword, and representative 16-bone grunt/Roman/common animation families. Derived character geometry, texture, and renders remain private and ignored; only metadata, hashes, tooling, tests, and documentation are public.
 
 The canonical common Spartan allied infantry target is now identified as `SPARTAN_SWORDSMAN` (ID 11), separate from the player and the distinct type-8 Hoplite. Its `SPT_SWRD/SSWRD` family supplies five integrated PSQ LODs (478 down to 94 triangles), the exact Hoplite-compatible 16-bone BNS, one 256² indexed atlas, a left-hand leaf sword, and a very broad right-arm blue shield. Generic `GREEK/SWORD` and shared `COMMON` animation evidence is bounded; source-derived reconstruction and review renders remain private under `temp/character-research/SPARTAN_SWORDSMAN`.
+
+The complete campaign/arena character roster now distinguishes 85 global gameplay type definitions, 60 actually packaged type IDs, 46 geometry-bearing top-level model families, 51 unique high-detail geometry signatures, 67 unique decoded character-associated textures, and 61 meaningful visible appearances. Production classification currently recommends 42 distinct Reforged masters, nine major derivatives, and ten texture-only variants; 20 unresolved type definitions remain gated rather than guessed into the paid generation queue.
 
 ## Executable Analysis
 
@@ -60,4 +62,4 @@ See `research/TOOL_REGISTRY.md` and `SETUP_CHECKLIST.md`.
 
 ## Next Actions
 
-Obtain human review of the private canonical `SPARTAN_SWORDSMAN` turnaround before any Reforged concept work. Later, decode the executable/entity model pointers for type 11 → `SPT_SWRD` and type 3 → `RMN_GRNT`; map ANM compressed tracks only when animation reconstruction becomes active.
+Review `CHARACTER_ROSTER.md`, the private texture-evidence contact sheet, and the ranked high-poly queue before spending further generation credits. Do not start another character automatically; unresolved Amazon and unobserved global types require targeted evidence or human disposition first.

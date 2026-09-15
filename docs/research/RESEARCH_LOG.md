@@ -353,3 +353,14 @@
 - Decoded the 256×256 PSMT8/RGB5A1 SSWRD atlas privately. It establishes the bronze crestless full-face helmet and greaves, pale torso/pteruges, dark skirt, broad blue shield, pale lambda-like chevron, patterned rim, and leaf-shaped sword identity.
 - Validated 19 `GREEK/SWORD` and 11 representative `COMMON` ANM headers; all declare 16 bones and positive frame counts. The player's `GREEK/SPARTAN/SWORD1` namespace remains distinct.
 - Added a public-safe metadata manifest, consistency tests, and canonical research document. All PSQ/BNS/TM2/ANM inputs, decoded texture, OBJ/MTL, and source-derived renders remain ignored/private.
+
+## 2026-09-15 - Complete character production roster established
+
+- Extracted all 22 campaign/arena PAKs into ignored `temp/character-roster-audit` and reconciled the global 85-entry character type table against every section's `CHAR_TYPES.BIN`, `CHR_MDLS` assets, textures, skeletons, and animation namespaces. Sixty IDs are actually packaged; 25 are not observed in any audited type table.
+- Inventoried 47 top-level `CHR_MDLS` directories: 46 contain geometry and `STONE` is a texture-only petrification/helper family. All 263 logical PSQ variants were decoded sufficiently for normalized mesh fingerprints; no container-different decoded duplicate existed beyond byte-identical groups.
+- Identified 68 logical TM2 paths and 67 unique byte/decoded-RGBA images. The sole exact duplicate is the player's variation-1/variation-2 extras texture. Mip levels are metadata within a texture, never separate skins.
+- Classified 61 evidenced visible appearances into 42 distinct high-poly masters, nine major derived variants, and ten texture/material-only variants. Exact production-relevant reuse includes Roman Grunt variants, Roman/snow archers, Gigantes warrior/captain, Pollux/zombie, and Nemesis/player variation 3.
+- Grouped 59 logical BNS paths into 16 byte-level skeletons and six meaningful parent-topology families. The dominant 16-bone humanoid topology covers multiple exact Greek, Roman/common, and Barbarian/Gladiator reuse clusters.
+- Created a ranked 42-entry high-poly master queue: Roman Grunt remains human-approved/complete, Spartan Swordsman remains in progress, and 40 distinct masters remain. Twenty unresolved gameplay definitions remain explicitly gated for evidence/human review.
+- Generated private CSVs, detailed JSON, and a 61-tile decoded-atlas evidence sheet under `temp/character-roster-audit`. A uniform model-render contact sheet is not claimed because PSW/multiweighted/component reconstruction is not yet generic enough to avoid guessed output.
+- Added public-safe generic inventory tooling, an authoritative roster document/manifest, and synthetic/metadata regression tests. No proprietary model, texture, animation, render, contact sheet, or generated master is public.
